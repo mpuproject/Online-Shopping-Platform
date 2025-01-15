@@ -57,6 +57,10 @@ const doLogin = () => {
     }
   })
 }
+
+const doRegister = () => {
+  router.push({ path: '/register' })
+}
 </script>
 
 <template>
@@ -105,10 +109,15 @@ const doLogin = () => {
               </el-form-item>
               <el-form-item>
                 <el-checkbox  size="large" v-model="form.agree">
-                  I agree the Privacy Policy
+                  I agree the <a class="privacy">Privacy Policy.</a>
                 </el-checkbox>
               </el-form-item>
-              <el-button size="large" class="subBtn" @click="doLogin">Login</el-button>
+              <div class="login-action">
+                <el-button size="large" class="subBtn" @click="doLogin">Login</el-button>
+                <span class="register">New user? 
+                    <a href="javascript:;" @click="doRegister">Sign up!</a>
+                </span>
+              </div>
             </el-form>
           </div>
         </div>
@@ -275,6 +284,38 @@ const doLogin = () => {
   }
 }
 
+.login-action {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.register {
+  margin-top: 15px;
+  font-size: 13px;
+
+  a {
+    color: #409eff;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+:deep(.el-checkbox) {
+  .el-checkbox__label {
+    color: inherit;
+  }
+
+  &.is-checked {
+    .el-checkbox__label {
+      color: inherit;
+    }
+  }
+}
+
 .account-box {
   .toggle {
     padding: 15px 40px;
@@ -291,6 +332,15 @@ const doLogin = () => {
 
   .form {
     padding: 0 20px 20px 20px;
+
+    a.privacy {
+      color: $xtxColor;
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
 
     &-item {
       margin-bottom: 28px;
