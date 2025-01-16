@@ -1,10 +1,13 @@
 <script setup>
 import { ref } from 'vue'
-import { loginAPI } from '@/apis/user'
 import 'element-plus/theme-chalk/el-message.css'
 import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { View, Hide } from '@element-plus/icons-vue';
+
+import { useUserStore } from '@/stores/user'
+
+const userStore = useUserStore()
 
 // switch display of password
 const showPassword = ref(false);
@@ -51,7 +54,7 @@ const doLogin = () => {
 
   formRef.value.validate( async (valid) => {
     if(valid) {
-      await loginAPI({ username, password })
+      await userStore.getUserInfo({ username, password })
       ElMessage({ type: 'success', message: 'Login success' })
       router.replace({ path: '/' })
     }
