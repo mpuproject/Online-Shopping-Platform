@@ -11,21 +11,27 @@ const router = createRouter({
   routes: [
     
     { path: '/', component: Layout, children: [
-        { path: '', component: Home },
+        { path: '', component: Home, meta: { title: 'Rabbuy - Buy what you want' } },
         { path: 'category', component: Category }
       ] 
     },
 
-    { path: '/login', component: Login },
+    { path: '/login', component: Login, meta: { title: 'Rabbuy Login' } },
   
-    { path: '/register', component: Register },
+    { path: '/register', component: Register, meta: { title: 'Rabbuy registration' } },
   ],
 
   scrollBehavior () {
     return {
       top: 0
     }
-  }
+  },
+})
+
+router.beforeEach((to, from, next) => {
+  const title = to.meta.title || "Rabbuy";
+  document.title = title;
+  next();
 })
 
 export default router

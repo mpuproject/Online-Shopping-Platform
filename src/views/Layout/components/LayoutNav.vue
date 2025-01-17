@@ -26,6 +26,7 @@ const confirmLogout = () => {
         </template>
         <template v-else>
           <li><a href="javascript:;" @click="$router.push('/login')">Login</a></li>
+          <li><a href="javascript:;" @click="$router.push('/register')">Register</a></li>
           <li><a href="javascript:;">Help Center</a></li>
           <li><a href="javascript:;">About</a></li>
         </template>

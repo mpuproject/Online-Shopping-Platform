@@ -60,10 +60,6 @@ const doLogin = () => {
     }
   })
 }
-
-const doRegister = () => {
-  router.push({ path: '/register' })
-}
 </script>
 
 <template>
@@ -118,7 +114,7 @@ const doRegister = () => {
               <div class="login-action">
                 <el-button size="large" class="subBtn" @click="doLogin">Login</el-button>
                 <span class="register">New user? 
-                    <a href="javascript:;" @click="doRegister">Sign up!</a>
+                    <a href="javascript:;" @click="$router.push({ path: '/register' })">Sign up!</a>
                 </span>
               </div>
             </el-form>
