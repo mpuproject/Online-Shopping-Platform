@@ -2,9 +2,9 @@
 import { ref } from 'vue';
 
 const bannerList = ref([
-  { id: 1, imgUrl: 'https://cdn.pixabay.com/photo/2016/08/11/23/48/mountains-1587287_1280.jpg' },
-  { id: 2, imgUrl: 'https://cdn.pixabay.com/photo/2016/11/14/04/45/elephant-1822636_1280.jpg' },
-  { id: 3, imgUrl: 'https://cdn.pixabay.com/photo/2017/05/09/03/46/alberta-2297204_1280.jpg' },
+  { id: 1, imgUrl: 'https://picsum.photos/700/500.jpg?random=1' },
+  { id: 2, imgUrl: 'https://picsum.photos/700/500.jpg?random=2' },
+  { id: 3, imgUrl: 'https://picsum.photos/700/500.jpg?random=3' },
   // 添加更多静态图片的链接
 ]);
 </script>
