@@ -68,6 +68,7 @@
 }
 
 .logo {
+  margin-top: 10px;
   width: 200px;
 
   a {

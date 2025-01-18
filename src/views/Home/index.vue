@@ -11,8 +11,9 @@ import HomeProduct from './components/HomeProduct.vue'
   <div class="container">
     <HomeCategory />
     <HomeBanner />
-    <HomeId />
+    <HomeId class="id"/>
   </div>
+  
   <HomeNew />
   <HomeHot />
   <HomeProduct />
@@ -23,5 +24,8 @@ import HomeProduct from './components/HomeProduct.vue'
   display: flex; /* 使用 Flexbox 布局 */
   justify-content: space-between; /* 在主轴上均匀分布 */
   padding: 20px; /* 添加一些内边距 */
+}
+.id {
+  margin-left: 8px;
 }
 </style>
