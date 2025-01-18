@@ -10,17 +10,19 @@
         <!-- Search Bar -->
         <div class="search-section">
           <div class="search-wrapper">
-            <div class="category-select">
-              <span class="selected">全部</span>
-              <div class="dropdown-menu">
-                <div class="dropdown-item">全部</div>
-                <div class="dropdown-item">居家</div>
-                <div class="dropdown-item">美食</div>
-                <div class="dropdown-item">服饰</div>
+            <div class="category-select"
+              @mouseenter="openDropdown" @mouseleave="closeDropdown"
+            >
+              <span class="selected">{{ selectedCategory }}</span>
+              <div class="dropdown-menu" v-show="isDropdownVisible">
+                <div class="dropdown-item" @click="selectCategory('全部')">全部</div>
+                <div class="dropdown-item" @click="selectCategory('Product')">Product</div>
+                <div class="dropdown-item" @click="selectCategory('美食')">美食</div>
+                <div class="dropdown-item" @click="selectCategory('服饰')">服饰</div>
               </div>
             </div>
             <div class="search">
-              <input type="text" placeholder="搜一搜">
+              <input type="text" placeholder="Search Rabbuy">
               <button class="search-button">
                 <i class="iconfont icon-search"></i>
               </button>
@@ -52,6 +54,28 @@
   </header>
 </template>
 
+<script setup>
+import { ref } from 'vue'
+
+const selectedCategory = ref('全部')
+const isDropdownVisible = ref(false)
+
+const openDropdown =() => {
+  isDropdownVisible.value = true
+  console.log(1)
+}
+
+const closeDropdown = () => {
+  isDropdownVisible.value = false
+  console.log(2)
+}
+
+const selectCategory = (category) => {
+  selectedCategory.value = category;
+  isDropdownVisible.value = false;
+}
+</script>
+
 <style scoped lang='scss'>
 .app-header {
   background: #fff;
@@ -59,7 +83,7 @@
 
 .main-header {
   border-bottom: 1px solid #e7e7e7;
-  
+
   .container {
     display: flex;
     align-items: center;
@@ -97,11 +121,11 @@
 
 .category-select {
   position: relative;
-  width: 70px;
+  min-width: 70px;
   border-right: 1px solid #e7e7e7;
   background-color: #f5f5f5;
   cursor: pointer;
-  
+
   .selected {
     display: flex;
     align-items: center;
@@ -109,7 +133,8 @@
     padding: 0 10px;
     font-size: 14px;
     color: #666;
-    
+    white-space: nowrap;
+
     &::after {
       content: '';
       width: 0;
@@ -124,32 +149,26 @@
   .dropdown-menu {
     position: absolute;
     top: 100%;
-    left: -2px; // 对齐父元素border
-    right: -1px; // 对齐右侧分隔线
+    left: -2px;
+    right: -1px;
     background: #fff;
-    border: none;
+    border: 1px solid #e7e7e7;
     border-top: none;
     border-radius: 0 0 4px 4px;
     padding: 5px 0;
-    display: none;
-    animation: slideDown 0.5s ease-out;
     z-index: 100;
+    min-width: 100%;
   }
 
   .dropdown-item {
     padding: 8px 10px;
     font-size: 14px;
     color: #666;
-    
+    white-space: nowrap;
+
     &:hover {
       background-color: #f5f5f5;
       color: $xtxColor;
-    }
-  }
-
-  &:hover {
-    .dropdown-menu {
-      display: block;
     }
   }
 }
@@ -177,7 +196,7 @@
     height: 100%;
     border: none;
     font-size: 14px;
-    
+
     &:focus {
       outline: none;
     }
@@ -211,20 +230,20 @@
   display: flex;
   align-items: center;
   padding-left: 40px;
-  
+
   li {
     margin-right: 40px;
-    
+
     a {
       font-size: 14px;
       line-height: 40px;
       display: inline-block;
-      
+
       &:hover {
         color: $xtxColor;
       }
     }
-    
+
     &.home {
       a {
         font-weight: 500;
