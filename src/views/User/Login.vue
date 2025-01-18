@@ -33,7 +33,7 @@ const rules = {
     { min: 6, max: 20, message: 'Length of password must be in 6-20', trigger: 'blur'  }
   ],
   agree: [
-    { 
+    {
       validator: (rule, value, callback) => {
         if(value === true) {
           callback()
@@ -93,8 +93,8 @@ const doLogin = () => {
                 <span class="form-label">Password</span>
                 <span class="forgot-password"><a href="javascript:;">Forgot password?</a></span>
                 <el-input
-                  v-model="form.password" 
-                  placeholder="Input Your Password" 
+                  v-model="form.password"
+                  placeholder="Input Your Password"
                   :type="showPassword ? 'text' : 'password'">
                   <template #suffix>
                     <el-icon
@@ -113,7 +113,7 @@ const doLogin = () => {
               </el-form-item>
               <div class="login-action">
                 <el-button size="large" class="subBtn" @click="doLogin">Login</el-button>
-                <span class="register">New user? 
+                <span class="register">New user?
                     <a href="javascript:;" @click="$router.push({ path: '/register' })">Sign up!</a>
                 </span>
               </div>

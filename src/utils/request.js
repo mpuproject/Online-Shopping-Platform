@@ -14,15 +14,15 @@ httpInstance.interceptors.request.use(config => {
     const token = userStore.userInfo.refresh;
     if(token) {
         config.headers.Authorization = `Bearer ${token}`;
-    } 
+    }
     return config
 }, e => Promise.reject(e))
-  
+
   // axios responsive interceptor
 httpInstance.interceptors.response.use(res => res.data, e => {
     ElMessage({
         type: 'warning',
-        message: e.response.data.message,
+        message: e.response.data.msg,
     })
     return Promise.reject(e)
 })

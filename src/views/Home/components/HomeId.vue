@@ -1,11 +1,17 @@
 <template>
-  <div class="profile-card">
+  <div v-if="userStore.userInfo.username" class="profile-card">
     <div class="avatar">
-      <img :src="avatarUrl" alt="头像" />
+      <img :src="avatarUrl" alt="profile" />
     </div>
     <div class="user-info">
-      <h2>{{ userName }}</h2>
-      <p>切换账号 | 退出</p>
+      <h2>{{ userStore.userInfo.username }}</h2>
+      <a>Switch</a>
+      <span> | </span>
+      <el-popconfirm @confirm="confirmLogout" title="Confirm logout?" confirm-button-text="Logout" cancel-button-text="Cancel">
+        <template #reference>
+          <a href="javascript:;">Logout</a>
+        </template>
+      </el-popconfirm>
     </div>
     <div class="stats">
       <a
@@ -25,29 +31,43 @@
       <span>退换货: {{ pending.returns }}</span>
     </div>
   </div>
+
+  <div v-else class="profile-card-n">
+    <div class="avatar">
+      <img src="/src/assets/images/200.png" alt="" @click="$router.push({ path: '/login' })" />
+      <div class="avatar-links">
+        <a href="javascript:;" @click="$router.push({ path: '/register' })">Signup</a>
+        <span> | </span>
+        <a href="javascript:;">I'm a manager</a>
+      </div>
+    </div>
+    <div class="user-info">
+      <h2><a @click="$router.push({ path: '/login' })">You are currently logout</a></h2>
+    </div>
+    <el-button size="large" @click="$router.push({ path: '/login' })" class="loginBtn">Login</el-button>
+  </div>
 </template>
 
-<script>
-export default {
-  data() {
-    return {
-      avatarUrl: 'https://cdn.pixabay.com/photo/2016/08/11/23/48/mountains-1587287_1280.jpg', // 替换为头像路径
-      userName: '玫瑰花恋上了蝴蝶',
-      stats: [
-        { icon: '&#x10186;', label: '收藏', link: '#/favorites' },
-        { icon: '&#x10187;', label: '购物车', link: '#/cart' },
-        { icon: '&#x10188;', label: '消息', link: '#/messages' },
-        { icon: '&#x10189;', label: '订单', link: '#/orders' }
-      ],
-      pending: {
-        payment: 0,
-        received: 0,
-        review: 12,
-        returns: 0
-      }
-    };
-  }
-};
+<script setup>
+import 'element-plus/theme-chalk/el-message.css'
+import { useUserStore } from '@/stores/user';
+
+const userStore = useUserStore()
+
+const confirmLogout = () => {
+  userStore.clearUserInfo()
+}
+
+const avatarUrl = "https://cdn.pixabay.com/photo/2016/08/11/23/48/mountains-1587287_1280.jpg";
+const stats = [
+  { icon: '&#x10186;', label: '收藏', link: '#/favorites' },
+  { icon: '&#x10187;', label: '购物车', link: '#/cart' },
+  { icon: '&#x10188;', label: '消息', link: '#/messages' },
+  { icon: '&#x10189;', label: '订单', link: '#/orders' }
+]
+const pending = {
+  payment: 0, received: 0, review: 12, returns: 0
+}
 </script>
 
 <style scoped lang="scss">
@@ -73,8 +93,8 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
-  text-decoration: none; 
-  color: #333; 
+  text-decoration: none;
+  color: #333;
 }
 
 .stat-item:hover {
@@ -88,23 +108,73 @@ export default {
   width: 250px;
   text-align: center;
   background-color: #fff;
+
+  div.avatar img {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+  }
+
+  div.user-info h2 {
+    margin: 10px 0;
+    font-size: 18px;
+  }
+
+  div.user-info a {
+    margin: 5px 0;
+    font-size: 14px;
+  }
 }
 
-.avatar img {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-}
+.profile-card-n {
+  border: 1px solid #eaeaea;
+  border-radius: 10px;
+  padding: 20px;
+  width: 250px;
+  background-color: #fff;
 
-.user-info h2 {
-  margin: 10px 0;
-  font-size: 18px;
-}
+  div.avatar {
+    position: relative;
+    img {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+    }
+    .avatar-links {
+      position: absolute;
+      bottom: 0px; /* 调整位置，使其在头像下方 */
+      right: 0;
+      display: flex;
+      align-items: center; /* 垂直居中 */
+      font-size: 12px;
+      color: #666;
+      a {
+        color: #666;
+        text-decoration: none;
+        &:hover {
+          text-decoration: underline;
+          color: $xtxColor;
+        }
+      }
+      span {
+        margin: 0 4px; /* 调整分隔符的间距 */
+        color: #666; /* 分隔符颜色 */
+      }
+    }
+  }
 
-.user-info p {
-  margin: 5px 0;
-  font-size: 14px;
-  color: #888;
+  div.user-info h2 {
+    text-align: center;
+    margin: 10px 0;
+    font-size: 18px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+  }
+
+  div.user-info a {
+    margin: 5px 0;
+    font-size: 14px;
+  }
 }
 
 .stats {
@@ -117,5 +187,11 @@ export default {
   margin-top: 10px;
   font-size: 14px;
   color: #333;
+}
+
+.loginBtn {
+  background: $xtxColor;
+  width: 100%;
+  color: #fff;
 }
 </style>

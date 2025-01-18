@@ -11,7 +11,7 @@ export const useUserStore = defineStore('user', () => {
         userInfo.value = res.data
         userInfo.value.username = jwtDecode(res.data.access)['username']
     }
-    
+
     const clearUserInfo = () => {
         userInfo.value = {}
     }
