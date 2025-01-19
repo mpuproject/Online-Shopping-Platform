@@ -25,10 +25,38 @@
       </a>
     </div>
     <div class="pending">
-      <span>待付款: {{ pending.payment }}</span>
-      <span>待收货: {{ pending.received }}</span>
-      <span>待评价: {{ pending.review }}</span>
-      <span>退换货: {{ pending.returns }}</span>
+      <div class="pending-item">
+        <span class="number">{{ pending.payment }}</span>
+        <span class="label">待付款</span>
+      </div>
+      <div class="pending-item">
+        <span class="number">{{ pending.received }}</span>
+        <span class="label">待收货</span>
+      </div>
+      <div class="pending-item">
+        <span class="number">{{ pending.review }}</span>
+        <span class="label">待评价</span>
+      </div>
+      <div class="pending-item">
+        <span class="number">{{ pending.returns }}</span>
+        <span class="label">退换</span>
+      </div>
+    </div>
+    
+    <!-- Membership Cards -->
+    <div class="membership-cards">
+      <div class="card plus-member">
+        <div class="card-content">
+          <h3>PLUS</h3>
+          <button class="activate-btn brown">立即开通</button>
+        </div>
+      </div>
+      <div class="card enterprise-member">
+        <div class="card-content">
+          <h3>会员</h3>
+          <button class="activate-btn blue">立即开通</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -81,7 +109,7 @@ const pending = {
 /* 定义使用iconfont的样式 */
 .iconfont {
   font-family: "iconfont" !important;
-  font-size: 16px;
+  font-size: 24px; /* Increased from 16px */
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -webkit-text-stroke-width: 0.2px;
@@ -95,6 +123,7 @@ const pending = {
   align-items: center;
   text-decoration: none;
   color: #333;
+  gap: 8px; /* Added gap between icon and label */
 }
 
 .stat-item:hover {
@@ -180,13 +209,103 @@ const pending = {
 .stats {
   display: flex;
   justify-content: space-around;
-  margin: 15px 0;
+  margin: 20px 0 25px; /* Adjusted margins */
+  padding: 0 10px; /* Added padding */
 }
 
 .pending {
-  margin-top: 10px;
-  font-size: 14px;
-  color: #333;
+  display: flex;
+  justify-content: space-between;
+  padding: 15px 10px; /* Adjusted padding */
+  background: #f5f5f5;
+  border-radius: 8px;
+  margin: 15px 0;
+
+  .pending-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    gap: 6px; /* Added consistent gap */
+
+    .number {
+      font-size: 24px;
+      font-weight: bold;
+      line-height: 1;
+    }
+
+    .label {
+      font-size: 13px; /* Slightly increased for better readability */
+      color: #666;
+    }
+  }
+  .pending-item:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      height: 80%;
+      width: 1px;
+      background-color: #e4e4e4;
+    }
+}
+
+.membership-cards {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+
+  .card {
+    flex: 1;
+    border-radius: 8px;
+    padding: 15px;
+    color: #fff;
+
+    &.plus-member {
+      background: linear-gradient(to right, #e6c48c, #d4af6f);
+    }
+
+    &.enterprise-member {
+      background: linear-gradient(to right, #7aa5eb, #5785e0);
+    }
+
+    .card-content {
+      h3 {
+        font-size: 16px;
+        margin: 0 0 5px 0;
+      }
+
+      p {
+        font-size: 12px;
+        margin: 0 0 10px 0;
+        opacity: 0.9;
+      }
+
+      .activate-btn {
+        border: none;
+        padding: 6px 12px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 12px;
+        
+        &.brown {
+          background: #8b6d42;
+          color: #fff;
+        }
+
+        &.blue {
+          background: #3668d1;
+          color: #fff;
+        }
+
+        &:hover {
+          opacity: 0.9;
+        }
+      }
+    }
+  }
 }
 
 .loginBtn {
@@ -195,3 +314,4 @@ const pending = {
   color: #fff;
 }
 </style>
+
