@@ -110,7 +110,7 @@ const doRegister = () => {
                 </el-form-item>
                 <el-form-item>
                   <span class="form-label">Password</span>
-                  <el-input v-model="form.password" placeholder="Input Your Password" type="password">
+                  <el-input v-model="form.password" placeholder="Input Your Password" :type="showPassword ? 'text' : 'password'">
                     <template #suffix>
                       <el-icon :class="['password-icon', {'active': showPassword }]" @click="togglePasswordVisibility">
                         <component :is="showPassword ? View : Hide" />
@@ -120,7 +120,7 @@ const doRegister = () => {
                 </el-form-item>
                 <el-form-item>
                   <span class="form-label">Confirm Password</span>
-                  <el-input  v-model="form.confirmPwd" placeholder="Confirm Your Password" type="password">
+                  <el-input  v-model="form.confirmPwd" placeholder="Confirm Your Password" :type="showPassword ? 'text' : 'password'">
                     <template #suffix>
                       <el-icon :class="['password-icon', {'active': confirmPassword }]" @click="toggleConfirmVisibility">
                         <component :is="confirmPassword ? View : Hide" />
@@ -139,7 +139,7 @@ const doRegister = () => {
           </div>
         </div>
       </section>
-  
+
       <footer class="login-footer">
         <div class="container">
           <p>
@@ -156,21 +156,21 @@ const doRegister = () => {
       </footer>
     </div>
   </template>
-  
+
   <style scoped lang='scss'>
   .login-header {
     background: #fff;
     border-bottom: 1px solid #e4e4e4;
-  
+
     .container {
       display: flex;
       align-items: flex-end;
       justify-content: space-between;
     }
-  
+
     .logo {
       width: 200px;
-  
+
       a {
         display: block;
         height: 132px;
@@ -179,7 +179,7 @@ const doRegister = () => {
         background: url("@/assets/images/logo.png") no-repeat center 18px / contain;
       }
     }
-  
+
     .sub {
       flex: 1;
       font-size: 24px;
@@ -188,12 +188,12 @@ const doRegister = () => {
       margin-left: 20px;
       color: #666;
     }
-  
+
     .entry {
       width: 120px;
       margin-bottom: 38px;
       font-size: 16px;
-  
+
       i {
         font-size: 14px;
         color: $xtxColor;
@@ -201,12 +201,12 @@ const doRegister = () => {
       }
     }
   }
-  
+
   .login-section {
     background: url('@/assets/images/signup-bg.png') no-repeat center / cover;
     height: 604px;
     position: relative;
-  
+
     .wrapper {
       width: 380px;
       background: #fff;
@@ -215,7 +215,7 @@ const doRegister = () => {
       top: 54px;
       transform: translate3d(100px, 0, 0);
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
-  
+
       nav {
         font-size: 14px;
         height: 55px;
@@ -225,7 +225,7 @@ const doRegister = () => {
         padding: 0 40px;
         text-align: right;
         align-items: center;
-  
+
         a {
           flex: 1;
           line-height: 1;
@@ -237,134 +237,134 @@ const doRegister = () => {
       }
     }
   }
-  
+
   .login-footer {
     padding: 30px 0 50px;
     background: #fff;
-  
+
     p {
       text-align: center;
       color: #999;
       padding-top: 20px;
-  
+
       a {
         line-height: 1;
         padding: 0 10px;
         color: #999;
         display: inline-block;
-  
+
         ~a {
           border-left: 1px solid #ccc;
         }
       }
     }
   }
-  
+
   .password-icon {
     cursor: pointer;
     color: #c0c4cc;
     transition: color 0.2s;
-  
+
     &:hover {
       color: #409eff;
     }
-  
+
     &.active {
       color: #409eff;
     }
   }
-  
+
   .form-label {
     font-size: 17px;
     color: #606266;
     margin-bottom: 4px;
   }
-  
+
   .el-form-item {
     margin-bottom: 15px;
   }
-  
+
   .forgot-password {
     position: absolute;
     right: 0;
     top: 0;
     font-size: 13px;
-  
+
     a {
       color: #409eff;
       text-decoration: none;
-  
+
       &:hover {
         text-decoration: underline;
       }
     }
   }
-  
+
   .login-action {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
   }
-  
+
   .register {
     margin-top: 15px;
     font-size: 13px;
-  
+
     a {
       color: #409eff;
       text-decoration: none;
-  
+
       &:hover {
         text-decoration: underline;
       }
     }
   }
-  
+
   :deep(.el-checkbox) {
     .el-checkbox__label {
       color: inherit;
     }
-  
+
     &.is-checked {
       .el-checkbox__label {
         color: inherit;
       }
     }
   }
-  
+
   .account-box {
     .toggle {
       padding: 15px 40px;
       text-align: right;
-  
+
       a {
         color: $xtxColor;
-  
+
         i {
           font-size: 14px;
         }
       }
     }
-  
+
     .form {
       padding: 0 20px 20px 20px;
-  
+
       a.privacy {
         color: $xtxColor;
         text-decoration: none;
-  
+
         &:hover {
           text-decoration: underline;
         }
       }
-  
+
       &-item {
         margin-bottom: 28px;
-  
+
         .input {
           position: relative;
           height: 36px;
-  
+
           >i {
             width: 10px;
             height: 34px;
@@ -377,24 +377,24 @@ const doRegister = () => {
             line-height: 34px;
             font-size: 18px;
           }
-  
+
           input {
             padding-left: 44px;
             border: 1px solid #cfcdcd;
             height: 36px;
             line-height: 36px;
             width: 100%;
-  
+
             &.error {
               border-color: $priceColor;
             }
-  
+
             &.active,
             &:focus {
               border-color: $xtxColor;
             }
           }
-  
+
           .code {
             position: absolute;
             right: 1px;
@@ -409,20 +409,20 @@ const doRegister = () => {
             cursor: pointer;
           }
         }
-  
+
         >.error {
           position: absolute;
           font-size: 12px;
           line-height: 28px;
           color: $priceColor;
-  
+
           i {
             font-size: 14px;
             margin-right: 2px;
           }
         }
       }
-  
+
       .btn {
         display: block;
         width: 100%;
@@ -431,19 +431,19 @@ const doRegister = () => {
         text-align: center;
         line-height: 40px;
         background: $xtxColor;
-  
+
         &.disabled {
           background: #cfcdcd;
         }
       }
     }
-  
+
     .action {
       padding: 20px 40px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-  
+
       .url {
         a {
           color: #999;
@@ -452,7 +452,7 @@ const doRegister = () => {
       }
     }
   }
-  
+
   .subBtn {
     background: $xtxColor;
     width: 100%;

@@ -86,7 +86,7 @@ const confirmLogout = () => {
   userStore.clearUserInfo()
 }
 
-const avatarUrl = "https://cdn.pixabay.com/photo/2016/08/11/23/48/mountains-1587287_1280.jpg";
+const avatarUrl = userStore.userInfo.profile;
 const stats = [
   { icon: '&#x10186;', label: '收藏', link: '#/favorites' },
   { icon: '&#x10187;', label: '购物车', link: '#/cart' },
