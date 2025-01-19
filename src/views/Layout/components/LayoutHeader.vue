@@ -31,26 +31,6 @@
         </div>
       </div>
     </div>
-
-    <!-- Navigation Bar -->
-    <div class="nav-section">
-      <div class="container">
-        <ul class="app-header-nav">
-          <li class="home">
-            <RouterLink to="/">首页</RouterLink>
-          </li>
-          <li>
-            <RouterLink to="/">居家</RouterLink>
-          </li>
-          <li>
-            <RouterLink to="/">美食</RouterLink>
-          </li>
-          <li>
-            <RouterLink to="/">服饰</RouterLink>
-          </li>
-        </ul>
-      </div>
-    </div>
   </header>
 </template>
 
@@ -216,38 +196,6 @@ const selectCategory = (category) => {
 
     .icon-search {
       font-size: 18px;
-    }
-  }
-}
-
-.nav-section {
-  background: #f5f5f5;
-  border-bottom: 1px solid #e7e7e7;
-}
-
-.app-header-nav {
-  height: 40px;
-  display: flex;
-  align-items: center;
-  padding-left: 40px;
-
-  li {
-    margin-right: 40px;
-
-    a {
-      font-size: 14px;
-      line-height: 40px;
-      display: inline-block;
-
-      &:hover {
-        color: $xtxColor;
-      }
-    }
-
-    &.home {
-      a {
-        font-weight: 500;
-      }
     }
   }
 }

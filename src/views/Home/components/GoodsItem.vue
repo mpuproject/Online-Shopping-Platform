@@ -1,5 +1,4 @@
 <script setup>
-import { defineProps } from 'vue'
 
 defineProps({
   goods: {
@@ -15,14 +14,6 @@ defineProps({
 })
 </script>
 
-<!-- <template>
-  <RouterLink :to="`/product/${goods.id}`" class="goods-item">
-    <img v-img-lazy="goods.picture" :alt="goods.name" />
-    <p class="name ellipsis">{{ goods.name }}</p>
-    <p class="desc ellipsis">{{ goods.desc }}</p>
-    <p class="price">&yen;{{ goods.price.toFixed(2) }}</p>
-  </RouterLink>
-</template> -->
 <template>
   <RouterLink :to="`/product/${goods.id}`" class="goods-item">
     <img :src="goods.picture" :alt="goods.name" />
