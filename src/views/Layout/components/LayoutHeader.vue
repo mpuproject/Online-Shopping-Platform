@@ -15,10 +15,8 @@
             >
               <span class="selected">{{ selectedCategory }}</span>
               <div class="dropdown-menu" v-show="isDropdownVisible">
-                <div class="dropdown-item" @click="selectCategory('全部')">全部</div>
-                <div class="dropdown-item" @click="selectCategory('Product')">Product</div>
-                <div class="dropdown-item" @click="selectCategory('美食')">美食</div>
-                <div class="dropdown-item" @click="selectCategory('服饰')">服饰</div>
+                <div class="dropdown-item" @click="selectCategory('All')">All</div>
+                <div class="dropdown-item" @click="selectCategory(c.name)" v-for="c in categoryList" :key="c.id">{{ c.name }}</div>
               </div>
             </div>
             <div class="search">
@@ -37,23 +35,31 @@
 <script setup>
 import { ref } from 'vue'
 
-const selectedCategory = ref('全部')
+const selectedCategory = ref('All')
 const isDropdownVisible = ref(false)
 
 const openDropdown =() => {
   isDropdownVisible.value = true
-  console.log(1)
 }
 
 const closeDropdown = () => {
   isDropdownVisible.value = false
-  console.log(2)
 }
 
 const selectCategory = (category) => {
   selectedCategory.value = category;
   isDropdownVisible.value = false;
 }
+
+const categoryList = [
+{ id: 'living', name: 'Living' },
+  { id: 'food', name: 'Food' },
+  { id: 'clothes', name: 'Clothes' },
+  { id: 'baby', name: 'Baby' },
+  { id: 'health', name: 'Health' },
+  { id: 'Digital', name: 'Digital`' },
+  { id: 'sports', name: 'Sports' }
+]
 </script>
 
 <style scoped lang='scss'>

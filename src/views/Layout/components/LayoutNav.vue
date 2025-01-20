@@ -2,9 +2,13 @@
 import { ref } from 'vue'
 
 const categories = ref([
-  { id: 'living', name: '居家' },
-  { id: 'food', name: '美食' },
-  { id: 'clothes', name: '服饰' },
+  { id: 'living', name: 'Living' },
+  { id: 'food', name: 'Food' },
+  { id: 'clothes', name: 'Clothes' },
+  { id: 'baby', name: 'Baby' },
+  { id: 'health', name: 'Health' },
+  { id: 'digital', name: 'Digital' },
+  { id: 'sports', name: 'Sports' }
 ])
 </script>
 
@@ -14,10 +18,10 @@ const categories = ref([
     <div class="container">
       <ul class="app-header-nav">
         <li class="home">
-          <RouterLink to="/" active-class="active">首页</RouterLink>
+          <RouterLink to="/" exact-active-class="active">Home</RouterLink>
         </li>
         <li v-for="category in categories" :key="category.id">
-          <RouterLink :to="`/category/${category.id}`" active-class="active">{{ category.name }}</RouterLink>
+          <RouterLink :to="`/category/${category.id}`" exact-active-class="active">{{ category.name }}</RouterLink>
         </li>
       </ul>
     </div>

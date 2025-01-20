@@ -1,42 +1,27 @@
 <script setup>
 import HomePanel from './HomePanel.vue'
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { findNewAPI } from '@/apis/home'
 
 // Static data
-const newList = ref([
-  {
-    id: 1,
-    name: "新鲜水果1",
-    price: 29.99,
-    picture: "https://picsum.photos/300/300.jpg"
-  },
-  {
-    id: 2,
-    name: "新鲜蔬菜2",
-    price: 19.99,
-    picture: "https://picsum.photos/300/300?random=1.jpg"
-  },
-  {
-    id: 3,
-    name: "新鲜肉类3",
-    price: 39.99,
-    picture: "https://picsum.photos/300/300?random=5.jpg"
-  },
-  {
-    id: 4,
-    name: "新鲜海鲜4",
-    price: 49.99,
-    picture: "https://picsum.photos/300/300?random=9.jpg"
-  }
-])
+const newList = ref([])
+
+const getNewList = async () => {
+  const  res = await findNewAPI()
+  newList.value = res.data
+}
+
+onMounted(() => {
+  getNewList()
+})
 </script>
 
 <template>
-  <HomePanel title="新鲜好物" sub-title="新鲜出炉 品质靠谱">
+  <HomePanel title="Fresh" sub-title="Freshly, reliably">
     <ul class="goods-list">
       <li v-for="item in newList" :key="item.id">
         <RouterLink :to="`/detail/${item.id}`">
-          <img :src="item.picture" alt="" />
+          <img :src="item.image" alt="" />
           <p class="name">{{ item.name }}</p>
           <p class="price">&yen;{{ item.price }}</p>
         </RouterLink>
