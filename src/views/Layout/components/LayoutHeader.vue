@@ -27,18 +27,28 @@
             </div>
           </div>
         </div>
+
+        <!-- Cart Icon -->
+        <div class="cart-icon" @click="openCart">
+          <i class="iconfont icon-cart cart-icon-large"></i>
+          <span class="cart-badge" v-if="cartItemCount > 0">{{ cartItemCount }}</span>
+        </div>
       </div>
     </div>
   </header>
+  <SlidingCart ref="slidingCartRef" />
 </template>
 
 <script setup>
 import { ref } from 'vue'
+import SlidingCart from '@/views/Home/components/SlidingCart.vue'
 
 const selectedCategory = ref('All')
 const isDropdownVisible = ref(false)
+const cartItemCount = ref(4)
+const slidingCartRef = ref(null)
 
-const openDropdown =() => {
+const openDropdown = () => {
   isDropdownVisible.value = true
 }
 
@@ -52,14 +62,18 @@ const selectCategory = (category) => {
 }
 
 const categoryList = [
-{ id: 'living', name: 'Living' },
+  { id: 'living', name: 'Living' },
   { id: 'food', name: 'Food' },
   { id: 'clothes', name: 'Clothes' },
   { id: 'baby', name: 'Baby' },
   { id: 'health', name: 'Health' },
-  { id: 'Digital', name: 'Digital`' },
+  { id: 'Digital', name: 'Digital' },
   { id: 'sports', name: 'Sports' }
 ]
+
+const openCart = () => {
+  slidingCartRef.value?.toggleCart()
+}
 </script>
 
 <style scoped lang='scss'>
@@ -205,4 +219,37 @@ const categoryList = [
     }
   }
 }
+
+.cart-icon {
+  position: relative;
+  cursor: pointer;
+  font-size: 24px;
+  color: #666;
+  transition: color 0.3s;
+  margin-left: 190px;
+
+  &:hover {
+    color: $xtxColor;
+  }
+
+  .cart-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background-color: #ff6b6b;
+    color: white;
+    border-radius: 50%;
+    font-size: 12px;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .cart-icon-large {
+    font-size: 24px;
+  }
+}
 </style>
+
