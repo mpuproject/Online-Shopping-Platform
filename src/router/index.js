@@ -5,7 +5,7 @@ import Register from '@/views/User/Register.vue'
 import Layout from '@/views/Layout/index.vue'
 import Home from '@/views/Home/index.vue'
 import Category from '@/views/Category/index.vue'
-
+import Detail from '@/views/Detail/index.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -16,7 +16,9 @@ const router = createRouter({
       children: [
         { path: '', component: Home, meta: { title: 'Rabbuy - Buy what you want' } },
         { path: 'category', component: Category },
-        { path: 'category/:id', component: Category, meta: { title: 'Rabbuy - Category' } }]
+        { path: 'category/:id', component: Category, meta: { title: 'Rabbuy - Category' } },
+        { path: 'detail/:id', component: Detail, meta: {title: 'Product\'s Details' } }
+      ]
     },
     { path: '/login', component: Login, meta: { title: 'Rabbuy Login' } },
 

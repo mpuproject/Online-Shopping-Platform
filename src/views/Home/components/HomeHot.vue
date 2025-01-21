@@ -1,10 +1,22 @@
 <script setup>
 import HomePanel from './HomePanel.vue'
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
+import { findHotAPI } from '@/apis/home';
 
 // Static data
-const hotList = ref([
-  {
+const hotList = ref([])
+
+const getHotList = async () => {
+  const res = await findHotAPI()
+  hotList.value = res.data
+}
+
+onMounted(() => {
+  getHotList()
+})
+
+/**
+ * {
     id: 1,
     title: "热门商品1",
     alt: "畅销爆款",
@@ -28,7 +40,8 @@ const hotList = ref([
     alt: "优质精选",
     picture: "https://picsum.photos/300/300?random=9.jpg"
   }
-])
+ */
+
 </script>
 
 <template>
@@ -36,9 +49,9 @@ const hotList = ref([
     <ul class="goods-list">
       <li v-for="item in hotList" :key="item.id">
         <RouterLink to="/">
-          <img :src="item.picture" alt="" />
-          <p class="name">{{ item.title }}</p>
-          <p class="desc">{{ item.alt }}</p>
+          <img :src="item.image" alt="" />
+          <p class="name">{{ item.name }}</p>
+          <p class="desc">{{ item.price }}</p>
         </RouterLink>
       </li>
     </ul>
@@ -73,8 +86,7 @@ const hotList = ref([
     }
 
     .desc {
-      color: #999;
-      font-size: 18px;
+      color: $priceColor;
     }
   }
 }

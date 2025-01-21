@@ -1,5 +1,5 @@
 <script setup>
-import GoodsItem from '../Home/components/GoodsItem.vue' 
+import GoodsItem from '../Home/components/GoodsItem.vue'
 import { ref, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 
@@ -108,7 +108,7 @@ watch(() => route.params.id, (newId) => {
       <!-- Breadcrumb -->
       <div class="bread-container">
         <el-breadcrumb separator=">">
-          <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
+          <el-breadcrumb-item :to="{ path: '/' }">Home</el-breadcrumb-item>
           <el-breadcrumb-item>{{ categoryData.name }}</el-breadcrumb-item>
         </el-breadcrumb>
       </div>
