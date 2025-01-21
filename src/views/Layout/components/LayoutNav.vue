@@ -1,15 +1,13 @@
 <script setup>
-import { ref } from 'vue'
+import { onMounted } from 'vue'
+import { useCategoryStore } from '@/stores/categoryStore'
 
-const categories = ref([
-  { id: 'living', name: 'Living' },
-  { id: 'food', name: 'Food' },
-  { id: 'clothes', name: 'Clothes' },
-  { id: 'baby', name: 'Baby' },
-  { id: 'health', name: 'Health' },
-  { id: 'digital', name: 'Digital' },
-  { id: 'sports', name: 'Sports' }
-])
+const categoryStore = useCategoryStore()
+
+onMounted(() => {
+  categoryStore.getCategory()
+})
+
 </script>
 
 <template>
@@ -20,8 +18,8 @@ const categories = ref([
         <li class="home">
           <RouterLink to="/" exact-active-class="active">Home</RouterLink>
         </li>
-        <li v-for="category in categories" :key="category.id">
-          <RouterLink :to="`/category/${category.id}`" exact-active-class="active">{{ category.name }}</RouterLink>
+        <li v-for="category in categoryStore.categoryList" :key="category?.id">
+          <RouterLink :to="`/category/${category?.id}`" exact-active-class="active">{{ category?.name }}</RouterLink>
         </li>
       </ul>
     </div>

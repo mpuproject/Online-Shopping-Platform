@@ -22,7 +22,7 @@ httpInstance.interceptors.request.use(config => {
 httpInstance.interceptors.response.use(res => res.data, e => {
     ElMessage({
         type: 'warning',
-        message: e.response.data.msg,
+        message: e.response.data.msg || 'Network Error',
     })
     return Promise.reject(e)
 })

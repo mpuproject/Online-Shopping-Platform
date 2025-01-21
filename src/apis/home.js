@@ -1,10 +1,10 @@
-import httpInstance from "@/utils/request";
+import request from "@/utils/request";
 
 /**
  * @description: 获取Banner
  */
 export const getBannerAPI = () => {
-  return httpInstance({
+  return request({
     url: '/home/banner'
   })
 }
@@ -15,7 +15,7 @@ export const getBannerAPI = () => {
  * @return {*}
  */
 export const findNewAPI = () => {
-  return httpInstance({
+  return request({
     url: '/home/new/'
   })
 }
@@ -25,7 +25,7 @@ export const findNewAPI = () => {
  */
 
 export const findHotAPI = () => {
-  return httpInstance({
+  return request({
     url: '/home/hot/'
   })
 }

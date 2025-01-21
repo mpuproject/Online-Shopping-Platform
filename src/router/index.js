@@ -6,6 +6,7 @@ import Layout from '@/views/Layout/index.vue'
 import Home from '@/views/Home/index.vue'
 import Category from '@/views/Category/index.vue'
 import Detail from '@/views/Detail/index.vue'
+import SubCategory from '@/views/SubCategory/index.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -15,8 +16,8 @@ const router = createRouter({
       path: '/', component: Layout,
       children: [
         { path: '', component: Home, meta: { title: 'Rabbuy - Buy what you want' } },
-        { path: 'category', component: Category },
         { path: 'category/:id', component: Category, meta: { title: 'Rabbuy - Category' } },
+        { path: 'category/sub/:id', compoenent: SubCategory, meta: { title: 'Rabbuy - Sub-Category ' } },
         { path: 'detail/:id', component: Detail, meta: {title: 'Product\'s Details' } }
       ]
     },
