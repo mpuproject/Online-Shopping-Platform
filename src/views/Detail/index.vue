@@ -1,18 +1,18 @@
 <script setup>
 import ImageView from '@/components/ImageView/index.vue';
-import { getDetail } from '@/apis/detail'
+import { getDetailAPI } from '@/apis/detail'
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router';
 
 const product = ref({})
 const route = useRoute()
 
-const getProduct = async () => {
-  const res = await getDetail(route.params.id)
+const getDetail = async () => {
+  const res = await getDetailAPI(route.params.id)
   product.value = res.data
 }
 
-onMounted(() => {getProduct()})
+onMounted(() => {getDetail()})
 
 </script>
 
