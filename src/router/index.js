@@ -17,7 +17,7 @@ const router = createRouter({
       children: [
         { path: '', component: Home, meta: { title: 'Rabbuy - Buy what you want' } },
         { path: 'category/:id', component: Category, meta: { title: 'Rabbuy - Category' } },
-        { path: 'category/sub/:id', compoenent: SubCategory, meta: { title: 'Rabbuy - Sub-Category ' } },
+        { path: 'category/sub/:id', component: SubCategory, meta: { title: 'Rabbuy - Sub-Category ' } },
         { path: 'detail/:id', component: Detail, meta: {title: 'Product\'s Details' } }
       ]
     },
@@ -26,11 +26,11 @@ const router = createRouter({
     { path: '/register', component: Register, meta: { title: 'Rabbuy registration' } },
   ],
 
-  scrollBehavior() {
+  scrollBehavior () {
     return {
       top: 0
     }
-  },
+  }
 })
 
 router.beforeEach((to, from, next) => {

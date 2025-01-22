@@ -6,9 +6,3 @@ export const getDetailAPI = async (id) => {
     url: `/product/detail/${id}/`,
   })
 }
-
-export const getImageAPI = async (id) => {
-  return request({
-    url: `/product/detail/image/${id}/`,
-  })
-}

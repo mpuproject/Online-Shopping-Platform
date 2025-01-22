@@ -1,19 +1,20 @@
 <script setup>
 import ImageView from '@/components/ImageView/index.vue';
-import { getDetailAPI } from '@/apis/detail'
-import { ref, onMounted } from 'vue'
+import { getDetailAPI } from '@/apis/detail';
+import { ref, onBeforeMount } from 'vue';
 import { useRoute } from 'vue-router';
 
-const product = ref({})
-const route = useRoute()
+const product = ref({});
+const route = useRoute();;
 
 const getDetail = async () => {
-  const res = await getDetailAPI(route.params.id)
-  product.value = res.data
-}
+  const res = await getDetailAPI(route.params.id);
+  product.value = res.data;
+};
 
-onMounted(() => {getDetail()})
-
+onBeforeMount(() => {
+  getDetail();
+});
 </script>
 
 <template>
@@ -22,9 +23,11 @@ onMounted(() => {getDetail()})
       <div class="bread-container">
         <el-breadcrumb separator=">">
           <el-breadcrumb-item :to="{ path: '/' }">Home</el-breadcrumb-item>
-          <el-breadcrumb-item :to="{ path: `/category/${product.category?.id}` }">{{ product.category?.name }}
+          <el-breadcrumb-item :to="{ path: `/category/${product.category?.id}` }">
+            {{ product.category?.name }}
           </el-breadcrumb-item>
-          <el-breadcrumb-item :to="{ path: `/category/sub/${product.sub_category?.id}` }">{{ product.sub_category?.name }}
+          <el-breadcrumb-item :to="{ path: `/category/sub/${product.sub_category?.id}` }">
+            {{ product.sub_category?.name }}
           </el-breadcrumb-item>
           <el-breadcrumb-item>{{ product.name }}</el-breadcrumb-item>
         </el-breadcrumb>
@@ -35,12 +38,14 @@ onMounted(() => {getDetail()})
           <div class="goods-info">
             <div class="media">
               <!-- 图片预览区 -->
-              <ImageView />
+              <template v-if="product.images && product.images.length > 0">
+                <ImageView :imageList="product.images" />
+              </template>
               <!-- 统计数量 -->
               <ul class="goods-sales">
                 <li>
                   <p>Sales</p>
-                  <p> 100+ </p>
+                  <p>100+</p>
                   <p><i class="iconfont icon-task-filling"></i>Sales</p>
                 </li>
                 <li>
@@ -62,14 +67,14 @@ onMounted(() => {getDetail()})
             </div>
             <div class="spec">
               <!-- 商品信息区 -->
-              <p class="g-name"> {{ product.name }} </p>
-              <p class="g-desc">{{ product.description }} </p>
+              <p class="g-name">{{ product.name }}</p>
+              <p class="g-desc">{{ product.description }}</p>
               <p class="g-price">
                 <span>{{ product.price }}</span>
               </p>
               <div class="g-service">
                 <dl>
-                  <dt>On-Sale: </dt>
+                  <dt>On-Sale:</dt>
                   <dd>Voucher purchases go straight down to 120 yuan</dd>
                 </dl>
                 <dl>
@@ -88,11 +93,8 @@ onMounted(() => {getDetail()})
 
               <!-- 按钮组件 -->
               <div>
-                <el-button size="large" class="btn">
-                  Add to cart
-                </el-button>
+                <el-button size="large" class="btn">Add to cart</el-button>
               </div>
-
             </div>
           </div>
           <div class="goods-footer">
@@ -111,14 +113,11 @@ onMounted(() => {getDetail()})
                     </li>
                   </ul>
                   <!-- 图片 -->
-
                 </div>
               </div>
             </div>
             <!-- 24热榜+专题推荐 -->
-            <div class="goods-aside">
-
-            </div>
+            <div class="goods-aside"></div>
           </div>
         </div>
       </div>
@@ -126,8 +125,7 @@ onMounted(() => {getDetail()})
   </div>
 </template>
 
-
-<style scoped lang='scss'>
+<style scoped lang="scss">
 .xtx-goods-page {
   .goods-info {
     min-height: 600px;
