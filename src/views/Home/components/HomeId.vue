@@ -28,34 +28,34 @@
     <div class="pending">
       <div class="pending-item">
         <span class="number">{{ pending.payment }}</span>
-        <span class="label">待付款</span>
+        <span class="label">Unpaid</span>
       </div>
       <div class="pending-item">
         <span class="number">{{ pending.received }}</span>
-        <span class="label">待收货</span>
+        <span class="label">Paid</span>
       </div>
       <div class="pending-item">
         <span class="number">{{ pending.review }}</span>
-        <span class="label">待评价</span>
+        <span class="label">Review</span>
       </div>
       <div class="pending-item">
         <span class="number">{{ pending.returns }}</span>
-        <span class="label">退换</span>
+        <span class="label">Return</span>
       </div>
     </div>
-    
+
     <!-- Membership Cards -->
     <div class="membership-cards">
       <div class="card plus-member">
         <div class="card-content">
           <h3>PLUS</h3>
-          <button class="activate-btn brown">立即开通</button>
+          <button class="activate-btn brown">Start</button>
         </div>
       </div>
       <div class="card enterprise-member">
         <div class="card-content">
-          <h3>会员</h3>
-          <button class="activate-btn blue">立即开通</button>
+          <h3>Member</h3>
+          <button class="activate-btn blue">Join</button>
         </div>
       </div>
     </div>
@@ -99,10 +99,10 @@ const openCart = (event) => {
 
 const avatarUrl = userStore.userInfo.profile
 const stats = [
-  { icon: '&#x10186;', label: '收藏', link: '#/favorites' },
-  { icon: '&#x10187;', label: '购物车', link: '#/cart', onClick: openCart },
-  { icon: '&#x10188;', label: '消息', link: '#/messages' },
-  { icon: '&#x10189;', label: '订单', link: '#/orders' }
+  { icon: '&#x10186;', label: 'Mark', link: '#/favorites' },
+  { icon: '&#x10187;', label: 'Cart', link: '#/cart', onClick: openCart },
+  { icon: '&#x10188;', label: 'Note', link: '#/messages' },
+  { icon: '&#x10189;', label: 'Order', link: '#/orders' }
 ]
 const pending = {
   payment: 0, received: 0, review: 12, returns: 0
@@ -300,7 +300,7 @@ const pending = {
         border-radius: 4px;
         cursor: pointer;
         font-size: 12px;
-        
+
         &.brown {
           background: #8b6d42;
           color: #fff;

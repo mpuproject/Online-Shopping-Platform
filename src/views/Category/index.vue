@@ -2,6 +2,7 @@
 import GoodsItem from '../Home/components/GoodsItem.vue'
 import { ref, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import { getCategoryAPI } from '@/apis/category'
 
 const route = useRoute()
 
@@ -17,80 +18,10 @@ const categoryData = ref({
 })
 
 const fetchCategoryData = async (id) => {
-  // Simulating API call
-  const categories = {
-    living: {
-      name: '居家',
-      children: [
-        {
-          id: 1,
-          name: '家具',
-          picture: 'https://picsum.photos/350/350.jpg?random=3',
-          goods: [
-            { id: 101, name: 'Sofa', price: 999, picture: 'https://picsum.photos/500/500.jpg?random=7' },
-            { id: 102, name: 'Dining Table', price: 599, picture: 'https://picsum.photos/500/500.jpg?random=8' },
-          ]
-        },
-        {
-          id: 2,
-          name: '家纺',
-          picture: 'https://picsum.photos/350/350.jpg?random=2',
-          goods: [
-            { id: 201, name: 'Bedding Set', price: 199, picture: 'https://picsum.photos/500/500.jpg?random=9' },
-            { id: 202, name: 'Curtains', price: 99, picture: 'https://picsum.photos/500/500.jpg?random=10' },
-          ]
-        },
-      ]
-    },
-    food: {
-      name: '美食',
-      children: [
-        {
-          id: 1,
-          name: '零食',
-          picture: 'https://picsum.photos/350/350.jpg?random=2',
-          goods: [
-            { id: 101, name: 'Chips', price: 5, picture: 'https://picsum.photos/500/500.jpg?random=11' },
-            { id: 102, name: 'Cookies', price: 8, picture: 'https://picsum.photos/500/500.jpg?random=12' },
-          ]
-        },
-        {
-          id: 2,
-          name: '饮料',
-          picture: 'https://picsum.photos/350/350.jpg?random=4',
-          goods: [
-            { id: 201, name: 'Soda', price: 3, picture: 'https://picsum.photos/500/500.jpg?random=13' },
-            { id: 202, name: 'Juice', price: 4, picture: 'https://picsum.photos/500/500.jpg?random=14' },
-          ]
-        },
-      ]
-    },
-    clothes: {
-      name: '服饰',
-      children: [
-        {
-          id: 1,
-          name: '上衣',
-          picture: 'https://picsum.photos/350/350.jpg?random=5',
-          goods: [
-            { id: 101, name: 'T-Shirt', price: 29, picture: 'https://picsum.photos/500/500.jpg?random=15' },
-            { id: 102, name: 'Sweater', price: 59, picture: 'https://picsum.photos/500/500.jpg?random=16' },
-          ]
-        },
-        {
-          id: 2,
-          name: '裤子',
-          picture: 'https://picsum.photos/350/350.jpg?random=6',
-          goods: [
-            { id: 201, name: 'Jeans', price: 79, picture: 'https://picsum.photos/500/500.jpg?random=17' },
-            { id: 202, name: 'Shorts', price: 39, picture: 'https://picsum.photos/500/500.jpg?random=18' },
-          ]
-        },
-      ]
-    },
-  }
+  const res = await getCategoryAPI(id)
+  const categories = res.data;
 
-  categoryData.value = categories[id] || { name: 'Category Not Found', children: [] }
+  categoryData.value = {name: categories?.name, children: categories?.subcate}
 }
 
 onMounted(() => {
@@ -121,11 +52,11 @@ watch(() => route.params.id, (newId) => {
         </el-carousel>
       </div>
       <div class="sub-list">
-        <h3>全部分类</h3>
+        <h3>Sub-List</h3>
         <ul>
           <li v-for="i in categoryData.children" :key="i.id">
             <RouterLink :to="`/category/sub/${i.id}`">
-              <img :src="i.picture" />
+              <img :src="i.image" />
               <p>{{ i.name }}</p>
             </RouterLink>
           </li>

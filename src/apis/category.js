@@ -8,6 +8,6 @@ export const getCategories = () => {
 
 export function getCategoryAPI(id) {
   return request({
-    url: `/category/${id}`,
+    url: `/category/${id}/`,
   })
 }
