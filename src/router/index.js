@@ -18,7 +18,7 @@ const router = createRouter({
         { path: '', component: Home, meta: { title: 'Rabbuy - Buy what you want' } },
         { path: 'category/:id', component: Category, meta: { title: 'Rabbuy - Category' } },
         { path: 'category/sub/:id', component: SubCategory, meta: { title: 'Rabbuy - Sub-Category ' } },
-        { path: 'detail/:id', component: Detail, meta: {title: 'Product\'s Details' } }
+        { path: 'product/:id', component: Detail, meta: {title: 'Product\'s Details' } }
       ]
     },
     { path: '/login', component: Login, meta: { title: 'Rabbuy Login' } },

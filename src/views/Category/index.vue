@@ -12,16 +12,11 @@ const bannerList = ref([
   { id: 3, imgUrl: 'https://picsum.photos/1200/500.jpg?random=6' },
 ])
 
-const categoryData = ref({
-  name: '',
-  children: []
-})
+const categories = ref({})
 
 const fetchCategoryData = async (id) => {
   const res = await getCategoryAPI(id)
-  const categories = res.data;
-
-  categoryData.value = {name: categories?.name, children: categories?.subcate}
+  categories.value = res.data;
 }
 
 onMounted(() => {
@@ -40,7 +35,7 @@ watch(() => route.params.id, (newId) => {
       <div class="bread-container">
         <el-breadcrumb separator=">">
           <el-breadcrumb-item :to="{ path: '/' }">Home</el-breadcrumb-item>
-          <el-breadcrumb-item>{{ categoryData.name }}</el-breadcrumb-item>
+          <el-breadcrumb-item>{{ categories.name }}</el-breadcrumb-item>
         </el-breadcrumb>
       </div>
       <!-- Carousel -->
@@ -54,7 +49,7 @@ watch(() => route.params.id, (newId) => {
       <div class="sub-list">
         <h3>Sub-List</h3>
         <ul>
-          <li v-for="i in categoryData.children" :key="i.id">
+          <li v-for="i in categories.subcate" :key="i.id">
             <RouterLink :to="`/category/sub/${i.id}`">
               <img :src="i.image" />
               <p>{{ i.name }}</p>
@@ -62,12 +57,12 @@ watch(() => route.params.id, (newId) => {
           </li>
         </ul>
       </div>
-      <div class="ref-goods" v-for="item in categoryData.children" :key="item.id">
+      <div class="ref-goods" v-for="item in categories.subcate" :key="item.id">
         <div class="head">
           <h3>- {{ item.name }} -</h3>
         </div>
         <div class="body">
-          <GoodsItem v-for="good in item.goods" :goods="good" :key="good.id" />
+          <GoodsItem v-for="good in item.products" :goods="good" :key="good.id" />
         </div>
       </div>
     </div>

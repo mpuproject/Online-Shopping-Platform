@@ -20,7 +20,7 @@ onMounted(() => {
   <HomePanel title="Fresh" sub-title="Freshly, reliably">
     <ul class="goods-list">
       <li v-for="item in newList" :key="item.id">
-        <RouterLink :to="`/detail/${item.id}`">
+        <RouterLink :to="`/product/${item.id}`">
           <img :src="item.image" alt="" />
           <p class="name">{{ item.name }}</p>
           <p class="price">&yen;{{ item.price }}</p>

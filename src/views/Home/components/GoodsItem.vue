@@ -8,7 +8,7 @@ defineProps({
       name: '',
       desc: '',
       price: 0,
-      picture: ''
+      images: []
     })
   }
 })
@@ -16,10 +16,10 @@ defineProps({
 
 <template>
   <RouterLink :to="`/product/${goods.id}`" class="goods-item">
-    <img :src="goods.picture" :alt="goods.name" />
+    <img :src="goods.images" :alt="goods.name" />
     <p class="name ellipsis">{{ goods.name }}</p>
     <p class="desc ellipsis">{{ goods.desc }}</p>
-    <p class="price">&yen;{{ goods.price.toFixed(2) }}</p>
+    <p class="price">&yen;{{ goods.price }}</p>
   </RouterLink>
 </template>
 

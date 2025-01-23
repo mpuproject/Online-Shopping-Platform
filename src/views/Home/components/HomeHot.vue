@@ -15,40 +15,13 @@ onMounted(() => {
   getHotList()
 })
 
-/**
- * {
-    id: 1,
-    title: "热门商品1",
-    alt: "畅销爆款",
-    picture: "https://picsum.photos/300/300?random=6.jpg"
-  },
-  {
-    id: 2,
-    title: "热门商品2",
-    alt: "人气推荐",
-    picture: "https://picsum.photos/300/300?random=7.jpg"
-  },
-  {
-    id: 3,
-    title: "热门商品3",
-    alt: "限时特惠",
-    picture: "https://picsum.photos/300/300?random=8.jpg"
-  },
-  {
-    id: 4,
-    title: "热门商品4",
-    alt: "优质精选",
-    picture: "https://picsum.photos/300/300?random=9.jpg"
-  }
- */
-
 </script>
 
 <template>
   <HomePanel title="Hot" sub-title="Too pop to miss">
     <ul class="goods-list">
       <li v-for="item in hotList" :key="item.id">
-        <RouterLink to="/">
+        <RouterLink :to="`/product/${item.id}`">
           <img :src="item.image" alt="" />
           <p class="name">{{ item.name }}</p>
           <p class="desc">{{ item.price }}</p>
