@@ -1,15 +1,6 @@
 import request from "@/utils/request";
 
 /**
- * @description: 获取Banner
- */
-export const getBannerAPI = () => {
-  return request({
-    url: '/home/banner'
-  })
-}
-
-/**
  * @description: 获取新鲜好物
  * @param {*}
  * @return {*}

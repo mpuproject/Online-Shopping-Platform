@@ -56,7 +56,12 @@ const doLogin = () => {
     if(valid) {
       await userStore.getUserInfo({ username, password })
       ElMessage({ type: 'success', message: 'Login success' })
-      router.replace({ path: '/' })
+      if(!userStore.userInfo.is_staff) {
+        router.replace({ path: '/' })
+      }
+      else {
+        router.replace({ path: '/manager' })
+      }
     }
   })
 }

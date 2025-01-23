@@ -112,7 +112,7 @@ onBeforeMount(() => {
                       <span class="dd">{{ value }}</span>
                     </li>
                   </ul>
-                  <!-- 图片 -->
+                  <!-- 评论 -->
                 </div>
               </div>
             </div>

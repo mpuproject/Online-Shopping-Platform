@@ -6,12 +6,14 @@ import { getCategoryAPI } from '@/apis/category'
 
 const route = useRoute()
 
+// Banner写死的信息
 const bannerList = ref([
   { id: 1, imgUrl: 'https://picsum.photos/1200/500.jpg?random=4' },
   { id: 2, imgUrl: 'https://picsum.photos/1200/500.jpg?random=5' },
   { id: 3, imgUrl: 'https://picsum.photos/1200/500.jpg?random=6' },
 ])
 
+// 获取并组装一级分类下的信息
 const categories = ref({})
 
 const fetchCategoryData = async (id) => {
