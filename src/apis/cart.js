@@ -16,3 +16,13 @@ export const getCartAPI = async (id) => {
     }
   })
 }
+
+export const addCartAPI = async (id) => {
+  return request({
+    url: '/cart/add/',
+    method: 'POST',
+    data: {
+      "user_id": id
+    }
+  })
+}

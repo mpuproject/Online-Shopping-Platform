@@ -7,6 +7,7 @@ import { View, Hide } from '@element-plus/icons-vue';
 
 import { useUserStore } from '@/stores/user'
 
+import { addCartAPI } from '@/apis/cart';
 
 // switch display of password
 const showPassword = ref(false);
@@ -70,7 +71,8 @@ const doRegister = () => {
 
   formRef.value.validate(async valid => {
     if(valid) {
-      await userStore.register({ username, email, password, confirmPwd });
+      const user = await userStore.register({ username, email, password, confirmPwd });
+      await addCartAPI(user.id);
       ElMessage({type:'success', message:'Registration successful!'});
       router.push({ path: '/login' });
     }
