@@ -1,5 +1,6 @@
 import { defineStore } from "pinia"
 import { ref, computed } from "vue"
+import { saveCartAPI } from "@/apis/cart"
 
 export const useCartStore = defineStore("cart", () => {
   const cartList = ref([])
@@ -28,12 +29,28 @@ export const useCartStore = defineStore("cart", () => {
     }
   }
 
+  // 将用户数据保存到数据库
+  const saveCart = async (data) => {
+    try {
+      await saveCartAPI(data)
+    } catch (error) {
+      console.error('Error saving cart:', error)
+    }
+  }
+
+  // 清除购物车数据
+  const clearCart = () => {
+    cartList.value = []
+  }
+
   return {
     cartList,
     totalCount,
     totalPrice,
     addToCart,
     deleteCart,
+    saveCart,
+    clearCart
   }
 }, {
   persist: true

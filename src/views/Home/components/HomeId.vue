@@ -84,12 +84,13 @@ import { ref } from 'vue'
 import 'element-plus/theme-chalk/el-message.css'
 import { useUserStore } from '@/stores/user'
 import SlidingCart from './SlidingCart.vue'
+import { saveCartToServer } from '@/composables/logout'
 
 const userStore = useUserStore()
 const slidingCartRef = ref(null)
 
-const confirmLogout = () => {
-  userStore.clearUserInfo()
+const confirmLogout = async () => {
+  await saveCartToServer('/')
 }
 
 const openCart = (event) => {

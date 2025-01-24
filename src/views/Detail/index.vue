@@ -89,8 +89,15 @@ const addCart = () => {
               <!-- 商品信息区 -->
               <p class="g-name">{{ product.name }}</p>
               <p class="g-desc">{{ product.description }}</p>
-              <p class="g-price">
+              <p class="g-price"> Price: &nbsp;
                 <span>{{ product.price }}</span>
+              </p>
+              <p class="g-inventory">
+                Inventory:
+                <span v-if="product.stock_quantity <= product.low_stock_threshold" class="low-stock">
+                  {{ product.stock_quantity }} only
+                </span>
+                <span v-else>{{ product.stock_quantity }}</span>
               </p>
               <div class="g-service">
                 <dl>
@@ -110,7 +117,9 @@ const addCart = () => {
               <!-- sku组件 -->
 
               <!-- 数据组件 -->
-              <el-input-number v-model="count" :min="1" :max="10" @change="handleChange" class="ipt" />
+              <p class="g-quantity">Quantity: &nbsp;
+                <el-input-number v-model="count" :min="1" :max="10" @change="handleChange" />
+              </p>
               <!-- 按钮组件 -->
               <div>
                 <el-button size="large" class="btn" @click="addCart">Add to cart</el-button>
@@ -212,16 +221,26 @@ const addCart = () => {
 
   .g-price {
     margin-top: 10px;
+    font-size: 16px;
 
     span {
       color: $priceColor;
       margin-right: 10px;
-      font-size: 22px;
+      font-size: 20px;
 
       &::before {
         content: "¥";
         font-size: 18px;
       }
+    }
+  }
+
+  .g-inventory {
+    margin-top: 10px;
+    font-size: 16px;
+
+    .low-stock {
+      color: #f33c3c;
     }
   }
 
@@ -262,6 +281,11 @@ const addCart = () => {
         }
       }
     }
+  }
+
+  .g-quantity{
+    margin-top: 30px;
+    font-size: 14px;
   }
 
   .goods-sales {
@@ -366,10 +390,6 @@ const addCart = () => {
   >img {
     width: 100%;
   }
-}
-
-.ipt {
-  margin-top: 50px;
 }
 
 .btn {
