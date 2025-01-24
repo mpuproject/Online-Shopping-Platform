@@ -8,6 +8,7 @@ import Category from '@/views/Category/index.vue'
 import Detail from '@/views/Detail/index.vue'
 import SubCategory from '@/views/SubCategory/index.vue'
 import CartList from '@/views/CartList/index.vue'
+import { useUserStore } from '@/stores/user'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -20,7 +21,8 @@ const router = createRouter({
         { path: 'category/:id', component: Category, meta: { title: 'Rabbuy - Category' } },
         { path: 'category/sub/:id', component: SubCategory, meta: { title: 'Rabbuy - Sub-Category ' } },
         { path: 'product/:id', component: Detail, meta: { title: 'Product\'s Details' } },
-        { path: 'cartlist', component: CartList, meta: { title: 'Rabbuy - CartList' } }
+        { path: 'cartlist', component: CartList, meta: { title: 'Rabbuy - CartList' } },
+        { path: 'product/:id', component: Detail, meta: { title: 'Product\'s Details', requiresAuth: true } }
       ]
     },
     { path: '/login', component: Login, meta: { title: 'Rabbuy Login' } },
@@ -38,7 +40,15 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const title = to.meta.title || "Rabbuy";
   document.title = title;
-  next();
+
+  const userStore = useUserStore()
+  const isAuthenticated = !!userStore.userInfo.access
+
+  if (to.meta.requiresAuth && !isAuthenticated) {
+    next({ name: 'Login' })
+  } else {
+    next();
+  }
 })
 
 export default router
