@@ -13,16 +13,16 @@ export const useCartStore = defineStore("cart", () => {
   })
 
   const addToCart = (item) => {
-    const existingItem = cartList.value.find((i) => i.skuId === item.skuId)
+    const existingItem = cartList.value.find((i) => i.id === item.id)
     if (existingItem) {
-      existingItem.count++
+      existingItem.count += item.count
     } else {
-      cartList.value.push({ ...item, count: 1 })
+      cartList.value.push({ ...item, count: item.count })
     }
   }
 
-  const deleteCart = (skuId) => {
-    const index = cartList.value.findIndex((item) => item.skuId === skuId)
+  const deleteCart = (id) => {
+    const index = cartList.value.findIndex((item) => item.id === id)
     if (index !== -1) {
       cartList.value.splice(index, 1)
     }
@@ -35,4 +35,6 @@ export const useCartStore = defineStore("cart", () => {
     addToCart,
     deleteCart,
   }
+}, {
+  persist: true
 })

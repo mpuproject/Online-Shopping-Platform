@@ -3,6 +3,7 @@ import ImageView from '@/components/ImageView/index.vue';
 import { getDetailAPI } from '@/apis/detail';
 import { ref, onBeforeMount } from 'vue';
 import { useRoute } from 'vue-router';
+import { useCartStore } from '@/stores/cartStore';
 
 const product = ref({});
 const route = useRoute();;
@@ -15,6 +16,25 @@ const getDetail = async () => {
 onBeforeMount(() => {
   getDetail();
 });
+
+// 选择商品数量
+const cartStore = useCartStore()
+const count = ref(1)
+const handleChange = (num) => {
+  count.value = num
+  console.log(count.value)
+}
+
+const addCart = () => {
+  cartStore.addToCart({
+    id: product.value.id,
+    name: product.value.name,
+    image: product.value.images[0],
+    price: product.value.price,
+    count: count.value,
+    selected: true,
+  })
+}
 </script>
 
 <template>
@@ -90,10 +110,10 @@ onBeforeMount(() => {
               <!-- sku组件 -->
 
               <!-- 数据组件 -->
-
+              <el-input-number v-model="count" :min="1" :max="10" @change="handleChange" class="ipt" />
               <!-- 按钮组件 -->
               <div>
-                <el-button size="large" class="btn">Add to cart</el-button>
+                <el-button size="large" class="btn" @click="addCart">Add to cart</el-button>
               </div>
             </div>
           </div>
@@ -348,8 +368,12 @@ onBeforeMount(() => {
   }
 }
 
+.ipt {
+  margin-top: 50px;
+}
+
 .btn {
-  margin-top: 20px;
+  margin-top: 30px;
   background-color: $xtxColor;
   color: #fff;
 }

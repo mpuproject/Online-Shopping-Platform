@@ -15,4 +15,6 @@ export const useCategoryStore = defineStore('category', () => {
     categoryList,
     getCategory,
   }
+}, {
+  persist: true
 })

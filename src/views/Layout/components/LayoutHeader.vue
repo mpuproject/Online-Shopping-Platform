@@ -40,12 +40,15 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+import { useCartStore } from '@/stores/cartStore'
 import SlidingCart from '@/views/Home/components/SlidingCart.vue'
+
+const cartStore = useCartStore()
 
 const selectedCategory = ref('All')
 const isDropdownVisible = ref(false)
-const cartItemCount = ref(4)
+const cartItemCount = computed(() => cartStore.totalCount)
 const slidingCartRef = ref(null)
 
 const openDropdown = () => {

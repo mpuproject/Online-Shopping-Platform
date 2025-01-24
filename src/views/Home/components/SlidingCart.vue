@@ -1,5 +1,6 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+import { useCartStore } from '@/stores/cartStore';
 
 const isOpen = ref(false)
 
@@ -7,36 +8,12 @@ const toggleCart = () => {
   isOpen.value = !isOpen.value
 }
 
-// 模拟购物车数据
-const cartItems = ref([
-  {
-    id: 1,
-    name: "高品质无线蓝牙耳机",
-    picture: "https://picsum.photos/id/1/200/200",
-    price: 299,
-    count: 1,
-    attrsText: "白色"
-  },
-  {
-    id: 2,
-    name: "时尚休闲运动鞋",
-    picture: "https://picsum.photos/id/21/200/200",
-    price: 199,
-    count: 2,
-    attrsText: "黑色, 42码"
-  },
-  {
-    id: 3,
-    name: "多功能智能手表",
-    picture: "https://picsum.photos/id/26/200/200",
-    price: 599,
-    count: 1,
-    attrsText: "银色"
-  }
-])
+// 购物车数据
+const cartStore = useCartStore()
+const cartItems = computed(() => cartStore.cartList)
 
-const totalCount = ref(4)
-const totalPrice = ref(1096)
+const totalCount = computed(() => cartStore.totalCount)
+const totalPrice = computed(() => cartStore.totalPrice)
 
 const removeItem = (id) => {
   const index = cartItems.value.findIndex(item => item.id === id)
@@ -58,7 +35,7 @@ defineExpose({
     <Transition name="slide">
       <div v-if="isOpen" class="cart-panel">
         <div class="header">
-          <h3>购物车</h3>
+          <h3>My Cart</h3>
           <button class="close-btn" @click="toggleCart">
             <i class="iconfont icon-close-new"></i>
           </button>
@@ -66,15 +43,15 @@ defineExpose({
         <div class="list">
           <div class="item" v-for="item in cartItems" :key="item.id">
             <RouterLink to="">
-              <img :src="item.picture" alt="" />
+              <img :src="item.image" alt="" />
               <div class="center">
                 <p class="name ellipsis-2">
                   {{ item.name }}
                 </p>
-                <p class="attr ellipsis">{{ item.attrsText }}</p>
+                <!-- <p class="attr ellipsis">{{ item.attrsText }}</p> -->
               </div>
               <div class="right">
-                <p class="price">&yen;{{ item.price.toFixed(2) }}</p>
+                <p class="price">&yen;{{ item.price }}</p>
                 <p class="count">x{{ item.count }}</p>
               </div>
             </RouterLink>
@@ -83,10 +60,10 @@ defineExpose({
         </div>
         <div class="foot">
           <div class="total">
-            <p>共 {{ totalCount }} 件商品</p>
+            <p>Subtotal ({{ totalCount }} items):</p>
             <p>&yen; {{ totalPrice.toFixed(2) }} </p>
           </div>
-          <el-button size="large" type="primary" @click="$router.push('/cartlist')">去购物车结算</el-button>
+          <el-button size="large" type="primary" @click="$router.push('/cartlist')">Check out</el-button>
         </div>
       </div>
     </Transition>
