@@ -6,8 +6,10 @@ import { useRouter } from 'vue-router'
 import { View, Hide } from '@element-plus/icons-vue';
 
 import { useUserStore } from '@/stores/user'
+import { useCartStore } from '@/stores/cartStore';
 
 const userStore = useUserStore()
+const cartStore = useCartStore()
 
 // switch display of password
 const showPassword = ref(false);
@@ -54,7 +56,9 @@ const doLogin = () => {
 
   formRef.value.validate( async (valid) => {
     if(valid) {
-      await userStore.getUserInfo({ username, password })
+      const userInfo = await userStore.getUserInfo({ username, password })
+      await cartStore.getCart(userInfo.id)
+
       ElMessage({ type: 'success', message: 'Login success' })
       if(!userStore.userInfo.is_staff) {
         router.replace({ path: '/' })

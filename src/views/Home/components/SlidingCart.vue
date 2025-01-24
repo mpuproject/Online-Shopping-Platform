@@ -63,7 +63,9 @@ defineExpose({
             <p>Subtotal ({{ totalCount }} items):</p>
             <p>&yen; {{ totalPrice.toFixed(2) }} </p>
           </div>
-          <el-button size="large" type="primary" @click="$router.push('/cartlist')">Check out</el-button>
+          <el-button size="large" type="primary" @click="() => { toggleCart(); $router.push('/cartlist'); }">
+            Check out
+          </el-button>
         </div>
       </div>
     </Transition>

@@ -7,3 +7,12 @@ export const saveCartAPI = async (data) => {
     data
   })
 }
+
+export const getCartAPI = async (id) => {
+  return request({
+    url: '/cart/',
+    params: {
+      id
+    }
+  })
+}
