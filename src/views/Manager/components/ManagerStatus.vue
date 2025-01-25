@@ -1,11 +1,10 @@
 <script setup>
 import { useUserStore } from '@/stores/user'
-import { saveCartToServer } from '@/composables/logout';
 
 const userStore = useUserStore()
 
-const confirmLogout = async () => {
-  await saveCartToServer('/')
+const confirmLogout = () => {
+  userStore.clearUserInfo()
 }
 </script>
 

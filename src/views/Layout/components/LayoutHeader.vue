@@ -1,3 +1,59 @@
+<script setup>
+import { ref, computed } from 'vue'
+import { useCartStore } from '@/stores/cartStore'
+import SlidingCart from '@/views/Home/components/SlidingCart.vue'
+import { useCategoryStore } from '@/stores/categoryStore'
+import router from '@/router'
+
+const cartStore = useCartStore()
+
+const selectedCategory = ref('All')
+const queryCategory = ref(null)
+const isDropdownVisible = ref(false)
+const cartItemCount = computed(() => cartStore.totalType)
+const slidingCartRef = ref(null)
+
+const openDropdown = () => {
+  isDropdownVisible.value = true
+}
+
+const closeDropdown = () => {
+  isDropdownVisible.value = false
+}
+
+const selectCategory = (category) => {
+  const [id, name] = category
+  selectedCategory.value = name;
+  queryCategory.value = id
+  isDropdownVisible.value = false;
+}
+
+// 绑定搜索框的输入值
+const searchQuery = ref('')
+
+// 搜索功能
+const performSearch = () => {
+  const query = searchQuery.value.trim()
+  if (!query) return
+
+  // 跳转到搜索结果页，传递搜索参数
+  router.push({
+    path: '/search',
+    query: {
+      q: query,
+      category: selectedCategory.value === 'All' ? null : queryCategory.value,
+    },
+  })
+}
+
+const categoryStore = useCategoryStore()
+const categoryList = categoryStore.categoryList
+
+const openCart = () => {
+  slidingCartRef.value?.toggleCart()
+}
+</script>
+
 <template>
   <header class='app-header'>
     <div class="main-header">
@@ -15,13 +71,19 @@
             >
               <span class="selected">{{ selectedCategory }}</span>
               <div class="dropdown-menu" v-show="isDropdownVisible">
-                <div class="dropdown-item" @click="selectCategory('All')">All</div>
-                <div class="dropdown-item" @click="selectCategory(c.name)" v-for="c in categoryList" :key="c.id">{{ c.name }}</div>
+                <div class="dropdown-item" @click="selectCategory([null, 'All'])">All</div>
+                <div class="dropdown-item" @click="selectCategory([c.id, c.name])" v-for="c in categoryList" :key="c.id">{{ c.name }}</div>
               </div>
             </div>
             <div class="search">
-              <input type="text" placeholder="Search Rabbuy">
-              <button class="search-button">
+              <!-- 绑定输入框的值，并监听回车键 -->
+              <input
+                type="text"
+                placeholder="Search Rabbuy"
+                v-model="searchQuery"
+                @keyup.enter="performSearch"
+              >
+              <button class="search-button" @click="performSearch">
                 <i class="iconfont icon-search"></i>
               </button>
             </div>
@@ -38,46 +100,6 @@
   </header>
   <SlidingCart ref="slidingCartRef" />
 </template>
-
-<script setup>
-import { ref, computed } from 'vue'
-import { useCartStore } from '@/stores/cartStore'
-import SlidingCart from '@/views/Home/components/SlidingCart.vue'
-
-const cartStore = useCartStore()
-
-const selectedCategory = ref('All')
-const isDropdownVisible = ref(false)
-const cartItemCount = computed(() => cartStore.totalCount)
-const slidingCartRef = ref(null)
-
-const openDropdown = () => {
-  isDropdownVisible.value = true
-}
-
-const closeDropdown = () => {
-  isDropdownVisible.value = false
-}
-
-const selectCategory = (category) => {
-  selectedCategory.value = category;
-  isDropdownVisible.value = false;
-}
-
-const categoryList = [
-  { id: 'living', name: 'Living' },
-  { id: 'food', name: 'Food' },
-  { id: 'clothes', name: 'Clothes' },
-  { id: 'baby', name: 'Baby' },
-  { id: 'health', name: 'Health' },
-  { id: 'Digital', name: 'Digital' },
-  { id: 'sports', name: 'Sports' }
-]
-
-const openCart = () => {
-  slidingCartRef.value?.toggleCart()
-}
-</script>
 
 <style scoped lang='scss'>
 .app-header {
@@ -255,4 +277,3 @@ const openCart = () => {
   }
 }
 </style>
-

@@ -10,7 +10,7 @@ const totalCount = computed(() => cartStore.totalCount)
 const totalPrice = computed(() => cartStore.totalPrice)
 
 // New code for selection functionality
-const selectedItems = ref([])
+const selectedItems = ref([...cartList.value])
 
 const isAllSelected = computed(() => {
   return cartList.value.length > 0 && selectedItems.value.length === cartList.value.length
@@ -55,7 +55,7 @@ const removeItem = (id) => {
     if (selectedIndex !== -1) {
       selectedItems.value.splice(selectedIndex, 1)
     }
-    ElMessage.success('商品已成功移除')
+    ElMessage.success('Delete successfully')
   }
 }
 
@@ -84,20 +84,20 @@ const updateCount = (id, count) => {
           <thead>
             <tr>
               <th width="120">
-                <el-checkbox :model-value="isAllSelected" @change="toggleAllSelection" />
+                <el-checkbox :model-value="isAllSelected" @change="toggleAllSelection">Select All</el-checkbox>
               </th>
-              <th width="400">商品信息</th>
-              <th width="220">单价</th>
-              <th width="180">数量</th>
-              <th width="180">小计</th>
-              <th width="140">操作</th>
+              <th width="400">Commodity Info</th>
+              <th width="220">Price per unit</th>
+              <th width="180">Quantity</th>
+              <th width="180">Amount</th>
+              <th width="140">Operations</th>
             </tr>
           </thead>
           <!-- 商品列表 -->
           <tbody>
             <tr v-for="item in cartList" :key="item.id">
               <td>
-                <el-checkbox 
+                <el-checkbox
                   :model-value="selectedItems.some(selectedItem => selectedItem.id === item.id)"
                   @change="() => toggleItemSelection(item)"
                 />
@@ -123,9 +123,9 @@ const updateCount = (id, count) => {
               </td>
               <td class="tc">
                 <p>
-                  <el-popconfirm title="确认删除吗?" confirm-button-text="确认" cancel-button-text="取消" @confirm="removeItem(item.id)">
+                  <el-popconfirm title="Are you sure to delete?" confirm-button-text="Confirm" cancel-button-text="Cancel" @confirm="removeItem(item.id)">
                     <template #reference>
-                      <a href="javascript:;">删除</a>
+                      <a href="javascript:;">Delete</a>
                     </template>
                   </el-popconfirm>
                 </p>
@@ -134,8 +134,8 @@ const updateCount = (id, count) => {
             <tr v-if="cartList.length === 0">
               <td colspan="6">
                 <div class="cart-none">
-                  <el-empty description="购物车列表为空">
-                    <el-button type="primary" @click="$router.push('/')">随便逛逛</el-button>
+                  <el-empty description="There is nothing in your cart">
+                    <el-button type="primary" @click="$router.push('/')">Continue shopping</el-button>
                   </el-empty>
                 </div>
               </td>
@@ -146,11 +146,11 @@ const updateCount = (id, count) => {
       <!-- 操作栏 -->
       <div class="action">
         <div class="batch">
-          共 {{ totalCount }} 件商品，已选择 {{ selectedCount }} 件，商品合计：
+          <span>{{ totalCount }}</span> items in total, <span>{{ selectedCount }}</span> items have been seleted. Total Amount:
           <span class="red">¥ {{ Number(selectedPrice).toFixed(2) }} </span>
         </div>
         <div class="total">
-          <el-button size="large" type="primary">下单结算</el-button>
+          <el-button size="large" type="primary">Pay Now</el-button>
         </div>
       </div>
     </div>
@@ -264,6 +264,11 @@ const updateCount = (id, count) => {
     .batch {
       a {
         margin-left: 20px;
+      }
+
+      span {
+        font-size: 18px;
+        color: $priceColor;
       }
     }
 

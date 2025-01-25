@@ -9,6 +9,8 @@ import Detail from '@/views/Detail/index.vue'
 import SubCategory from '@/views/SubCategory/index.vue'
 import CartList from '@/views/CartList/index.vue'
 import { useUserStore } from '@/stores/user'
+import Search from '@/views/Search/index.vue'
+import Manager from '@/views/Manager/index.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -22,12 +24,15 @@ const router = createRouter({
         { path: 'category/sub/:id', component: SubCategory, meta: { title: 'Rabbuy - Sub-Category ' } },
         { path: 'product/:id', component: Detail, meta: { title: 'Product\'s Details' } },
         { path: 'cartlist', component: CartList, meta: { title: 'Rabbuy - CartList' } },
-        { path: 'product/:id', component: Detail, meta: { title: 'Product\'s Details', requiresAuth: true } }
+        { path: 'product/:id', component: Detail, meta: { title: 'Product\'s Details', requiresAuth: true } },
+        { path: '/search', component: Search, meta: { title: 'Search results' } }
       ]
     },
     { path: '/login', component: Login, meta: { title: 'Rabbuy Login' } },
 
     { path: '/register', component: Register, meta: { title: 'Rabbuy registration' } },
+
+    { path: '/manager', component: Manager, meta: {title: 'Rabbuy admin', } },  //requiresAuth: true
   ],
 
   scrollBehavior() {

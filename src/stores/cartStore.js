@@ -5,6 +5,10 @@ import { saveCartAPI, getCartAPI } from "@/apis/cart"
 export const useCartStore = defineStore("cart", () => {
   const cartList = ref([])
 
+  const totalType = computed(() => {
+    return cartList.value.reduce(acc => acc + 1, 0)
+  })
+
   const totalCount = computed(() => {
     return cartList.value.reduce((acc, item) => acc + item.count, 0)
   })
@@ -52,6 +56,7 @@ export const useCartStore = defineStore("cart", () => {
 
   return {
     cartList,
+    totalType,
     totalCount,
     totalPrice,
     addToCart,

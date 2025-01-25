@@ -1,71 +1,73 @@
 <script setup>
-import { getSubcategoryFilterAPI, getSubcategoryProductAPI } from '@/apis/subcategory';
-import { ref, onMounted } from 'vue'
+import { getSearchResultsAPI } from '@/apis/search';
+import { ref, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import GoodsItem from '../Home/components/GoodsItem.vue';
 
 const route = useRoute()
 
-// 获取并组装二级分类下的导航信息
-const subcategory = ref({})
+// 获取搜索结果
+const searchResults = ref([])
+const requestData = ref({
+  q: route.query.q, // 从路由中获取搜索关键词
+  category: route.query.category,
+  page: 1,
+  pageSize: 10,
+  sortField: 'created_time' // 默认按最新排序
+})
 
-const fetchSubcategoryFilterData = async (id) => {
-  const res = await getSubcategoryFilterAPI(id)
-  subcategory.value = res.data;
+const fetchSearchResults = async () => {
+  const res = await getSearchResultsAPI(requestData.value)
+  searchResults.value = res.data.products
 }
 
 onMounted(() => {
-  fetchSubcategoryFilterData(route.params.id)
+  fetchSearchResults()
+  console.log(requestData.value)
 })
 
-// 获取并组装二级分类下的产品信息
-const productList = ref([])
-const requestData = ref({
-  subCategoryId: route.params.id,
-  page: 1,
-  pageSize: 10,
-  sortField: 'created_time'
-})
-
-const getProductList = async () => {
-  const res = await getSubcategoryProductAPI(requestData.value)
-  productList.value = res.data.products
-}
-
-onMounted(() => { getProductList() })
+// 监听路由的 query 参数变化
+watch(
+  () => route.query, // 监听 route.query
+  (newQuery) => {
+    // 更新 requestData 中的搜索参数
+    requestData.value.q = newQuery.q
+    requestData.value.category = newQuery.category
+    requestData.value.page = 1 // 重置页码
+    fetchSearchResults() // 重新获取搜索结果
+  }
+)
 
 // tab切换回调
 const tabChange = async () => {
-  const res = await getSubcategoryProductAPI(requestData.value)
-  productList.value = res.data.products
+  requestData.value.page = 1 // 重置页码
+  const res = await getSearchResultsAPI(requestData.value)
+  searchResults.value = res.data.products
 }
 
-// 分页拼接
+// 分页加载更多
 const disabled = ref(false)
 
 const load = async () => {
   // 获取下一页数据
   requestData.value.page++
-  const res = await getSubcategoryProductAPI(requestData.value)
-  productList.value = [...productList.value, ...res.data.products]  // [老数组，新数组]
+  const res = await getSearchResultsAPI(requestData.value)
+  searchResults.value = [...searchResults.value, ...res.data.products]  // 合并新旧数据
 
   // 加载完毕，停止监听
   if(res.data.products.length === 0) {
     disabled.value = true
   }
 }
-
 </script>
 
 <template>
-  <div class="container ">
+  <div class="container">
     <!-- 面包屑 -->
     <div class="bread-container">
       <el-breadcrumb separator=">">
         <el-breadcrumb-item :to="{ path: '/' }">Home</el-breadcrumb-item>
-        <el-breadcrumb-item :to="{ path: `/category/${subcategory.categoryId}` }">{{ subcategory.categoryName }}
-        </el-breadcrumb-item>
-        <el-breadcrumb-item>{{ subcategory.name }}</el-breadcrumb-item>
+        <el-breadcrumb-item>Search Results</el-breadcrumb-item>
       </el-breadcrumb>
     </div>
     <div class="sub-container">
@@ -75,14 +77,11 @@ const load = async () => {
       </el-tabs>
       <div class="body" v-infinite-scroll="load" :infinite-scroll-disabled="disabled">
          <!-- 商品列表-->
-         <GoodsItem v-for="good in productList" :goods="good" :key="good.id" />
+         <GoodsItem v-for="good in searchResults" :goods="good" :key="good.id" />
       </div>
     </div>
   </div>
-
 </template>
-
-
 
 <style lang="scss" scoped>
 .bread-container {
@@ -136,7 +135,5 @@ const load = async () => {
     display: flex;
     justify-content: center;
   }
-
-
 }
 </style>
