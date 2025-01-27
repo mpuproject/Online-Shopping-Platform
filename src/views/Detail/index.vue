@@ -122,7 +122,15 @@ const addCart = () => {
               </p>
               <!-- 按钮组件 -->
               <div>
-                <el-button size="large" class="btn" @click="addCart">Add to cart</el-button>
+                <el-button
+                  size="large"
+                  class="btn"
+                  @click="addCart"
+                  :disabled="product.stock_quantity === 0"
+                  :class="{ 'disabled-btn': product.stock_quantity === 0 }"
+                >
+                  Add to cart
+                </el-button>
               </div>
             </div>
           </div>
@@ -396,6 +404,11 @@ const addCart = () => {
   margin-top: 30px;
   background-color: $xtxColor;
   color: #fff;
+
+  &.disabled-btn {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
 }
 
 .bread-container {

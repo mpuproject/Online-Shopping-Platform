@@ -10,7 +10,10 @@ import SubCategory from '@/views/SubCategory/index.vue'
 import CartList from '@/views/CartList/index.vue'
 import { useUserStore } from '@/stores/user'
 import Search from '@/views/Search/index.vue'
-import Manager from '@/views/Manager/index.vue'
+import Admin from '@/views/Admin/index.vue'
+import AdminProduct from '@/views/Admin/components/AdminProduct.vue'
+import AdminCategory from '@/views/Admin/components/AdminCategory.vue'
+import AdminSubcategory from '@/views/Admin/components/AdminSubcategory.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -23,16 +26,22 @@ const router = createRouter({
         { path: 'category/:id', component: Category, meta: { title: 'Rabbuy - Category' } },
         { path: 'category/sub/:id', component: SubCategory, meta: { title: 'Rabbuy - Sub-Category ' } },
         { path: 'product/:id', component: Detail, meta: { title: 'Product\'s Details' } },
-        { path: 'cartlist', component: CartList, meta: { title: 'Rabbuy - CartList' } },
-        { path: 'product/:id', component: Detail, meta: { title: 'Product\'s Details', requiresAuth: true } },
-        { path: '/search', component: Search, meta: { title: 'Search results' } }
+        { path: 'cartlist', component: CartList, meta: { title: 'Rabbuy - CartList', requiresUser: true } },
+        { path: 'product/:id', component: Detail, meta: { title: 'Product\'s Details' } },
+        { path: 'search', component: Search, meta: { title: 'Search results' } }
       ]
     },
     { path: '/login', component: Login, meta: { title: 'Rabbuy Login' } },
 
     { path: '/register', component: Register, meta: { title: 'Rabbuy registration' } },
 
-    { path: '/manager', component: Manager, meta: {title: 'Rabbuy admin', } },  //requiresAuth: true
+    { path: '/admin', redirect: '/admin/product', component: Admin,
+      meta: { title: 'Rabbuy admin', requiresAdmin: true },
+      children: [
+      { path: 'product', component: AdminProduct },
+      { path: 'category', component: AdminCategory },
+      { path: 'subcategory', component: AdminSubcategory }
+    ] },
   ],
 
   scrollBehavior() {
@@ -47,10 +56,14 @@ router.beforeEach((to, from, next) => {
   document.title = title;
 
   const userStore = useUserStore()
-  const isAuthenticated = !!userStore.userInfo.access
+  const isUser = !!userStore.userInfo.access
+  const isAdmin = userStore.userInfo.is_staff
 
-  if (to.meta.requiresAuth && !isAuthenticated) {
+  if (to.meta.requiresUser && !isUser) {
     next({ name: 'Login' })
+  } else if (to.meta.requiresAdmin && !isAdmin) {
+    alert("This page is for admin only!")
+    next('/')
   } else {
     next();
   }

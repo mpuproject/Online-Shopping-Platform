@@ -23,7 +23,6 @@ const fetchSearchResults = async () => {
 
 onMounted(() => {
   fetchSearchResults()
-  console.log(requestData.value)
 })
 
 // 监听路由的 query 参数变化

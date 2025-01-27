@@ -86,7 +86,7 @@ const updateCount = (id, count) => {
               <th width="120">
                 <el-checkbox :model-value="isAllSelected" @change="toggleAllSelection">Select All</el-checkbox>
               </th>
-              <th width="400">Commodity Info</th>
+              <th width="400">Product name</th>
               <th width="220">Price per unit</th>
               <th width="180">Quantity</th>
               <th width="180">Amount</th>
@@ -95,11 +95,12 @@ const updateCount = (id, count) => {
           </thead>
           <!-- 商品列表 -->
           <tbody>
-            <tr v-for="item in cartList" :key="item.id">
+            <tr v-for="item in cartList" :key="item.id" :class="{'disabled-item': item.status === '0' || item.stock_quantity === 0}">
               <td>
                 <el-checkbox
                   :model-value="selectedItems.some(selectedItem => selectedItem.id === item.id)"
                   @change="() => toggleItemSelection(item)"
+                  :disabled="item.status === '0' || item.stock_quantity === 0"
                 />
               </td>
               <td>
@@ -116,7 +117,12 @@ const updateCount = (id, count) => {
                 <p>&yen;{{ Number(item.price).toFixed(2) }}</p>
               </td>
               <td class="tc">
-                <el-input-number v-model="item.count" @change="(value) => updateCount(item.id, value)" :min="1" />
+                <el-input-number
+                  v-model="item.count"
+                  @change="(value) => updateCount(item.id, value)"
+                  :min="1"
+                  :disabled="item.status === '0' || item.stock_quantity === 0"
+                />
               </td>
               <td class="tc">
                 <p class="f16 red">&yen;{{ (Number(item.price) * item.count).toFixed(2) }}</p>
@@ -129,15 +135,6 @@ const updateCount = (id, count) => {
                     </template>
                   </el-popconfirm>
                 </p>
-              </td>
-            </tr>
-            <tr v-if="cartList.length === 0">
-              <td colspan="6">
-                <div class="cart-none">
-                  <el-empty description="There is nothing in your cart">
-                    <el-button type="primary" @click="$router.push('/')">Continue shopping</el-button>
-                  </el-empty>
-                </div>
               </td>
             </tr>
           </tbody>
@@ -284,6 +281,27 @@ const updateCount = (id, count) => {
     font-size: 16px;
     font-weight: normal;
     line-height: 50px;
+  }
+}
+
+.disabled-item {
+  background-color: #f5f5f5;
+  color: #999;
+
+  .goods img {
+    filter: grayscale(100%);
+    opacity: 0.6;
+  }
+
+  .el-checkbox,
+  .el-input-number,
+  .el-popconfirm {
+    pointer-events: none;
+    opacity: 0.6;
+  }
+
+  .red {
+    color: #999 !important;
   }
 }
 </style>

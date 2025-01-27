@@ -48,7 +48,6 @@ defineExpose({
                 <p class="name ellipsis-2">
                   {{ item.name }}
                 </p>
-                <!-- <p class="attr ellipsis">{{ item.attrsText }}</p> -->
               </div>
               <div class="right">
                 <p class="price">&yen;{{ item.price }}</p>

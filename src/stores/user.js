@@ -17,7 +17,7 @@ export const useUserStore = defineStore('user', () => {
 
     const register = async ({ username, email, password, confirmPwd }) => {
         const res = await signupAPI({ username, email, password, confirmPwd })
-        return res.data
+        return res.data.user
     }
 
     return {

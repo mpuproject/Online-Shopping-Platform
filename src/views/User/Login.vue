@@ -64,7 +64,7 @@ const doLogin = () => {
         router.replace({ path: '/' })
       }
       else {
-        router.replace({ path: '/manager' })
+        router.replace({ path: '/admin' })
       }
     }
   })

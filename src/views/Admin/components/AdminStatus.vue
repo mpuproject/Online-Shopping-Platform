@@ -21,8 +21,8 @@ const confirmLogout = () => {
               </template>
             </el-popconfirm>
           </li>
-          <li><a href="javascript:;">My Order</a></li>
-          <li><a href="javascript:;">My Address</a></li>
+          <!-- <li><a href="javascript:;">My Order</a></li>
+          <li><a href="javascript:;">My Address</a></li> -->
         </template>
         <template v-else>
           <li><a href="javascript:;" @click="$router.push('/login')">Login</a></li>
