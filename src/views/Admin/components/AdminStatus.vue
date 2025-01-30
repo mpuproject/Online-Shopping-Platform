@@ -21,6 +21,9 @@ const confirmLogout = () => {
               </template>
             </el-popconfirm>
           </li>
+          <li>
+            <a href="/">Home</a>
+          </li>
           <!-- <li><a href="javascript:;">My Order</a></li>
           <li><a href="javascript:;">My Address</a></li> -->
         </template>

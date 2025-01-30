@@ -31,3 +31,14 @@ export const getSubcategoryProductAPI = (data) => {
     data
   })
 }
+
+/**
+ * @description 获取二级分类
+ *
+ * @returns
+ */
+export const getSubcategoryAPI = () => {
+  return request({
+    url: '/category/sub/list/'
+  })
+}

@@ -5,8 +5,10 @@
     </div>
     <div class="user-info">
       <h2>{{ userStore.userInfo.username }}</h2>
-      <a>Switch</a>
-      <span> | </span>
+      <div v-if="userStore.userInfo.is_staff" class="admin-entrance">
+        <a href="/admin">Dashboard</a>
+        <span> | </span>
+      </div>
       <el-popconfirm @confirm="confirmLogout" title="Confirm logout?" confirm-button-text="Logout" cancel-button-text="Cancel">
         <template #reference>
           <a href="javascript:;">Logout</a>
@@ -164,6 +166,26 @@ const pending = {
   div.user-info a {
     margin: 5px 0;
     font-size: 14px;
+
+    &:hover {
+      color: $xtxColor;
+      text-decoration: underline;
+    }
+  }
+
+  .admin-entrance {
+    display: inline-block;
+    margin-right: 8px;
+
+    a {
+      color: inherit;
+      text-decoration: none;
+
+      &:hover {
+        color: $xtxColor;
+        text-decoration: underline;
+      }
+    }
   }
 }
 

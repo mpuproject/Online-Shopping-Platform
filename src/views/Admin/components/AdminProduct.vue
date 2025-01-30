@@ -1,9 +1,10 @@
 <script setup>
 import { onMounted, ref } from 'vue'
-import { Plus, Search, Edit, Delete, InfoFilled } from '@element-plus/icons-vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import { getProductAPI} from '@/apis/detail'
+import { Plus, Search, InfoFilled } from '@element-plus/icons-vue'
+import { getProductAPI, getStockStatusAPI, editProductAPI } from '@/apis/detail'
+import { ElMessageBox, ElMessage } from 'element-plus'
 
+// 针对不同状态产品下的提示
 const setRowClassName = ({ row }) => {
   if (row.stock_quantity === 0 && row.status == '1') {
     return 'row-red' // 库存为 0，显示浅红色
@@ -21,12 +22,27 @@ const requestData = ref({
   pageSize: 10,
 })
 
+// 计算序号的方法
+const getIndex = (index) => {
+  return (requestData.value.page - 1) * requestData.value.pageSize + index + 1;
+};
+
 const total = ref(0)
+
+const understockCount = ref(0) // 库存不足数量
+const shortStockCount = ref(0) // 库存紧张数量
 
 const getProducts = async () => {
   const res = await getProductAPI(requestData.value)
   tableData.value = res.data.products
   total.value = res.data.total
+}
+
+// 获取库存状态栏
+const getStockStatus = async () => {
+  const res = await getStockStatusAPI()
+  understockCount.value = res.data.understock
+  shortStockCount.value = res.data.shortstock
 }
 
 // 处理页码变化
@@ -42,30 +58,40 @@ const handleSizeChange = (newSize) => {
   getProducts()
 }
 
-onMounted(() => { getProducts() })
+onMounted(() => {
+  getProducts();
+  getStockStatus();
+})
 
-const searchKeyword = ref('')
+// 修改产品状态
+const editProductStatus = async(row) => {
+  const newStatus = row.status === '1' ? '0' : '1';
+  try {
+    await ElMessageBox.confirm(
+      `Are you sure to make "${row.name}" ${row.status === '1' ? 'unavailable' : 'available'} ?`,
+      'Warning',
+      {
+        confirmButtonText: 'Confirm',
+        cancelButtonText: 'Cancel',
+        type: 'warning',
+      }
+    );
 
-const handleAdd = () => {
-  ElMessage.success('点击了新增按钮')
-}
 
-const handleEdit = (row) => {
-  ElMessage.info(`正在编辑 ID: ${row.id}`)
-}
+    await editProductAPI(row.id, { status: newStatus });
 
-const handleDelete = (row) => {
-  ElMessageBox.confirm(
-    `Are you sure to delete "${row.name}" ?`,
-    'Warning',
-    {
-      confirmButtonText: 'Confirm',
-      cancelButtonText: 'Cancel',
-      type: 'warning',
+    ElMessage.success('Status changed');
+    row.status = newStatus; // 更新本地状态
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error('Status unchanged: database error');
     }
-  ).then(() => {
-    ElMessage.success('Delete successfully')
-  })
+  }
+}
+
+// 新增方法：打开新标签页
+const handleAddProduct = () => {
+  window.open('/admin/product/add', '_blank') // 新标签页打开新增页面
 }
 
 </script>
@@ -74,10 +100,19 @@ const handleDelete = (row) => {
   <div class="content-table">
     <!-- 顶部操作区 -->
     <div class="top-actions">
-      <el-button type="primary" @click="handleAdd" class="add-btn">
+      <div class="stock-status">
+        <span class="status-item">
+          <span class="dot red"></span>
+          Understock: {{ understockCount }}
+        </span>
+        <span class="status-item">
+          <span class="dot yellow"></span>
+          Short of stock: {{ shortStockCount }}
+        </span>
+      </div>
+      <el-button type="primary" @click="handleAddProduct" class="add-btn">
         <el-icon><Plus /></el-icon>Add
       </el-button>
-
       <el-input
         v-model="searchKeyword"
         placeholder="Search by keywords"
@@ -97,30 +132,33 @@ const handleDelete = (row) => {
       border
       :row-class-name="setRowClassName"
     >
-      <el-table-column type="index" label="ID" width="55" align="center" />
+    <el-table-column label="Index" width="70" align="center">
+      <template #default="{ $index }">
+        {{ getIndex($index) }}
+      </template>
+    </el-table-column>
       <el-table-column prop="name" label="Name" min-width="120" />
+      <el-table-column prop="price" label="Price" width="100" align="center" />
       <el-table-column prop="rating" label="Rating" width="80" align="center" />
       <el-table-column prop="stock_quantity" label="Inventory" width="100" align="center" />
       <el-table-column prop="low_stock_threshold" label="Threshold" width="100" align="center" />
-      <el-table-column prop="updatedTime" label="Last Updated" width="180"/>
+      <el-table-column prop="updatedTime" label="Last Updated" width="180" align="center" />
       <el-table-column prop="status" label="Status" width="80" align="center">
         <template #default="{ row }">
-          <el-tag :type="row.status === '1' ? 'success' : 'info'">
+          <el-switch
+          :model-value="row.status === '1'"
+          @change="editProductStatus(row)"
+          style="cursor: pointer;"
+          >
             {{ row.status === '1' ? 'Avail' : 'NA' }}
-          </el-tag>
+          </el-switch>
         </template>
       </el-table-column>
-      <el-table-column label="Operations" width="160" fixed="right">
+      <el-table-column label="Edit & Delete" width="110" fixed="right" align="center">
         <template #default="{ row }">
           <el-button-group>
             <el-button type="primary" size="small">
               <el-icon><InfoFilled /></el-icon>
-            </el-button>
-            <el-button type="primary" size="small" @click="handleEdit(row)" class="custom-button">
-              <el-icon><Edit /></el-icon>
-            </el-button>
-            <el-button type="danger" size="small" @click="handleDelete(row)">
-              <el-icon><Delete /></el-icon>
             </el-button>
           </el-button-group>
         </template>
@@ -153,14 +191,44 @@ const handleDelete = (row) => {
 
 .top-actions {
   display: flex;
-  justify-content: space-between; /* 将 Add 按钮和搜索框分开 */
-  align-items: center; /* 垂直居中 */
-  margin-bottom: 20px; /* 调整间距 */
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
 }
 
+.stock-status {
+  display: flex;
+  gap: 20px;
+  margin-right: auto; // 让状态显示靠左
+  margin-left: 10px;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  color: #606266;
+}
+
+.dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
+}
+
+.red {
+  background-color: #ff4d4f;
+}
+
+.yellow {
+  background-color: #faad14;
+}
 
 .add-btn {
   background-color: $xtxColor;
+  margin-right: 20px;
 
   &:hover {
     background-color: #22978c;

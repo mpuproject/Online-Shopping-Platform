@@ -2,7 +2,7 @@ import axios from "axios";
 import 'element-plus/theme-chalk/el-message.css'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from "@/stores/user"
-import { saveCartToServer } from "@/composables/logout";
+import { handle401Error } from "./token";
 
 const httpInstance = axios.create({
     baseURL: '/api/',
@@ -21,16 +21,15 @@ httpInstance.interceptors.request.use(config => {
 
   // axios responsive interceptor
 httpInstance.interceptors.response.use(res => res.data, async e => {
-    ElMessage({
-        type: 'warning',
-        message: e.response.data.msg || 'Network Error',
-    })
+  // 处理401错误
+  if (e.response?.status === 401 && !e.config._retry) {
+    return handle401Error(e);
+  }
 
-    // 登录401失效处理
-    if (e.response.status === 401) {
-      await saveCartToServer('/login')
-    }
-    return Promise.reject(e)
+  ElMessage({
+      type: 'warning',
+      message: e.response.data.msg || 'Network Error',
+  })
 })
 
 export default httpInstance

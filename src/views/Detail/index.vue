@@ -76,7 +76,7 @@ const addCart = () => {
                 <li>
                   <p>Favorite</p>
                   <p>300+</p>
-                  <p><i class="iconfont icon-favorite-filling"></i>Add</p>
+                  <p><i class="iconfont icon-favorite-filling"></i>Favorite</p>
                 </li>
                 <li>
                   <p>Brand Info</p>
@@ -144,9 +144,9 @@ const addCart = () => {
                 <div class="goods-detail">
                   <!-- 属性 -->
                   <ul class="attrs">
-                    <li v-for="(value, key) in product.details" :key="key">
-                      <span class="dt">{{ key.charAt(0).toUpperCase() + key.slice(1) }}:</span>
-                      <span class="dd">{{ value }}</span>
+                    <li v-for="(item, key) in product.details" :key="key">
+                      <span class="dt">{{ Object.keys(item)[0].charAt(0).toUpperCase() + Object.keys(item)[0].slice(1) }}:</span>
+                      <span class="dd">{{ item[Object.keys(item)[0]] }}</span>
                     </li>
                   </ul>
                   <!-- 评论 -->

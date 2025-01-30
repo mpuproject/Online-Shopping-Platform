@@ -47,3 +47,17 @@ export const getProductAPI = async (data) => {
     params: data
   })
 }
+
+export const getStockStatusAPI = async () => {
+  return request({
+    url: `/product/stock-count/`,
+  })
+}
+
+export const editProductAPI = async (id, data) => {
+  return request({
+    url: `/product/update/${id}/`,
+    method: 'PUT',
+    data
+  })
+}

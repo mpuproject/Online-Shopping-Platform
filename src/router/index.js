@@ -14,6 +14,7 @@ import Admin from '@/views/Admin/index.vue'
 import AdminProduct from '@/views/Admin/components/AdminProduct.vue'
 import AdminCategory from '@/views/Admin/components/AdminCategory.vue'
 import AdminSubcategory from '@/views/Admin/components/AdminSubcategory.vue'
+import ProductAdd from '@/views/Product/ProductAdd.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -38,10 +39,12 @@ const router = createRouter({
     { path: '/admin', redirect: '/admin/product', component: Admin,
       meta: { title: 'Rabbuy admin', requiresAdmin: true },
       children: [
-      { path: 'product', component: AdminProduct },
+      { path: 'product', component: AdminProduct, },
       { path: 'category', component: AdminCategory },
       { path: 'subcategory', component: AdminSubcategory }
     ] },
+
+    { path:'/admin/product/add', component: ProductAdd, meta: { title: 'Add product' } },
   ],
 
   scrollBehavior() {
