@@ -1,10 +1,11 @@
 import { useUserStore } from "@/stores/user"
-import router from "@/router"
+import { useRouter } from 'vue-router';
 import { useCartStore } from "@/stores/cartStore"
 
 export const saveCartToServer = async(url) => {
   const userStore = useUserStore()
   const cartStore = useCartStore()
+  const router = useRouter()
 
   // 1.保存购物车数据
   try {

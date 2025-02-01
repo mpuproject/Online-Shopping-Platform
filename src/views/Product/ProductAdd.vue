@@ -3,6 +3,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { Plus } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { getSubcategoryAPI } from '@/apis/subcategory'
+import { getCategoryAPI } from '@/apis/category'
 import { addProductAPI } from '@/apis/detail'
 import { ElMessageBox } from 'element-plus'
 import { postImageAPI } from '@/apis/image'
@@ -20,7 +21,7 @@ const formData = reactive({
   lowStockThreshold: 0,
   details: [],
   status: '1',
-  subCategoryId: null
+  subCategoryId: []
 })
 
 // 表单验证规则
@@ -46,12 +47,31 @@ const rules = reactive({
   ]
 })
 
-// 分类选项（示例数据，实际应从API获取）
+// 分类选项
 const categoryOptions = ref([])
 
 const getCategoryOptions = async () => {
-  const res = await getSubcategoryAPI()
-  categoryOptions.value = res.data
+  const subList = await getSubcategoryAPI()
+  const cateList = await getCategoryAPI()
+
+  // 将子分类按父分类ID分组
+  const subMap = subList.data.reduce((map, sub) => {
+    if (!map[sub.category_id]) {
+      map[sub.category_id] = []
+    }
+    map[sub.category_id].push({
+      id: sub.id,
+      name: sub.name
+    })
+    return map
+  }, {})
+
+  // 组装层级结构
+  categoryOptions.value = cateList.data.map(cate => ({
+    id: cate.id,
+    name: cate.name,
+    children: subMap[cate.id] || []
+  }))
 }
 
 onMounted(()=>{
@@ -61,22 +81,18 @@ onMounted(()=>{
 // 自定义上传逻辑
 const handleUpload = async (options) => {
   const { file } = options
-  const url = await postImageAPI(file)
-  if (url) {
-    return { url }  // 返回图片URL
+  const res = await postImageAPI(file)
+  if (res && res.url) {
+    return res
   } else {
     throw new Error('Upload failed')
   }
 }
 
 // 处理上传成功
-const handleUploadSuccess = (response, file) => {
+const handleUploadSuccess = (response) => {
   if (response && response.url) {
-    formData.images.push({
-      url: response.url,
-      name: file.name,
-      status: 'success'
-    })
+    formData.images.push(response.url)
     ElMessage.success('Image uploaded successfully')
   } else {
     ElMessage.error('Failed: unvalid URL in return')
@@ -108,14 +124,11 @@ const submitForm = async (formEl) => {
   await formEl.validate(async (valid) => {
     if (valid) {
       formData.subCategoryId = formData.subCategoryId[formData.subCategoryId.length-1]
-      const res = await addProductAPI(formData)
-      if (res.code === 201) {
-        ElMessage.success('Add successfully')
-        resetForm(formEl)
-      } else {
-        ElMessage.error(`Submission failed: ${res.message}`)
-      }
-
+      await addProductAPI(formData)
+      ElMessage.success('Add successfully')
+      formEl.resetFields()
+      formData.details = []
+      formData.images = []
     } else {
       ElMessage.error('Please double check your form')
       return false
@@ -218,8 +231,8 @@ const resetForm = (formEl) => {
             :props="{
               label: 'name',
               value: 'id',
+              checkStrictly: true,
             }"
-            filterable
             placeholder="Choose sub-category"
           />
         </el-form-item>
@@ -235,7 +248,6 @@ const resetForm = (formEl) => {
               :limit="5"
               :on-success="handleUploadSuccess"
               :on-remove="handleRemove"
-              :before-upload="beforeUpload"
               :file-list="formData.images"
             >
               <el-icon><Plus /></el-icon>

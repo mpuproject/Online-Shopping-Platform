@@ -89,9 +89,14 @@ const editProductStatus = async(row) => {
   }
 }
 
-// 新增方法：打开新标签页
+// // 新标签页打开新增页面
 const handleAddProduct = () => {
-  window.open('/admin/product/add', '_blank') // 新标签页打开新增页面
+  window.open('/admin/product/add', '_blank')
+}
+
+// 新标签页打开详细页面
+const handleProductInfo = (row) => {
+  window.open(`/admin/product/details/${row.id}`, '_blank')
 }
 
 </script>
@@ -157,7 +162,7 @@ const handleAddProduct = () => {
       <el-table-column label="Edit & Delete" width="110" fixed="right" align="center">
         <template #default="{ row }">
           <el-button-group>
-            <el-button type="primary" size="small">
+            <el-button type="primary" size="small" @click="handleProductInfo(row)">
               <el-icon><InfoFilled /></el-icon>
             </el-button>
           </el-button-group>

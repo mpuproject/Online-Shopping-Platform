@@ -3,7 +3,6 @@ import HomePanel from './HomePanel.vue'
 import { onMounted, ref } from 'vue'
 import { findHotAPI } from '@/apis/home';
 
-// Static data
 const hotList = ref([])
 
 const getHotList = async () => {

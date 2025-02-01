@@ -2,12 +2,15 @@ import axios from "axios";
 import 'element-plus/theme-chalk/el-message.css'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from "@/stores/user"
-import { handle401Error } from "./token";
+import { saveCartToServer } from "@/composables/logout";
 
 const httpInstance = axios.create({
     baseURL: '/api/',
     timeout: 5000,
 })
+
+let isRefreshing = false; // 标记是否正在刷新token
+let refreshSubscribers = []; // 存储需要重新发送的请求
 
 // axios request interceptor
 httpInstance.interceptors.request.use(config => {
@@ -19,17 +22,59 @@ httpInstance.interceptors.request.use(config => {
     return config
 }, e => Promise.reject(e))
 
-  // axios responsive interceptor
+// axios response interceptor
 httpInstance.interceptors.response.use(res => res.data, async e => {
-  // 处理401错误
-  if (e.response?.status === 401 && !e.config._retry) {
-    return handle401Error(e);
-  }
+  const userStore = useUserStore();
+  const refreshToken = userStore.userInfo.refresh;
 
-  ElMessage({
+  if (e.response.status === 401 && refreshToken) {
+    if (!isRefreshing) {
+      isRefreshing = true; // 标记正在刷新token
+      try {
+        const response = await httpInstance.post('/user/token-refresh/', { refresh: refreshToken });
+        userStore.setAccessToken(response.access);
+        isRefreshing = false; // 刷新完成，取消标记
+
+        // 重新发送之前失败的请求
+        refreshSubscribers.forEach(subscriber => subscriber(response.access));
+        refreshSubscribers = [];
+
+        // 重新发起当前请求
+        e.config.headers.Authorization = `Bearer ${response.access}`;
+        return httpInstance(e.config);
+      } catch (refreshError) {
+        ElMessage({
+          type: 'error',
+          message: 'Token refresh failed. Please log in again.',
+        });
+        isRefreshing = false; // 刷新失败，取消标记
+        await saveCartToServer('/login');
+        return Promise.reject(refreshError);
+      }
+    } else {
+      // 如果正在刷新token，将当前请求加入队列
+      return new Promise((resolve, reject) => {
+        refreshSubscribers.push((newToken) => {
+          if (newToken) {
+            e.config.headers.Authorization = `Bearer ${newToken}`;
+            resolve(httpInstance(e.config)); // 重新发起请求
+          } else {
+            reject(e);
+          }
+        });
+      });
+    }
+  } else {
+    ElMessage({
       type: 'warning',
       message: e.response.data.msg || 'Network Error',
-  })
-})
+    });
+    if (e.response.status === 401) {
+      await saveCartToServer('/login');
+    }
+    return Promise.reject(e);
+  }
+});
+
 
 export default httpInstance

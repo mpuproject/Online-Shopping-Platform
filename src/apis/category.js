@@ -18,12 +18,18 @@ export const getCategories = () => {
  * @returns
  */
 
-export function getCategoryAPI(id) {
+export function getCategoriesAPI(id) {
   return request({
     url: `/category/all/`,
     method: 'POST',
     data: {
       "id": id
     }
+  })
+}
+
+export const getCategoryAPI = () => {
+  return request({
+    url: '/category/list/',
   })
 }

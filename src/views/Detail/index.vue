@@ -145,7 +145,7 @@ const addCart = () => {
                   <!-- 属性 -->
                   <ul class="attrs">
                     <li v-for="(item, key) in product.details" :key="key">
-                      <span class="dt">{{ Object.keys(item)[0].charAt(0).toUpperCase() + Object.keys(item)[0].slice(1) }}:</span>
+                      <span class="dt">{{ Object.keys(item)[0].charAt(0).toUpperCase() + Object.keys(item)[0].slice(1).toLowerCase() }}:</span>
                       <span class="dd">{{ item[Object.keys(item)[0]] }}</span>
                     </li>
                   </ul>

@@ -22,9 +22,14 @@ const confirmLogout = async () => {
               </template>
             </el-popconfirm>
           </li>
-          <li><a href="javascript:;">My Order</a></li>
-          <li><a href="javascript:;">My Address</a></li>
-        </template>
+          <template v-if="!userStore.userInfo.is_staff">
+            <li><a href="javascript:;">My Order</a></li>
+            <li><a href="javascript:;">My Address</a></li>
+          </template>
+          <template v-else>
+            <li><a href="/admin/product">Dashboard</a></li>
+          </template>
+          </template>
         <template v-else>
           <li><a href="javascript:;" @click="$router.push('/login')">Login</a></li>
           <li><a href="javascript:;" @click="$router.push('/register')">Register</a></li>

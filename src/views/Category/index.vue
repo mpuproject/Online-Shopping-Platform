@@ -2,7 +2,7 @@
 import GoodsItem from '../Home/components/GoodsItem.vue'
 import { ref, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { getCategoryAPI } from '@/apis/category'
+import { getCategoriesAPI } from '@/apis/category'
 
 const route = useRoute()
 
@@ -17,7 +17,7 @@ const bannerList = ref([
 const categories = ref({})
 
 const fetchCategoryData = async (id) => {
-  const res = await getCategoryAPI(id)
+  const res = await getCategoriesAPI(id)
   categories.value = res.data;
 }
 

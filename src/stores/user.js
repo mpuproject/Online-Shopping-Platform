@@ -20,11 +20,16 @@ export const useUserStore = defineStore('user', () => {
         return res.data.user
     }
 
+    const setAccessToken = (newAccess) => {
+      userInfo.value.access = newAccess
+    }
+
     return {
         userInfo,
         getUserInfo,
         clearUserInfo,
-        register
+        register,
+        setAccessToken
     }
 }, {
     persist: true,
