@@ -10,6 +10,7 @@ import SubCategory from '@/views/SubCategory/index.vue'
 import CartList from '@/views/CartList/index.vue'
 import { useUserStore } from '@/stores/user'
 import Search from '@/views/Search/index.vue'
+import Checkout from '@/views/Checkout/index.vue'
 import Admin from '@/views/Admin/index.vue'
 import AdminProduct from '@/views/Admin/components/AdminProduct.vue'
 import AdminCategory from '@/views/Admin/components/AdminCategory.vue'
@@ -30,7 +31,8 @@ const router = createRouter({
         { path: 'product/:id', component: Detail, meta: { title: 'Product\'s Details' } },
         { path: 'cartlist', component: CartList, meta: { title: 'Rabbuy - CartList', requiresUser: true } },
         { path: 'product/:id', component: Detail, meta: { title: 'Product\'s Details' } },
-        { path: 'search', component: Search, meta: { title: 'Search results' } }
+        { path: 'search', component: Search, meta: { title: 'Search results' } },
+        { path: 'checkout', component: Checkout, meta: {title: 'checkout'} },
       ]
     },
     { path: '/login', component: Login, meta: { title: 'Rabbuy Login' } },

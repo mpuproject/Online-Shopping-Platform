@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import 'element-plus/theme-chalk/el-message.css'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { View, Hide } from '@element-plus/icons-vue';
 
@@ -57,14 +57,37 @@ const doLogin = () => {
   formRef.value.validate( async (valid) => {
     if(valid) {
       const userInfo = await userStore.getUserInfo({ username, password })
-      await cartStore.getCart(userInfo.id)
+      const dbcart = await cartStore.getCart(userInfo.id)
 
-      ElMessage({ type: 'success', message: 'Login success' })
-      if(!userStore.userInfo.is_staff) {
-        router.replace({ path: '/' })
-      }
-      else {
-        router.replace({ path: '/admin' })
+      // 若购物车不为空：是否合并本地购物车
+      if(cartStore.cartList.length !== 0) {
+        ElMessageBox.confirm(
+          'Item detected in local shopping cart. Would you like to merge in your account?',
+          'Reminder',
+          {
+            confirmButtonText: 'Confirm',
+            cancelButtonText: 'Cancel',
+            type: 'warning',
+          }
+        ).then(() => {
+          // 确认：将dbcart中的东西加入购物车
+          for (let i of dbcart) {
+            cartStore.addToCart(i)
+          }
+        }).catch(() => {
+          // 取消：dbcart取代本地购物车
+          cartStore.cartList = dbcart
+        }).then(() => {
+          ElMessage({ type: 'success', message: 'Login success' })
+
+          // 判断是否为管理员
+          if(!userStore.userInfo.is_staff) {
+            router.replace({ path: '/' })
+          }
+          else {
+            router.replace({ path: '/admin' })
+          }
+        })
       }
     }
   })

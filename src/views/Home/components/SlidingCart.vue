@@ -1,6 +1,11 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useCartStore } from '@/stores/cartStore';
+import { useUserStore } from '@/stores/user';
+import router from '@/router';
+import { ElMessageBox } from 'element-plus';
+
+const userStore = useUserStore()
 
 const isOpen = ref(false)
 
@@ -28,6 +33,27 @@ const removeItem = (id) => {
 defineExpose({
   toggleCart
 })
+
+const checkout = () => {
+  toggleCart();
+  if (userStore.userInfo){
+    // 若未登录，请求跳转到登录界面
+    ElMessageBox.confirm(
+      'You haven\'t logged in yet. Checkout isn\'t allowed for any anonymous users.',
+      'Reminder',
+      {
+        confirmButtonText: 'Login',
+        cancelButtonText: 'Cancel',
+        type: 'warning',
+      }
+    ).then(() => {
+      router.push('/login')
+    })
+  } else {
+  // 若已登录，跳转到cartlist
+    router.push('/cartlist')
+  }
+}
 </script>
 
 <template>
@@ -42,7 +68,7 @@ defineExpose({
         </div>
         <div class="list">
           <div class="item" v-for="item in cartItems" :key="item.id">
-            <RouterLink to="">
+            <RouterLink :to="`/product/${item.id}`">
               <img :src="item.image" alt="" />
               <div class="center">
                 <p class="name ellipsis-2">
@@ -56,13 +82,14 @@ defineExpose({
             </RouterLink>
             <i class="iconfont icon-close-new" @click="removeItem(item.id)"></i>
           </div>
+          <el-empty v-if="cartItems.length === 0" description="Cart is empty" />
         </div>
         <div class="foot">
           <div class="total">
             <p>Subtotal ({{ totalCount }} items):</p>
             <p>&yen; {{ totalPrice.toFixed(2) }} </p>
           </div>
-          <el-button size="large" type="primary" @click="() => { toggleCart(); $router.push('/cartlist'); }">
+          <el-button size="large" type="primary" @click="checkout">
             Check out
           </el-button>
         </div>

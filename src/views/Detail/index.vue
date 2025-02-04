@@ -149,7 +149,14 @@ const addCart = () => {
                       <span class="dd">{{ item[Object.keys(item)[0]] }}</span>
                     </li>
                   </ul>
-                  <!-- 评论 -->
+                </div>
+              </div>
+              <div class="goods-tabs">
+                <nav>
+                  <a>Comments</a>
+                </nav>
+                <div>
+                  <ul class="comments"></ul>
                 </div>
               </div>
             </div>
@@ -197,8 +204,9 @@ const addCart = () => {
   }
 
   .goods-tabs {
-    min-height: 600px;
+    min-height: 200px;
     background: #fff;
+    max-height: 600px;
   }
 
   .goods-warn {

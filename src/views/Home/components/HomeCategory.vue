@@ -5,10 +5,10 @@ import { RouterLink } from 'vue-router';
 const categoryList = ref([
   {
     id: 1,
-    name: '家电',
+    name: 'Living:',
     children: [
-      { id: 1, name: '空调' },
-      { id: 2, name: '洗衣机' },
+      { id: 1, name: 'Furniture' },
+      { id: 2, name: '/ Bedding' },
     ],
     goods: [
       {
@@ -75,10 +75,10 @@ const categoryList = ref([
   },
   {
     id: 2,
-    name: '手机',
+    name: 'Phone: ',
     children: [
-      { id: 1, name: '智能手机' },
-      { id: 2, name: '功能手机' },
+      { id: 1, name: 'iPhone' },
+      { id: 2, name: '/ Telephone' },
     ],
     goods: [
       {
@@ -105,7 +105,7 @@ const categoryList = ref([
         <RouterLink to="/">{{ item.name }}</RouterLink>
         <RouterLink v-for="child in item.children" :key="child.id" to="/">{{ child.name }}</RouterLink>
         <div class="layer">
-          <h4>分类推荐 <small>根据您的购买或浏览记录推荐</small></h4>
+          <h4>For Your Page <small>Hot sale are discounted</small></h4>
           <ul>
             <li v-for="good in item.goods.slice(0, 10)" :key="good.id"> <!-- 限制为前10个商品 -->
               <RouterLink to="/">
@@ -236,7 +236,7 @@ const categoryList = ref([
 
       &:hover {
         .layer {
-          display: block; 
+          display: block;
         }
       }
     }

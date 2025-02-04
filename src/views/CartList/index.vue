@@ -137,6 +137,15 @@ const updateCount = (id, count) => {
                 </p>
               </td>
             </tr>
+            <tr v-if="cartList.length === 0">
+              <td colspan="6">
+                <div class="cart-none">
+                  <el-empty description="There is nothing in your cart">
+                    <el-button type="primary" @click="$router.push('/')">Continue shopping</el-button>
+                  </el-empty>
+                </div>
+              </td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -147,7 +156,7 @@ const updateCount = (id, count) => {
           <span class="red">¥ {{ Number(selectedPrice).toFixed(2) }} </span>
         </div>
         <div class="total">
-          <el-button size="large" type="primary">Pay Now</el-button>
+          <el-button size="large" type="primary" @click="$router.push('/checkout')">Pay Now</el-button>
         </div>
       </div>
     </div>

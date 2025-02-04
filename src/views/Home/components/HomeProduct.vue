@@ -7,51 +7,30 @@ import GoodsItem from './GoodsItem.vue'
 const goodsProduct = ref([
   {
     id: 1,
-    name: "居家",
-    saleInfo: "家具生活",
+    name: "Living",
+    saleInfo: "Furniture",
     picture: "https://picsum.photos/200/600",
     goods: [
-      { id: 101, name: "舒适沙发", price: 1999, picture: "https://picsum.photos/200/200?random=1" },
-      { id: 102, name: "实木餐桌", price: 2499, picture: "https://picsum.photos/200/200?random=2" },
-      { id: 103, name: "柔软床垫", price: 999, picture: "https://picsum.photos/200/200?random=3" },
-      { id: 104, name: "简约书架", price: 599, picture: "https://picsum.photos/200/200?random=4" }
+      { id: 101, name: "Comfort Sofa", price: 1999, picture: "https://picsum.photos/200/200?random=1" },
+      { id: 102, name: "Dining Table", price: 2499, picture: "https://picsum.photos/200/200?random=2" },
+      { id: 103, name: "Soft Matress", price: 999, picture: "https://picsum.photos/200/200?random=3" },
+      { id: 104, name: "Simple Shelf", price: 599, picture: "https://picsum.photos/200/200?random=4" }
     ]
   },
   {
     id: 2,
-    name: "美食",
-    saleInfo: "品质美味",
+    name: "Food",
+    saleInfo: "Delicacies",
     picture: "https://picsum.photos/200/600",
     goods: [
-      { id: 201, name: "进口牛排", price: 199, picture: "https://picsum.photos/200/200?random=6" },
-      { id: 202, name: "有机蔬菜", price: 29, picture: "https://picsum.photos/200/200?random=7" },
-      { id: 203, name: "新鲜水果", price: 39, picture: "https://picsum.photos/200/200?random=8" },
-      { id: 204, name: "高级红酒", price: 299, picture: "https://picsum.photos/200/200?random=9" }
+      { id: 201, name: "Sirloin Steak", price: 199, picture: "https://picsum.photos/200/200?random=6" },
+      { id: 202, name: "Organic Vege", price: 29, picture: "https://picsum.photos/200/200?random=7" },
+      { id: 203, name: "Fresh Fruit", price: 39, picture: "https://picsum.photos/200/200?random=8" },
+      { id: 204, name: "Fine Red Wine", price: 299, picture: "https://picsum.photos/200/200?random=9" }
     ]
   }
 ]);
 </script>
-<!-- 
-<template>
-  <div class="home-product">
-    <HomePanel :title="cate.name" v-for="cate in goodsProduct" :key="cate.id">
-      <div class="box">
-        <RouterLink class="cover" to="/">
-          <img v-img-lazy="cate.picture" />
-          <strong class="label">
-            <span>{{ cate.name }}馆</span>
-            <span>{{ cate.saleInfo }}</span>
-          </strong>
-        </RouterLink>
-        <ul class="goods-list">
-          <li v-for="goods in cate.goods" :key="goods.id">
-            <GoodsItem :goods="goods" />
-          </li>
-        </ul>
-      </div>
-    </HomePanel>
-  </div>
-</template> -->
 
 <template>
   <div class="home-product">
@@ -64,7 +43,7 @@ const goodsProduct = ref([
         <RouterLink class="cover" to="/">
           <img :src="cate.picture" alt="Category Image" />
           <strong class="label">
-            <span>{{ cate.name }}馆</span>
+            <span>{{ cate.name }}</span>
             <span>{{ cate.saleInfo }}</span>
           </strong>
         </RouterLink>

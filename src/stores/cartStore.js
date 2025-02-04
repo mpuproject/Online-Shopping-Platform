@@ -36,7 +36,7 @@ export const useCartStore = defineStore("cart", () => {
   // 获取用户购物车数据
   const getCart = async (id) => {
     const res = await getCartAPI(id)
-    cartList.value = res.data.products
+    return res.data.products
 
   }
 
