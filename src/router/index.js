@@ -11,6 +11,7 @@ import CartList from '@/views/CartList/index.vue'
 import { useUserStore } from '@/stores/user'
 import Search from '@/views/Search/index.vue'
 import Checkout from '@/views/Checkout/index.vue'
+import Pay from '@/views/Pay/index.vue'
 import Admin from '@/views/Admin/index.vue'
 import AdminProduct from '@/views/Admin/components/AdminProduct.vue'
 import AdminCategory from '@/views/Admin/components/AdminCategory.vue'
@@ -27,12 +28,12 @@ const router = createRouter({
       children: [
         { path: '', component: Home, meta: { title: 'Rabbuy - Buy what you want' } },
         { path: 'category/:id', component: Category, meta: { title: 'Rabbuy - Category' } },
-        { path: 'category/sub/:id', component: SubCategory, meta: { title: 'Rabbuy - Sub-Category ' } },
-        { path: 'product/:id', component: Detail, meta: { title: 'Product\'s Details' } },
-        { path: 'cartlist', component: CartList, meta: { title: 'Rabbuy - CartList', requiresUser: true } },
-        { path: 'product/:id', component: Detail, meta: { title: 'Product\'s Details' } },
-        { path: 'search', component: Search, meta: { title: 'Search results' } },
-        { path: 'checkout', component: Checkout, meta: {title: 'checkout'} },
+        { path: 'category/sub/:id', component: SubCategory, meta: { title: 'Rabbuy - Subcategory ' } },
+        { path: 'product/:id', component: Detail, meta: { title: 'product\'s details' } },
+        { path: 'cartlist', component: CartList, meta: { title: 'Rabbuy - cartList', requiresUser: true } },
+        { path: 'search', component: Search, meta: { title: 'search results' } },
+        { path: 'checkout', component: Checkout, meta: { title: 'checkout' } },
+        { path: 'pay/:id', component: Pay, meta: { title: 'place order' } }
       ]
     },
     { path: '/login', component: Login, meta: { title: 'Rabbuy Login' } },

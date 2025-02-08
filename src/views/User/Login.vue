@@ -51,6 +51,18 @@ const formRef = ref(null)
 
 const router = useRouter()
 
+const afterLogin = () => {
+  ElMessage({ type: 'success', message: 'Login success' })
+
+  // 判断是否为管理员
+  if(!userStore.userInfo.is_staff) {
+    router.replace({ path: '/' })
+  }
+  else {
+    router.replace({ path: '/admin' })
+  }
+}
+
 const doLogin = () => {
   const { username, password } = form.value
 
@@ -78,16 +90,10 @@ const doLogin = () => {
           // 取消：dbcart取代本地购物车
           cartStore.cartList = dbcart
         }).then(() => {
-          ElMessage({ type: 'success', message: 'Login success' })
-
-          // 判断是否为管理员
-          if(!userStore.userInfo.is_staff) {
-            router.replace({ path: '/' })
-          }
-          else {
-            router.replace({ path: '/admin' })
-          }
+          afterLogin()
         })
+      } else {
+        afterLogin()
       }
     }
   })

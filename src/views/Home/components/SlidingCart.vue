@@ -35,8 +35,7 @@ defineExpose({
 })
 
 const checkout = () => {
-  toggleCart();
-  if (userStore.userInfo){
+  if (!userStore.userInfo.access){
     // 若未登录，请求跳转到登录界面
     ElMessageBox.confirm(
       'You haven\'t logged in yet. Checkout isn\'t allowed for any anonymous users.',
@@ -47,11 +46,16 @@ const checkout = () => {
         type: 'warning',
       }
     ).then(() => {
+      // 跳转到登录界面
       router.push('/login')
+      toggleCart()
+    }).catch(() => {
+      // 没有操作
     })
   } else {
   // 若已登录，跳转到cartlist
     router.push('/cartlist')
+    toggleCart();
   }
 }
 </script>

@@ -1,7 +1,123 @@
 <script setup>
-const checkInfo = {}  // 订单对象
-const curAddress = {}  // 地址对象
+import { ref, computed, onMounted } from 'vue';
+import { useUserStore } from '@/stores/user';
+import { useCartStore } from '@/stores/cartStore';
+import { getAddressAPI } from '@/apis/address';
+import { createOrderAPI } from '@/apis/checkout';
+import AddressDialog from './components/AddressDialog.vue'
+import { useRouter } from 'vue-router';
 
+const userStore = useUserStore()
+const cartStore = useCartStore()
+const router = useRouter()
+
+const addresses = ref([])   // 地址列表
+const curAddress = ref({})  // 当前地址对象
+const getUserAddress = async (userId) => {
+  const res = await getAddressAPI(userId)
+  addresses.value = res.data?.map(address => ({
+    ...address,
+    fullLocation: address.province === address.city
+      ? `${address.district}, ${address.province}`
+      : `${address.district}, ${address.city}, ${address.province}`
+  }))
+  // 将默认地址放在数组第一位
+  addresses.value.sort((a, b) => b.is_default - a.is_default)
+  // 设置当前地址为默认地址
+  curAddress.value = addresses.value.find(addr => addr.is_default) || {}
+}
+
+onMounted(() => {
+  getUserAddress(userStore.userInfo.id);
+})
+
+// 引入AddressDialog组件
+const addressDialog = ref(null)
+
+// 切换地址按钮
+const showChangeDialog = () => {
+  addressDialog.value.showChangeDialog = true
+}
+
+// 增加地址按钮
+const showAddDialog = () => {
+  addressDialog.value.showAddDialog = true
+}
+
+// 处理地址切换
+const handleChangeAddress = (address) => {
+  curAddress.value = address
+}
+
+// 处理地址添加
+const handleAddAddress = (newAddress) => {
+  // 处理添加地址的逻辑
+  console.log('New Address:', newAddress)
+}
+
+// 使用computed筛选出已选中的商品
+const checkInfo = computed(() => {
+  const selectedGoods = cartStore.cartList.filter(item => item.selected)
+  const totalGoodsPrice = selectedGoods
+    .reduce((sum, item) => sum + parseFloat(item.price) * item.count, 0)
+
+  const postFee = computed(() => {
+    switch (true) {
+      case totalGoodsPrice === 0:
+        return 0
+      case totalGoodsPrice > 0 && totalGoodsPrice <= 50:
+        return 5
+      case totalGoodsPrice > 50 && totalGoodsPrice <= 300:
+        return 8
+      case totalGoodsPrice > 300 && totalGoodsPrice <= 1000:
+        return 10
+      default:
+        return 12
+    }
+  })
+
+  return {
+    goods: selectedGoods.map(item => ({
+      id: item.id,
+      name: item.name,
+      image: item.image,
+      price: parseFloat(item.price),
+      count: item.count,
+      totalPrice: (parseFloat(item.price) * item.count),
+    })),
+    summary: {
+      goodsCount: selectedGoods.length,
+      totalPrice: totalGoodsPrice,
+      postFee: postFee.value,
+      totalPayPrice: (totalGoodsPrice + postFee.value).toFixed(2)
+    }
+  }
+})
+
+const order = ref({
+  deliveryTime: '0',  //默认为全时间段
+  products: checkInfo.value.goods.map(item => {
+    return {
+      id: item.id,
+      count: item.count,
+    }
+  }),
+  addressId: curAddress.value.id,
+  userId: userStore.userInfo.id,
+
+})
+
+// 创建订单
+const createOrder = async () => {
+  order.value.addressId = curAddress.value.id
+  const res = await createOrderAPI(order.value)
+  const orderId = res.data.id
+  router.push({
+    path: `/pay/${orderId}`,
+  })
+  // 清除购物车内的数据
+  cartStore.clearCart()
+}
 </script>
 
 <template>
@@ -9,103 +125,104 @@ const curAddress = {}  // 地址对象
     <div class="container">
       <div class="wrapper">
         <!-- 收货地址 -->
-        <h3 class="box-title">收货地址</h3>
+        <h3 class="box-title">Shipping Address</h3>
         <div class="box-body">
           <div class="address">
             <div class="text">
-              <div class="none" v-if="!curAddress">您需要先添加收货地址才可提交订单。</div>
+              <div class="none" v-if="!curAddress">Please add a shipping address to proceed with your order.</div>
               <ul v-else>
-                <li><span>收<i />货<i />人：</span>{{ curAddress.receiver }}</li>
-                <li><span>联系方式：</span>{{ curAddress.contact }}</li>
-                <li><span>收货地址：</span>{{ curAddress.fullLocation }} {{ curAddress.address }}</li>
+                <li><span>Recipient: </span>{{ curAddress.recipient }}</li>
+                <li><span>Contact: </span>{{ curAddress.phone }}</li>
+                <li><span>Address: </span>{{ curAddress.additional_addr }}, {{ curAddress.fullLocation }}</li>
               </ul>
             </div>
             <div class="action">
-              <el-button size="large" @click="toggleFlag = true">切换地址</el-button>
-              <el-button size="large" @click="addFlag = true">添加地址</el-button>
+              <el-button size="large" @click="showChangeDialog" style="width: 100px;">Change</el-button>
+              <el-button size="large" @click="showAddDialog" style="width: 100px;">Add</el-button>
             </div>
           </div>
         </div>
         <!-- 商品信息 -->
-        <h3 class="box-title">商品信息</h3>
+        <h3 class="box-title">Order Information</h3>
         <div class="box-body">
           <table class="goods">
             <thead>
               <tr>
-                <th width="520">商品信息</th>
-                <th width="170">单价</th>
-                <th width="170">数量</th>
-                <th width="170">小计</th>
-                <th width="170">实付</th>
+                <th width="520">Product Information</th>
+                <th width="170">Unit Price</th>
+                <th width="170">Quantity</th>
+                <th width="170">Total Price</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="i in checkInfo.goods" :key="i.id">
                 <td>
                   <a href="javascript:;" class="info">
-                    <img :src="i.picture" alt="">
+                    <img :src="i.image" alt="">
                     <div class="right">
                       <p>{{ i.name }}</p>
-                      <p>{{ i.attrsText }}</p>
                     </div>
                   </a>
                 </td>
                 <td>&yen;{{ i.price }}</td>
-                <td>{{ i.price }}</td>
+                <td>{{ i.count }}</td>
                 <td>&yen;{{ i.totalPrice }}</td>
-                <td>&yen;{{ i.totalPayPrice }}</td>
               </tr>
             </tbody>
           </table>
         </div>
         <!-- 配送时间 -->
-        <h3 class="box-title">配送时间</h3>
+        <h3 class="box-title">Delivery Time</h3>
         <div class="box-body">
-          <a class="my-btn active" href="javascript:;">不限送货时间：周一至周日</a>
-          <a class="my-btn" href="javascript:;">工作日送货：周一至周五</a>
-          <a class="my-btn" href="javascript:;">双休日、假日送货：周六至周日</a>
-        </div>
-        <!-- 支付方式 -->
-        <h3 class="box-title">支付方式</h3>
-        <div class="box-body">
-          <a class="my-btn active" href="javascript:;">在线支付</a>
-          <a class="my-btn" href="javascript:;">货到付款</a>
-          <span style="color:#999">货到付款需付5元手续费</span>
+          <a class="my-btn"
+             :class="{active: order.deliveryTime === '0'}"
+             @click="order.deliveryTime = '0'">Anytime</a>
+          <a class="my-btn"
+             :class="{active: order.deliveryTime === '1'}"
+             @click="order.deliveryTime = '1'">Weekdays (Mon-Fri)</a>
+          <a class="my-btn"
+             :class="{active: order.deliveryTime === '2'}"
+             @click="order.deliveryTime = '2'">Weekends (Sat-Sun)</a>
         </div>
         <!-- 金额明细 -->
-        <h3 class="box-title">金额明细</h3>
+        <h3 class="box-title">Order Summary</h3>
         <div class="box-body">
           <div class="total">
             <dl>
-              <dt>商品件数：</dt>
-              <dd>{{ checkInfo.summary?.goodsCount }}件</dd>
+              <dt>Number of Items: </dt>
+              <dd>{{ checkInfo.summary?.goodsCount }} item(s)</dd>
             </dl>
             <dl>
-              <dt>商品总价：</dt>
-              <dd>¥{{ checkInfo.summary?.totalPrice.toFixed(2) }}</dd>
+              <dt>Subtotal: </dt>
+              <dd>&yen;{{ checkInfo.summary?.totalPrice.toFixed(2) }}</dd>
             </dl>
             <dl>
-              <dt>运<i></i>费：</dt>
-              <dd>¥{{ checkInfo.summary?.postFee.toFixed(2) }}</dd>
+              <dt>Shipping Fee: </dt>
+              <dd>&yen;{{ checkInfo.summary?.postFee.toFixed(2) }}</dd>
             </dl>
             <dl>
-              <dt>应付总额：</dt>
-              <dd class="price">{{ checkInfo.summary?.totalPayPrice.toFixed(2) }}</dd>
+              <dt>Total Amount: </dt>
+              <dd class="price">&yen;{{ checkInfo.summary?.totalPayPrice }}</dd>
             </dl>
           </div>
         </div>
         <!-- 提交订单 -->
         <div class="submit">
-          <el-button type="primary" size="large" >提交订单</el-button>
+          <el-button type="primary" size="large" @click="createOrder">Place Order</el-button>
         </div>
       </div>
     </div>
   </div>
-  <!-- 切换地址 -->
-  <!-- 添加地址 -->
+  <AddressDialog
+    @change-address="handleChangeAddress"
+    @add-address="handleAddAddress"
+    ref="addressDialog"
+  />
 </template>
 
 <style scoped lang="scss">
+@use "sass:color";
+
 .xtx-pay-checkout-page {
   margin-top: 20px;
 
@@ -253,7 +370,7 @@ const curAddress = {}  // 地址对象
   &.active,
   &:hover {
     border-color: $xtxColor;
-    background: adjust-color($xtxColor, $lightness: 50%);
+    background: color.adjust($xtxColor, $lightness: 50%);
   }
 }
 
@@ -287,35 +404,5 @@ const curAddress = {}  // 地址对象
   text-align: right;
   padding: 60px;
   border-top: 1px solid #f5f5f5;
-}
-
-.addressWrapper {
-  max-height: 500px;
-  overflow-y: auto;
-}
-
-.text {
-  flex: 1;
-  min-height: 90px;
-  display: flex;
-  align-items: center;
-
-  &.item {
-    border: 1px solid #f5f5f5;
-    margin-bottom: 10px;
-    cursor: pointer;
-
-    &.active,
-    &:hover {
-      border-color: $xtxColor;
-      background: lighten($xtxColor, 50%);
-    }
-
-    >ul {
-      padding: 10px;
-      font-size: 14px;
-      line-height: 30px;
-    }
-  }
 }
 </style>

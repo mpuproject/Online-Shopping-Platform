@@ -91,7 +91,8 @@ const openCart = () => {
         </div>
 
         <!-- Cart Icon -->
-        <div class="cart-icon" @click="openCart">
+        <div class="cart-icon" @click="openCart"
+        v-if="$route.path !== '/checkout' && !$route.path.includes('/pay')">
           <i class="iconfont icon-cart cart-icon-large"></i>
           <span class="cart-badge" v-if="cartItemCount > 0">{{ cartItemCount }}</span>
         </div>
