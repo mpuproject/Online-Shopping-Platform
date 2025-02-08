@@ -14,3 +14,18 @@ export const createOrderAPI = async (data) => {
     data
   })
 }
+
+/**
+ * @description 获取指定订单
+ *
+ * @param {*} id
+ * @returns
+ */
+export const getOrderByIdAPI = async (id) => {
+  return request({
+    url: '/order/',
+    params: {
+      id
+    }
+  })
+}

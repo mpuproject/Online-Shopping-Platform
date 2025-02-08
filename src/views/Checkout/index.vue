@@ -104,7 +104,7 @@ const order = ref({
   }),
   addressId: curAddress.value.id,
   userId: userStore.userInfo.id,
-
+  amount: checkInfo.value.summary.totalPayPrice,
 })
 
 // 创建订单

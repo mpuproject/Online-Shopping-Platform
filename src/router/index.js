@@ -12,12 +12,13 @@ import { useUserStore } from '@/stores/user'
 import Search from '@/views/Search/index.vue'
 import Checkout from '@/views/Checkout/index.vue'
 import Pay from '@/views/Pay/index.vue'
+import PaySuccess from '@/views/Pay/PaySuccess.vue'
 import Admin from '@/views/Admin/index.vue'
 import AdminProduct from '@/views/Admin/components/AdminProduct.vue'
 import AdminCategory from '@/views/Admin/components/AdminCategory.vue'
 import AdminSubcategory from '@/views/Admin/components/AdminSubcategory.vue'
-import ProductAdd from '@/views/Product/ProductAdd.vue'
-import ProductDetail from '@/views/Product/ProductDetail.vue'
+import ProductAdd from '@/views/Admin/components/Product/ProductAdd.vue'
+import ProductDetail from '@/views/Admin/components/Product/ProductDetail.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -32,10 +33,12 @@ const router = createRouter({
         { path: 'product/:id', component: Detail, meta: { title: 'product\'s details' } },
         { path: 'cartlist', component: CartList, meta: { title: 'Rabbuy - cartList', requiresUser: true } },
         { path: 'search', component: Search, meta: { title: 'search results' } },
-        { path: 'checkout', component: Checkout, meta: { title: 'checkout' } },
-        { path: 'pay/:id', component: Pay, meta: { title: 'place order' } }
+        { path: 'checkout', component: Checkout, meta: { title: 'checkout' }, requiresUser: true },
+        { path: 'pay/:id', component: Pay, meta: { title: 'place order', requiresUser: true } },
       ]
     },
+    { path: '/pay/success', component: PaySuccess, meta: { title: 'Success' } },
+
     { path: '/login', component: Login, meta: { title: 'Rabbuy Login' } },
 
     { path: '/register', component: Register, meta: { title: 'Rabbuy registration' } },
