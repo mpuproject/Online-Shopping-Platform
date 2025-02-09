@@ -10,10 +10,11 @@ const totalCount = computed(() => cartStore.totalCount)
 const totalPrice = computed(() => cartStore.totalPrice)
 
 // New code for selection functionality
-const selectedItems = ref([...cartList.value])
+const selectedItems = ref(cartList.value.filter(item => item.status))
 
 const isAllSelected = computed(() => {
-  return cartList.value.length > 0 && selectedItems.value.length === cartList.value.length
+  const availableItems = cartList.value.filter(item => item.status===true)
+  return availableItems.length > 0 && selectedItems.value.length === availableItems.length
 })
 
 const selectedCount = computed(() => {
@@ -25,6 +26,11 @@ const selectedPrice = computed(() => {
 })
 
 const toggleItemSelection = (item) => {
+  // 如果商品已禁用，移除
+  if (item.status === false){
+    selectedItems.value.pop(item)
+    return;
+  }
   const index = selectedItems.value.findIndex(selectedItem => selectedItem.id === item.id)
   if (index === -1) {
     selectedItems.value.push(item)
@@ -37,7 +43,8 @@ const toggleAllSelection = () => {
   if (isAllSelected.value) {
     selectedItems.value = []
   } else {
-    selectedItems.value = [...cartList.value]
+    // 只选择可用的商品
+    selectedItems.value = cartList.value.filter(item => item.status===true)
   }
 }
 
@@ -95,17 +102,17 @@ const updateCount = (id, count) => {
           </thead>
           <!-- 商品列表 -->
           <tbody>
-            <tr v-for="item in cartList" :key="item.id" :class="{'disabled-item': item.status === '0' || item.stock_quantity === 0}">
+            <tr v-for="item in cartList" :key="item.id" :class="{'disabled-item': !item.status}">
               <td>
                 <el-checkbox
                   :model-value="selectedItems.some(selectedItem => selectedItem.id === item.id)"
                   @change="() => toggleItemSelection(item)"
-                  :disabled="item.status === '0' || item.stock_quantity === 0"
+                  :disabled="!item.status"
                 />
               </td>
               <td>
                 <div class="goods">
-                  <RouterLink to="/"><img :src="item.image" alt="" /></RouterLink>
+                  <RouterLink :to="`/product/${item.id}`"><img :src="item.image" alt="" /></RouterLink>
                   <div>
                     <p class="name ellipsis">
                       {{ item.name }}
@@ -121,7 +128,7 @@ const updateCount = (id, count) => {
                   v-model="item.count"
                   @change="(value) => updateCount(item.id, value)"
                   :min="1"
-                  :disabled="item.status === '0' || item.stock_quantity === 0"
+                  :disabled="!item.status"
                 />
               </td>
               <td class="tc">
@@ -244,7 +251,7 @@ const updateCount = (id, count) => {
     >div {
       width: 280px;
       font-size: 16px;
-      padding-left: 10px;
+      padding-left: 35px;
 
       .attr {
         font-size: 14px;

@@ -1,9 +1,12 @@
 <script setup>
-import { getOrderByIdAPI } from '@/apis/checkout';
+import { getOrderByIdAPI, updateOrder } from '@/apis/checkout';
+import { ElMessage, ElMessageBox } from 'element-plus';
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router';
+import { useRouter } from 'vue-router';
 
 const route = useRoute()
+const router = useRouter()
 
 const payInfo = ref({})
 const getPayInfo = async () => {
@@ -14,6 +17,37 @@ const getPayInfo = async () => {
 onMounted(() => {
   getPayInfo()
 })
+
+const getPaid = async (payMethod) => {
+  await updateOrder({
+    orderStatus: '1',   // 已支付
+    orderId: route.params.id,
+    payMethod: payMethod,
+  })
+  router.push('/pay/success')
+}
+
+const cancel = async () => {
+  ElMessageBox.confirm(
+    'Are you sure to cancel the order? The operation is not reversible.',
+    'Reminder',
+    {
+      confirmButtonText: 'Confirm',
+        cancelButtonText: 'Cancel',
+        type: 'warning',
+    }
+  ).then( async () => {
+    const res = await updateOrder({
+      orderStatus: '2',   //修改成已取消
+      orderId: route.params.id
+    })
+    if (res.code === 1) {
+      ElMessage.success('Order has been canceled')
+    } else {
+      ElMessage.error('Error: ' + res.msg)
+    }
+  })
+}
 </script>
 
 
@@ -35,7 +69,7 @@ onMounted(() => {
             <span>Amount: </span>
             <span>&yen;{{ payInfo.amount }}</span>
           </div>
-          <button class="cancel-btn">Cancel Order</button>
+          <button class="cancel-btn" @click="cancel">Cancel Order</button>
         </div>
       </div>
       <!-- 付款方式 -->
@@ -43,14 +77,14 @@ onMounted(() => {
         <p class="head">Select a payment method below</p>
         <div class="item">
           <p>Payment Platform</p>
-          <a class="btn wx" href="javascript:;"></a>
-          <a class="btn alipay" :href="payUrl"></a>
+          <a class="btn wx" href="javascript:;" @click="getPaid('0')"></a>
+          <a class="btn alipay" :href="payUrl" @click="getPaid('1')"></a>
           <br />
           <br />
-          <a class="btn" href="javascript:;">Bank Z</a>
-          <a class="btn" href="javascript:;">Bank G</a>
-          <a class="btn" href="javascript:;">Bank J</a>
-          <a class="btn" href="javascript:;">Bank N</a>
+          <a class="btn" href="javascript:;" @click="getPaid('2')">Bank Z</a>
+          <a class="btn" href="javascript:;" @click="getPaid('3')">Bank G</a>
+          <a class="btn" href="javascript:;" @click="getPaid('4')">Bank J</a>
+          <a class="btn" href="javascript:;" @click="getPaid('5')">Bank N</a>
         </div>
       </div>
     </div>

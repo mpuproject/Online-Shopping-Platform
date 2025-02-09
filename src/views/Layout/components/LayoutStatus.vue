@@ -5,7 +5,7 @@ import { saveCartToServer } from '@/composables/logout';
 const userStore = useUserStore()
 
 const confirmLogout = async () => {
-  await saveCartToServer('/')
+  await saveCartToServer('')
 }
 </script>
 

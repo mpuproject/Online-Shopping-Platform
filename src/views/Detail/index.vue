@@ -32,7 +32,7 @@ const addCart = () => {
     image: product.value.images[0],
     price: product.value.price,
     count: count.value,
-    selected: true,
+    status: true, // 是否下架
   })
 }
 </script>

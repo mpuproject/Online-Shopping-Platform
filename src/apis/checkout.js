@@ -29,3 +29,17 @@ export const getOrderByIdAPI = async (id) => {
     }
   })
 }
+
+/**
+ * @description 更新订单
+ *
+ * @param {*} data
+ * @returns
+ */
+export const updateOrder = async (data) => {
+  return request({
+    url: '/order/update/',
+    method: 'PUT',
+    data
+  })
+}

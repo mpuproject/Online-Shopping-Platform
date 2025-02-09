@@ -93,6 +93,7 @@ const doLogin = () => {
           afterLogin()
         })
       } else {
+        cartStore.cartList = dbcart
         afterLogin()
       }
     }

@@ -34,7 +34,7 @@ defineExpose({
   toggleCart
 })
 
-const checkout = () => {
+const checkout = async () => {
   if (!userStore.userInfo.access){
     // 若未登录，请求跳转到登录界面
     ElMessageBox.confirm(
@@ -53,8 +53,10 @@ const checkout = () => {
       // 没有操作
     })
   } else {
-  // 若已登录，跳转到cartlist
-    router.push('/cartlist')
+    // 若已登录，跳转到cartlist
+    router.push('/cartlist');
+    // 重新再获取一次cartList，避免在加入购物车-准备结算时，该商品被下架
+    cartStore.cartList = await cartStore.getCart()
     toggleCart();
   }
 }
@@ -71,8 +73,8 @@ const checkout = () => {
           </button>
         </div>
         <div class="list">
-          <div class="item" v-for="item in cartItems" :key="item.id">
-            <RouterLink :to="`/product/${item.id}`">
+          <div class="item" v-for="item in cartItems" :key="item.id" :class="{ disabled: !item.status }">
+            <RouterLink v-if="item.status" :to="`/product/${item.id}`">
               <img :src="item.image" alt="" />
               <div class="center">
                 <p class="name ellipsis-2">
@@ -84,6 +86,19 @@ const checkout = () => {
                 <p class="count">x{{ item.count }}</p>
               </div>
             </RouterLink>
+            <div v-else class="disabled-content">
+              <img :src="item.image" alt="" />
+              <div class="center">
+                <p class="name ellipsis-2">
+                  {{ item.name }}
+                </p>
+              </div>
+              <div class="right">
+                <p class="price">&yen;{{ item.price }}</p>
+                <p class="count">x{{ item.count }}</p>
+              </div>
+              <span class="disabled-text">Disabled</span>
+            </div>
             <i class="iconfont icon-close-new" @click="removeItem(item.id)"></i>
           </div>
           <el-empty v-if="cartItems.length === 0" description="Cart is empty" />
@@ -236,6 +251,68 @@ const checkout = () => {
               font-size: 16px;
             }
           }
+        }
+
+        &.disabled {
+          opacity: 0.6;
+
+          img {
+            filter: grayscale(100%);
+            height: 80px;
+            width: 80px;
+          }
+
+          .center {
+            padding: 0 10px;
+            width: 200px;
+
+            .name {
+              font-size: 16px;
+              color: #999 !important;
+            }
+
+            .attr {
+              color: #999;
+              padding-top: 5px;
+            }
+          }
+
+          .right {
+            width: 100px;
+            padding-right: 20px;
+            text-align: center;
+
+            .price {
+              font-size: 16px;
+              color: #999 !important;
+            }
+
+            .count {
+              color: #999;
+              margin-top: 5px;
+              font-size: 16px;
+              color: #999 !important;
+            }
+          }
+        }
+
+        .disabled-content {
+          position: relative;
+          display: flex;
+          align-items: center;
+          width: 100%;
+          opacity: 0.6;
+        }
+
+        .disabled-text {
+          position: absolute;
+          left: 50%;
+          top: 50%;
+          transform: translate(-50%, -50%);
+          font-size: 20px;
+          font-weight: bold;
+          color: $priceColor;
+          pointer-events: none;
         }
       }
     }

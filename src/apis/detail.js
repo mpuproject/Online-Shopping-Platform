@@ -50,7 +50,7 @@ export const updateProductAPI = async (id, data) => {
 export const deleteProductAPI = async (id) => {
   return request({
     url: `/product/${id}`,
-    method: 'DELETE',
+    method: 'PATCH',
   })
 }
 
@@ -99,7 +99,12 @@ export const editProductAPI = async (id, data) => {
   })
 }
 
-
+/**
+ * @description 管理员界面获取所有商品
+ *
+ * @param {*} id
+ * @returns
+ */
 export const getAdminProductAPI = async (id) => {
   return request({
     url: `/product/admin/${id}/`,

@@ -99,7 +99,9 @@ const order = ref({
   products: checkInfo.value.goods.map(item => {
     return {
       id: item.id,
+      image: item.image,
       count: item.count,
+      price: item.price,
     }
   }),
   addressId: curAddress.value.id,

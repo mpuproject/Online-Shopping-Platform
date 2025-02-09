@@ -92,7 +92,7 @@ const userStore = useUserStore()
 const slidingCartRef = ref(null)
 
 const confirmLogout = async () => {
-  await saveCartToServer('/')
+  await saveCartToServer('')
 }
 
 const openCart = (event) => {
