@@ -83,6 +83,7 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import 'element-plus/theme-chalk/el-message.css'
 import { useUserStore } from '@/stores/user'
 import SlidingCart from './SlidingCart.vue'
@@ -90,6 +91,7 @@ import { saveCartToServer } from '@/composables/logout'
 
 const userStore = useUserStore()
 const slidingCartRef = ref(null)
+const router = useRouter()
 
 const confirmLogout = async () => {
   await saveCartToServer('')
@@ -100,12 +102,17 @@ const openCart = (event) => {
   slidingCartRef.value?.toggleCart()
 }
 
+const goToOrders = (event) => { 
+  event.preventDefault()
+  router.push('/order')
+}
+
 const avatarUrl = userStore.userInfo.profile
 const stats = [
   { icon: '&#x10186;', label: 'Mark', link: '#/favorites' },
   { icon: '&#x10187;', label: 'Cart', link: '#/cart', onClick: openCart },
   { icon: '&#x10188;', label: 'Note', link: '#/messages' },
-  { icon: '&#x10189;', label: 'Order', link: '#/orders' }
+  { icon: '&#x10189;', label: 'Order', link: '#/order', onClick: goToOrders }
 ]
 const pending = {
   payment: 0, received: 0, review: 12, returns: 0

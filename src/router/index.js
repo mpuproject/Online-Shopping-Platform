@@ -19,6 +19,7 @@ import AdminCategory from '@/views/Admin/components/AdminCategory.vue'
 import AdminSubcategory from '@/views/Admin/components/AdminSubcategory.vue'
 import ProductAdd from '@/views/Admin/components/Product/ProductAdd.vue'
 import ProductDetail from '@/views/Admin/components/Product/ProductDetail.vue'
+import Order from '@/views/Order/index.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -35,6 +36,7 @@ const router = createRouter({
         { path: 'search', component: Search, meta: { title: 'search results' } },
         { path: 'checkout', component: Checkout, meta: { title: 'checkout' }, requiresUser: true },
         { path: 'pay/:id', component: Pay, meta: { title: 'place order', requiresUser: true } },
+        { path: 'order', component: Order, meta: { title: 'Rabbuy - Orders', requiresUser: true } },
       ]
     },
     { path: '/pay/success', component: PaySuccess, meta: { title: 'Success' } },
@@ -43,16 +45,18 @@ const router = createRouter({
 
     { path: '/register', component: Register, meta: { title: 'Rabbuy registration' } },
 
-    { path: '/admin', redirect: '/admin/product', component: Admin,
+    {
+      path: '/admin', redirect: '/admin/product', component: Admin,
       meta: { title: 'Rabbuy admin', requiresAdmin: true },
       children: [
-      { path: 'product', component: AdminProduct, },
-      { path: 'category', component: AdminCategory },
-      { path: 'subcategory', component: AdminSubcategory }
-    ] },
+        { path: 'product', component: AdminProduct, },
+        { path: 'category', component: AdminCategory },
+        { path: 'subcategory', component: AdminSubcategory }
+      ]
+    },
 
-    { path:'/admin/product/add', component: ProductAdd, meta: { title: 'Add product' } },
-    { path:'/admin/product/details/:id', component: ProductDetail, meta: { title: 'Product details' } },
+    { path: '/admin/product/add', component: ProductAdd, meta: { title: 'Add product' } },
+    { path: '/admin/product/details/:id', component: ProductDetail, meta: { title: 'Product details' } },
   ],
 
   scrollBehavior() {
