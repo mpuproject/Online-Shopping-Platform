@@ -1,5 +1,5 @@
 <script setup>
-import { getOrderByIdAPI, updateOrder } from '@/apis/checkout';
+import { getOrderByIdAPI, updateOrderAPI } from '@/apis/checkout';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router';
@@ -19,7 +19,7 @@ onMounted(() => {
 })
 
 const getPaid = async (payMethod) => {
-  await updateOrder({
+  await updateOrderAPI({
     orderStatus: '1',   // 已支付
     orderId: route.params.id,
     payMethod: payMethod,
@@ -37,12 +37,13 @@ const cancel = async () => {
         type: 'warning',
     }
   ).then( async () => {
-    const res = await updateOrder({
+    const res = await updateOrderAPI({
       orderStatus: '2',   //修改成已取消
       orderId: route.params.id
     })
     if (res.code === 1) {
       ElMessage.success('Order has been canceled')
+      payInfo.value = res.data
     } else {
       ElMessage.error('Error: ' + res.msg)
     }
@@ -56,12 +57,18 @@ const cancel = async () => {
     <div class="container">
       <!-- 付款信息 -->
       <div class="pay-info">
-        <div class="left">
+        <div class="left" v-if="payInfo.orderStatus === '0'">
           <span class="iconfont icon-queren2 green"></span>
-          <!-- <span class="iconfont icon-shanchu red"></span> -->
           <div class="tip">
             <p>Order submitted successfully! Please complete the payment as soon as possible.</p>
             <p>Payment remaining <span>24 m 30 s</span>, the order will be canceled after timeout</p>
+          </div>
+        </div>
+        <div class="left" v-else-if="payInfo.orderStatus === '2'">
+          <span class="iconfont icon-shanchu red"></span>
+          <div class="tip">
+            <p>Order has been canceled by user.</p>
+            <p>Transaction is closed.</p>
           </div>
         </div>
         <div class="right">
@@ -69,11 +76,17 @@ const cancel = async () => {
             <span>Amount: </span>
             <span>&yen;{{ payInfo.amount }}</span>
           </div>
-          <button class="cancel-btn" @click="cancel">Cancel Order</button>
+          <button
+            class="cancel-btn"
+            @click="cancel"
+            :disabled="payInfo.orderStatus === '2'"
+          >
+            Cancel Order
+          </button>
         </div>
       </div>
       <!-- 付款方式 -->
-      <div class="pay-type">
+      <div class="pay-type" v-show="payInfo.orderStatus === '0'">
         <p class="head">Select a payment method below</p>
         <div class="item">
           <p>Payment Platform</p>
@@ -100,8 +113,9 @@ const cancel = async () => {
 
 .pay-info {
   background: #fff;
-  display:flex;
+  display: flex;
   align-items: center;
+  justify-content: space-between;
   height: 240px;
   padding: 0 40px;
 
@@ -140,6 +154,7 @@ const cancel = async () => {
   }
 
   .right {
+    margin-left: auto;
     display: block;
 
     .amount {
@@ -174,6 +189,14 @@ const cancel = async () => {
 
       &:hover {
         background-color: color.scale($priceColor, $lightness: -10%);
+      }
+
+      &:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+        &:hover {
+          background-color: #ccc;
+        }
       }
     }
   }

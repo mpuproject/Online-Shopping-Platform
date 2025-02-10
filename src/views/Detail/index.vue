@@ -32,7 +32,8 @@ const addCart = () => {
     image: product.value.images[0],
     price: product.value.price,
     count: count.value,
-    status: true, // 是否下架
+    status: true, // 是否正常使用
+    seleted: true,  // 默认标记为选中
   })
 }
 </script>

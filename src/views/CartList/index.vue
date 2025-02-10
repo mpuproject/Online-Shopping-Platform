@@ -9,9 +9,10 @@ const cartList = computed(() => cartStore.cartList)
 const totalCount = computed(() => cartStore.totalCount)
 const totalPrice = computed(() => cartStore.totalPrice)
 
-// New code for selection functionality
+// 初始化选中商品列表
 const selectedItems = ref(cartList.value.filter(item => item.status))
 
+// 判断是否全选
 const isAllSelected = computed(() => {
   const availableItems = cartList.value.filter(item => item.status===true)
   return availableItems.length > 0 && selectedItems.value.length === availableItems.length
@@ -25,6 +26,7 @@ const selectedPrice = computed(() => {
   return selectedItems.value.reduce((total, item) => total + item.price * item.count, 0)
 })
 
+// 切换单个商品选中状态
 const toggleItemSelection = (item) => {
   // 如果商品已禁用，移除
   if (item.status === false){
@@ -33,12 +35,15 @@ const toggleItemSelection = (item) => {
   }
   const index = selectedItems.value.findIndex(selectedItem => selectedItem.id === item.id)
   if (index === -1) {
+    item.selected = true
     selectedItems.value.push(item)
   } else {
+    item.selected = false
     selectedItems.value.splice(index, 1)
   }
 }
 
+// 切换全选状态
 const toggleAllSelection = () => {
   if (isAllSelected.value) {
     selectedItems.value = []

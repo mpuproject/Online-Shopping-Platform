@@ -10,11 +10,11 @@ export const useCartStore = defineStore("cart", () => {
   })
 
   const totalCount = computed(() => {
-    return cartList.value.reduce((acc, item) => acc + item.count, 0)
+    return cartList.value.filter(item => item.status).reduce((acc, item) => acc + item.count, 0)
   })
 
   const totalPrice = computed(() => {
-    return cartList.value.reduce((acc, item) => acc + item.count * item.price, 0)
+    return cartList.value.filter(item => item.status).reduce((acc, item) => acc + item.count * item.price, 0)
   })
 
   const addToCart = (item) => {

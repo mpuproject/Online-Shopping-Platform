@@ -36,10 +36,19 @@ export const getOrderByIdAPI = async (id) => {
  * @param {*} data
  * @returns
  */
-export const updateOrder = async (data) => {
+export const updateOrderAPI = async (data) => {
   return request({
     url: '/order/update/',
     method: 'PUT',
     data
+  })
+}
+
+export const getOrderByUserIdAPI = async (id) => {
+  return request({
+    url: '/order/list/',
+    params: {
+      id
+    }
   })
 }

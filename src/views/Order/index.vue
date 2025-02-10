@@ -1,6 +1,10 @@
 <!-- src/views/Order/index.vue -->
 <script setup>
+// import { getOrderByUserIdAPI } from '@/apis/checkout'
 import { ref } from 'vue'
+// import { useUserStore } from '@/stores/user'
+
+// const userStore = useUserStore()
 
 // Static data for demonstration
 const tabTypes = [
@@ -50,6 +54,10 @@ const orderList = ref([
     postFee: 0
   }
 ])
+
+// const getOrder = async () => {
+//   const res = await getOrderByUserIdAPI(userStore.userInfo.id)
+// }
 
 const total = ref(2)
 
