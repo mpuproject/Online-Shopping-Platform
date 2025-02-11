@@ -1,6 +1,7 @@
 <script setup>
+import { computed } from 'vue';
 
-defineProps({
+const props = defineProps({
   goods: {
     type: Object,
     default: () => ({
@@ -11,12 +12,16 @@ defineProps({
       images: []
     })
   }
-})
+});
+
+const imageUrl = computed(() => {
+  return Array.isArray(props.goods.images) ? props.goods.images[0] : props.goods.images;
+});
 </script>
 
 <template>
   <RouterLink :to="`/product/${goods.id}`" class="goods-item">
-    <img :src="goods.images" :alt="goods.name" />
+    <img :src="imageUrl" :alt="goods.name" />
     <p class="name ellipsis">{{ goods.name }}</p>
     <p class="desc ellipsis">{{ goods.desc }}</p>
     <p class="price">&yen;{{ goods.price }}</p>

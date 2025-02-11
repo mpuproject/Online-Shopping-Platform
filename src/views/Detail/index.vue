@@ -1,21 +1,46 @@
 <script setup>
 import ImageView from '@/components/ImageView/index.vue';
 import { getDetailAPI } from '@/apis/detail';
-import { ref, onBeforeMount } from 'vue';
+import { ref, onBeforeMount, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useCartStore } from '@/stores/cartStore';
+import GoodsItem from '../Home/components/GoodsItem.vue';
+import { getSubcategoryProductAPI } from '@/apis/subcategory';
 
 const product = ref({});
 const route = useRoute();;
+const randomProducts = ref([]);
 
 const getDetail = async () => {
   const res = await getDetailAPI(route.params.id);
   product.value = res.data;
 };
 
+const fetchRandomProducts = async () => {
+  if (product.value.sub_category?.id) {
+    const res = await getSubcategoryProductAPI({
+      subCategoryId: product.value.sub_category.id,
+      page: 1,
+      pageSize: 20, 
+      sortField: 'created_time'
+    });
+    
+    const allProducts = res.data.products;
+
+    // 随机选择 4 个商品
+    const shuffled = allProducts.sort(() => 0.5 - Math.random());
+    randomProducts.value = shuffled.slice(0, 4);
+  }
+};
+
 onBeforeMount(() => {
   getDetail();
+  fetchRandomProducts();
 });
+
+watch(() => product.value, () => {
+  fetchRandomProducts();
+}, { immediate: true });
 
 // 选择商品数量
 const cartStore = useCartStore()
@@ -137,6 +162,12 @@ const addCart = () => {
           </div>
           <div class="goods-footer">
             <div class="goods-article">
+            <!-- Related Products -->
+            <div class="related-products" v-if="randomProducts.length > 0">
+              <div class="product-list">
+                <GoodsItem v-for="good in randomProducts" :key="good.id" :goods="good" />
+              </div>
+            </div>
               <!-- 商品详情 -->
               <div class="goods-tabs">
                 <nav>
@@ -191,11 +222,12 @@ const addCart = () => {
 
   .goods-footer {
     display: flex;
+    width: 100%;
     margin-top: 20px;
+    flex-wrap: wrap;
 
     .goods-article {
-      width: 940px;
-      margin-right: 20px;
+      width: 100%;
     }
 
     .goods-aside {
@@ -422,5 +454,21 @@ const addCart = () => {
 
 .bread-container {
   padding: 25px 0;
+}
+
+.related-products {
+  margin-bottom: 20px;
+  background: #fff;
+  padding: 20px;
+
+  h3 {
+    font-size: 22px;
+    margin-bottom: 20px;
+  }
+
+  .product-list {
+    display: flex;
+    justify-content: space-between;
+  }
 }
 </style>

@@ -47,14 +47,17 @@ export const updateOrderAPI = async (data) => {
 /**
  * @description 获取用户的所有订单
  *
- * @param {*} id
+ * @param {*} params
  * @returns
  */
-export const getOrderByUserIdAPI = async (userId) => {
+export const getOrderByUserIdAPI = async (params) => {
   return request({
     url: '/order/list/',
+    method: 'GET',
     params: {
-      userId
+      userId: params.userId,
+      page: params.page,
+      page_size: params.pageSize
     }
   })
 }

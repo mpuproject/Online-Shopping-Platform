@@ -1,107 +1,151 @@
 <!-- src/views/Order/index.vue -->
 <script setup>
-// import { getOrderByUserIdAPI } from '@/apis/checkout'
-import { ref } from 'vue'
-// import { useUserStore } from '@/stores/user'
+import { ref, onMounted } from 'vue'
+import { useUserStore } from '@/stores/user'
+import { ElMessage } from 'element-plus'
+import { 
+  getOrderByUserIdAPI,
+  updateOrderAPI,
+} from '@/apis/checkout'
 
-// const userStore = useUserStore()
+const userStore = useUserStore()
 
-// Static data for demonstration
+// 订单状态映射
+const stateMap = {
+  0: '待付款',
+  1: '已支付',
+  2: '已取消',
+  3: '待发货',
+  4: '待收货',
+  5: '已完成'
+}
+
+// 标签页配置
 const tabTypes = [
   { name: "all", label: "全部订单" },
-  { name: "unpay", label: "待付款" },
-  { name: "deliver", label: "待发货" },
-  { name: "receive", label: "待收货" },
-  { name: "comment", label: "待评价" },
-  { name: "complete", label: "已完成" },
-  { name: "cancel", label: "已取消" }
+  { name: 0, label: "待付款" },
+  { name: 3, label: "待发货" },
+  { name: 4, label: "待收货" },
+  { name: 5, label: "已完成" },
+  { name: 2, label: "已取消" }
 ]
 
-const orderList = ref([
-  {
-    id: '12345',
-    createTime: '2023-05-01 10:00:00',
-    orderState: 1,
-    countdown: '23:59:59',
-    skus: [
-      {
-        id: 1,
-        image: '/placeholder.svg?height=70&width=70',
-        name: 'Sample Product 1',
-        attrsText: 'Color: Red, Size: M',
-        realPay: 99.99,
-        quantity: 2
-      }
-    ],
-    payMoney: 199.98,
-    postFee: 10
-  },
-  {
-    id: '67890',
-    createTime: '2023-05-02 14:30:00',
-    orderState: 3,
-    skus: [
-      {
-        id: 2,
-        image: '/placeholder.svg?height=70&width=70',
-        name: 'Sample Product 2',
-        attrsText: 'Color: Blue, Size: L',
-        realPay: 149.99,
-        quantity: 1
-      }
-    ],
-    payMoney: 149.99,
-    postFee: 0
+const orderList = ref([])
+const total = ref(0)
+const currentPage = ref(1)
+const activeTab = ref('all')
+
+// 获取订单数据
+const fetchOrders = async () => {
+  try {
+    const params = {
+      userId: userStore.userInfo.id,
+      status: activeTab.value === 'all' ? undefined : parseInt(activeTab.value),
+      page: currentPage.value,
+      page_size: 2
+    }
+    console.log('API请求参数:', params)
+    
+    const { data } = await getOrderByUserIdAPI(params)
+    console.log('API响应数据:', data)
+    
+    orderList.value = data.results.map(order => ({
+      id: order.id,
+      createTime: order.created_time,
+      orderState: order.status,
+      countdown: order.countdown || '00:00:00',
+      skus: order.items.map(item => ({
+        id: item.id,
+        image: item.image || '/placeholder.svg',
+        name: item.name,
+        attrsText: item.specs ? Object.entries(item.specs)
+          .map(([k, v]) => `${k}:${v}`).join(' ') : '无规格',
+        realPay: item.price,
+        quantity: item.quantity
+      })),
+      payMoney: order.total_price,
+      postFee: order.post_fee || 0
+    }))
+    total.value = data.count
+  } catch (error) {
+    console.error('请求失败:', error)
+    ElMessage.error('获取订单失败')
   }
-])
+}
 
-// const getOrder = async () => {
-//   const res = await getOrderByUserIdAPI(userStore.userInfo.id)
-// }
-
-const total = ref(2)
-
+// 标签切换
 const tabChange = (type) => {
-  console.log(type)
-  // In a real application, you would fetch new data based on the selected tab
+  activeTab.value = type
+  currentPage.value = 1
+  fetchOrders()
 }
 
+// 分页切换
 const pageChange = (page) => {
-  console.log(page)
-  // In a real application, you would fetch new data for the selected page
+  currentPage.value = page
+  fetchOrders()
 }
 
-const fomartPayState = (payState) => {
-  const stateMap = {
-    1: '待付款',
-    2: '待发货',
-    3: '待收货',
-    4: '待评价',
-    5: '已完成',
-    6: '已取消'
+// 取消订单
+const handleCancelOrder = async (orderId) => {
+  try {
+    await updateOrderAPI({
+      id: orderId,
+      status: 2,
+      cancel_reason: '用户取消'
+    })
+    ElMessage.success('订单已取消')
+    await fetchOrders()
+  } catch (error) {
+    ElMessage.error(error.response?.data?.error || '取消失败')
   }
-  return stateMap[payState]
 }
+
+// 确认收货
+const handleConfirmReceipt = async (orderId) => {
+  try {
+    await updateOrderAPI({
+      id: orderId,
+      status: 5
+    })
+    ElMessage.success('确认收货成功')
+    await fetchOrders()
+  } catch (error) {
+    ElMessage.error('操作失败')
+  }
+}
+
+// 初始化获取数据
+onMounted(() => {
+  fetchOrders()
+})
 </script>
 
 <template>
   <div class="order-container">
-    <el-tabs @tab-change="tabChange">
-      <!-- tab切换 -->
-      <el-tab-pane v-for="item in tabTypes" :key="item.name" :label="item.label" />
-
+    <el-tabs v-model="activeTab" @tab-change="tabChange">
+      <el-tab-pane 
+        v-for="item in tabTypes" 
+        :key="item.name" 
+        :label="item.label"
+        :name="item.name"
+      />
+      
       <div class="main-container">
         <div class="holder-container" v-if="orderList.length === 0">
           <el-empty description="暂无订单数据" />
         </div>
         <div v-else>
           <!-- 订单列表 -->
-          <div class="order-item" v-for="order in orderList" :key="order.id">
+          <div 
+            class="order-item" 
+            v-for="order in orderList" 
+            :key="order.id"
+          >
             <div class="head">
               <span>下单时间：{{ order.createTime }}</span>
               <span>订单编号：{{ order.id }}</span>
-              <!-- 未付款，倒计时时间还有 -->
-              <span class="down-time" v-if="order.orderState === 1">
+              <span class="down-time" v-if="order.orderState === 0">
                 <i class="iconfont icon-down-time"></i>
                 <b>付款截止: {{ order.countdown }}</b>
               </span>
@@ -114,57 +158,70 @@ const fomartPayState = (payState) => {
                       <img :src="item.image" alt="" />
                     </a>
                     <div class="info">
-                      <p class="name ellipsis-2">
-                        {{ item.name }}
-                      </p>
+                      <p class="name ellipsis-2">{{ item.name }}</p>
                       <p class="attr ellipsis">
                         <span>{{ item.attrsText }}</span>
                       </p>
                     </div>
-                    <div class="price">¥{{ item.realPay?.toFixed(2) }}</div>
+                    <div class="price">¥{{ (item.realPay || 0).toFixed(2) }}</div>
                     <div class="count">x{{ item.quantity }}</div>
                   </li>
                 </ul>
               </div>
               <div class="column state">
-                <p>{{ fomartPayState(order.orderState) }}</p>
-                <p v-if="order.orderState === 3">
-                  <a href="javascript:;" class="green">查看物流</a>
-                </p>
+                <p>{{ stateMap[order.orderState] }}</p>
                 <p v-if="order.orderState === 4">
-                  <a href="javascript:;" class="green">评价商品</a>
-                </p>
-                <p v-if="order.orderState === 5">
-                  <a href="javascript:;" class="green">查看评价</a>
+                  <a class="green">查看物流</a>
                 </p>
               </div>
               <div class="column amount">
-                <p class="red">¥{{ order.payMoney?.toFixed(2) }}</p>
-                <p>（含运费：¥{{ order.postFee?.toFixed(2) }}）</p>
+                <p class="red">¥{{ (order.payMoney + order.postFee).toFixed(2) }}</p>
+                <p v-if="order.postFee > 0">（含运费：¥{{ order.postFee.toFixed(2) }}）</p>
                 <p>在线支付</p>
               </div>
               <div class="column action">
-                <el-button v-if="order.orderState === 1" type="primary" size="small">
+                <el-button 
+                  v-if="order.orderState === 0" 
+                  type="primary" 
+                  size="small"
+                  @click="$router.push(`/order/pay/${order.id}`)"
+                >
                   立即付款
                 </el-button>
-                <el-button v-if="order.orderState === 3" type="primary" size="small">
+                <el-button 
+                  v-if="order.orderState === 4" 
+                  type="success" 
+                  size="small"
+                  @click="handleConfirmReceipt(order.id)"
+                >
                   确认收货
                 </el-button>
-                <p><a href="javascript:;">查看详情</a></p>
-                <p v-if="[2, 3, 4, 5].includes(order.orderState)">
-                  <a href="javascript:;">再次购买</a>
+                <el-button 
+                  v-if="order.orderState === 0" 
+                  type="danger" 
+                  size="small"
+                  @click="handleCancelOrder(order.id)"
+                >
+                  取消订单
+                </el-button>
+                <p><a @click="$router.push(`/order/${order.id}`)">查看详情</a></p>
+                <p v-if="[3,4,5].includes(order.orderState)">
+                  <a>再次购买</a>
                 </p>
-                <p v-if="[4, 5].includes(order.orderState)">
-                  <a href="javascript:;">申请售后</a>
-                </p>
-                <p v-if="order.orderState === 1"><a href="javascript:;">取消订单</a></p>
               </div>
             </div>
           </div>
+          
           <!-- 分页 -->
           <div class="pagination-container">
-            <el-pagination :total="total" @current-change="pageChange" :page-size="2" background
-              layout="prev, pager, next" />
+            <el-pagination 
+              :total="total"
+              :current-page="currentPage"
+              :page-size="2"
+              background
+              layout="prev, pager, next"
+              @current-change="pageChange"
+            />
           </div>
         </div>
       </div>
@@ -222,12 +279,6 @@ const fomartPayState = (payState) => {
         }
       }
     }
-
-    .del {
-      margin-right: 0;
-      float: right;
-      color: #999;
-    }
   }
 
   .body {
@@ -239,7 +290,7 @@ const fomartPayState = (payState) => {
       text-align: center;
       padding: 20px;
 
-      >p {
+      > p {
         padding-top: 10px;
       }
 
@@ -283,10 +334,6 @@ const fomartPayState = (payState) => {
                 &.attr {
                   color: #999;
                   font-size: 12px;
-
-                  span {
-                    margin-right: 5px;
-                  }
                 }
               }
             }
@@ -307,6 +354,7 @@ const fomartPayState = (payState) => {
 
         .green {
           color: $xtxColor;
+          cursor: pointer;
         }
       }
 
@@ -323,6 +371,7 @@ const fomartPayState = (payState) => {
 
         a {
           display: block;
+          cursor: pointer;
 
           &:hover {
             color: $xtxColor;
