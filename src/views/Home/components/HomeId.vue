@@ -29,11 +29,11 @@
     </div>
     <div class="pending">
       <div class="pending-item">
-        <span class="number">{{ pending.payment }}</span>
+        <span class="number">{{ pending.unpaid }}</span>
         <span class="label">Unpaid</span>
       </div>
       <div class="pending-item">
-        <span class="number">{{ pending.received }}</span>
+        <span class="number">{{ pending.paid }}</span>
         <span class="label">Paid</span>
       </div>
       <div class="pending-item">
@@ -88,13 +88,14 @@ import 'element-plus/theme-chalk/el-message.css'
 import { useUserStore } from '@/stores/user'
 import SlidingCart from './SlidingCart.vue'
 import { saveCartToServer } from '@/composables/logout'
+// import { getOrderByUserIdAPI } from '@/apis/checkout'
 
 const userStore = useUserStore()
 const slidingCartRef = ref(null)
 const router = useRouter()
 
 const confirmLogout = async () => {
-  await saveCartToServer('')
+  await saveCartToServer('/')
 }
 
 const openCart = (event) => {
@@ -102,7 +103,7 @@ const openCart = (event) => {
   slidingCartRef.value?.toggleCart()
 }
 
-const goToOrders = (event) => { 
+const goToOrders = (event) => {
   event.preventDefault()
   router.push('/order')
 }
@@ -114,9 +115,18 @@ const stats = [
   { icon: '&#x10188;', label: 'Note', link: '#/messages' },
   { icon: '&#x10189;', label: 'Order', link: '#/order', onClick: goToOrders }
 ]
-const pending = {
-  payment: 0, received: 0, review: 12, returns: 0
-}
+
+const pending = ref({
+  unpaid: 0,
+  paid: 0,
+  review: 12,
+  returns: 0
+})
+
+// const getOrderByUserId = async () => {
+//   const res = await getOrderByUserIdAPI(userStore.userInfo.id)
+//   pending.value.
+// }
 </script>
 
 <style scoped lang="scss">

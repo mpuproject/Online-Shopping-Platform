@@ -55,8 +55,6 @@ const checkout = async () => {
   } else {
     // 若已登录，跳转到cartlist
     router.push('/cartlist');
-    // 重新再获取一次cartList，避免在加入购物车-准备结算时，该商品被下架
-    cartStore.cartList = await cartStore.getCart(userStore.userInfo.id)
     toggleCart();
   }
 }

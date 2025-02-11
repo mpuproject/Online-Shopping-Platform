@@ -33,7 +33,7 @@ const addCart = () => {
     price: product.value.price,
     count: count.value,
     status: true, // 是否正常使用
-    seleted: true,  // 默认标记为选中
+    selected: true,  // 默认标记为选中
   })
 }
 </script>

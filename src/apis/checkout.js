@@ -44,11 +44,17 @@ export const updateOrderAPI = async (data) => {
   })
 }
 
-export const getOrderByUserIdAPI = async (id) => {
+/**
+ * @description 获取用户的所有订单
+ *
+ * @param {*} id
+ * @returns
+ */
+export const getOrderByUserIdAPI = async (userId) => {
   return request({
     url: '/order/list/',
     params: {
-      id
+      userId
     }
   })
 }

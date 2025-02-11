@@ -1,7 +1,7 @@
 <script setup>
 import { getOrderByIdAPI, updateOrderAPI } from '@/apis/checkout';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router';
 import { useRouter } from 'vue-router';
 
@@ -9,9 +9,45 @@ const route = useRoute()
 const router = useRouter()
 
 const payInfo = ref({})
+const countdown = ref(0)
+const timer = ref(null)
+
+const getRemainingTime = (serverTime) => {
+  const now = new Date().getTime()
+  const serverDate = new Date(serverTime).getTime()
+  const timeDiff = Math.floor(((serverDate + 1800 * 1000) - now) / 1000) // 半小时有效期
+  return timeDiff > 0 ? timeDiff : 0
+}
+
+const formatTime = computed(() => {
+  const min = Math.floor((countdown.value % 3600) / 60)
+  const sec = countdown.value % 60
+  return `${min} m ${sec} s`
+})
+
+const startCountdown = (serverTime) => {
+  countdown.value = getRemainingTime(serverTime)
+  timer.value = setInterval(async () => {
+    if (countdown.value > 0) {
+      countdown.value--
+    } else {
+      clearInterval(timer.value)
+      if (payInfo.value.orderStatus === '0') {
+        await updateOrderAPI({
+          orderStatus: '2',   //修改成已取消
+          orderId: route.params.id
+        })
+      }
+    }
+  }, 1000)
+}
+
 const getPayInfo = async () => {
   const res = await getOrderByIdAPI(route.params.id)
   payInfo.value = res.data
+  if (payInfo.value.orderStatus === '0' && payInfo.value.createdTime) {
+    startCountdown(payInfo.value.createdTime)
+  }
 }
 
 onMounted(() => {
@@ -24,7 +60,10 @@ const getPaid = async (payMethod) => {
     orderId: route.params.id,
     payMethod: payMethod,
   })
-  router.push('/pay/success')
+  router.replace('/pay/success')
+  if (timer.value) {
+    clearInterval(timer.value)
+  }
 }
 
 const cancel = async () => {
@@ -47,8 +86,17 @@ const cancel = async () => {
     } else {
       ElMessage.error('Error: ' + res.msg)
     }
+    if (timer.value) {
+      clearInterval(timer.value)
+    }
   })
 }
+
+onUnmounted(() => {
+  if (timer.value) {
+    clearInterval(timer.value)
+  }
+})
 </script>
 
 
@@ -61,7 +109,7 @@ const cancel = async () => {
           <span class="iconfont icon-queren2 green"></span>
           <div class="tip">
             <p>Order submitted successfully! Please complete the payment as soon as possible.</p>
-            <p>Payment remaining <span>24 m 30 s</span>, the order will be canceled after timeout</p>
+            <p>Payment remaining <span>{{ formatTime }}</span>, the order will be canceled after timeout</p>
           </div>
         </div>
         <div class="left" v-else-if="payInfo.orderStatus === '2'">
@@ -79,19 +127,20 @@ const cancel = async () => {
           <button
             class="cancel-btn"
             @click="cancel"
-            :disabled="payInfo.orderStatus === '2'"
+            v-if="payInfo.orderStatus === '0'"
           >
             Cancel Order
           </button>
+          <button class="home-btn" @click="$router.replace('/')" v-else>Back home</button>
         </div>
       </div>
       <!-- 付款方式 -->
-      <div class="pay-type" v-show="payInfo.orderStatus === '0'">
+      <div class="pay-type" v-show="payInfo.orderStatus === '0' && countdown > 0">
         <p class="head">Select a payment method below</p>
         <div class="item">
           <p>Payment Platform</p>
           <a class="btn wx" href="javascript:;" @click="getPaid('0')"></a>
-          <a class="btn alipay" :href="payUrl" @click="getPaid('1')"></a>
+          <a class="btn alipay" href="javascript:;" @click="getPaid('1')"></a>
           <br />
           <br />
           <a class="btn" href="javascript:;" @click="getPaid('2')">Bank Z</a>
@@ -184,19 +233,31 @@ const cancel = async () => {
       padding: 10px 20px;
       border-radius: 4px;
       cursor: pointer;
-      font-size: 16px;
+      font-size: 14px;
       transition: background-color 0.3s;
 
       &:hover {
         background-color: color.scale($priceColor, $lightness: -10%);
       }
+    }
 
-      &:disabled {
-        background-color: #ccc;
-        cursor: not-allowed;
-        &:hover {
-          background-color: #ccc;
-        }
+    .home-btn {
+      margin-left: 85px;
+      margin-top: 20px;
+      display: block;
+      margin-top: 20px;
+      padding: 10px 20px;
+      background-color: $xtxColor;
+      color: white;
+      text-decoration: none;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      font-size: 14px;
+
+      &:hover {
+        background-color: color.scale($xtxColor, $lightness: -10%);
       }
     }
   }

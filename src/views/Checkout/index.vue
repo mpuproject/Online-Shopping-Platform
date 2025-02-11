@@ -99,6 +99,7 @@ const order = ref({
   products: checkInfo.value.goods.map(item => {
     return {
       id: item.id,
+      name: item.name,
       image: item.image,
       count: item.count,
       price: item.price,
@@ -114,11 +115,23 @@ const createOrder = async () => {
   order.value.addressId = curAddress.value.id
   const res = await createOrderAPI(order.value)
   const orderId = res.data.id
-  router.push({
+  router.replace({
     path: `/pay/${orderId}`,
   })
-  // 清除购物车内的数据
-  cartStore.clearCart()
+  // 清除要结算的商品
+  for (let item of order.value.products) {
+    cartStore.deleteCart(item.id)
+  }
+  // 保存
+  cartStore.saveCart({
+    'user': userStore.userInfo.id,
+    'products': cartStore.cartList.map(item => {
+      return {
+        'id': item.id,
+        'count': item.count
+      }
+    })
+  })
 }
 </script>
 
