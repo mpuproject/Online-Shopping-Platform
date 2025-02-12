@@ -56,6 +56,7 @@ export const getOrderByUserIdAPI = async (params) => {
     method: 'GET',
     params: {
       userId: params.userId,
+      itemStatus: params.itemStatus,
       page: params.page,
       page_size: params.pageSize
     }

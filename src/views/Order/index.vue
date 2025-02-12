@@ -9,7 +9,7 @@ import {
 } from '@/apis/checkout'
 
 const userStore = useUserStore()
-
+//v-if="item.status of [3, 4, ,5, 6, 7, 8]"
 // 订单状态映射
 const stateMap = {
   0: '待付款',
@@ -20,14 +20,31 @@ const stateMap = {
   5: '已完成'
 }
 
+// 商品状态映射
+const itemStateMap = {
+  '0': { text: '未支付', type: 'warning' },
+  '1': { text: '已支付', type: 'success' },
+  '2': { text: '已取消', type: 'info' },
+  '3': { text: '已发货', type: 'primary' },
+  '4': { text: '已送达', type: '' },
+  '5': { text: '已签收', type: 'success' },
+  '6': { text: '未退款', type: 'danger' },
+  '7': { text: '已退款', type: 'info' },
+  '8': { text: '已完成', type: 'success' }
+}
+
 // 标签页配置
 const tabTypes = [
   { name: "all", label: "全部订单" },
-  { name: 0, label: "待付款" },
-  { name: 3, label: "待发货" },
-  { name: 4, label: "待收货" },
-  { name: 5, label: "已完成" },
-  { name: 2, label: "已取消" }
+  { name: "0", label: "未支付" },
+  { name: "1", label: "已支付" },
+  { name: "2", label: "已取消" },
+  { name: "3", label: "已发货" },
+  { name: "4", label: "已送达" },
+  { name: "5", label: "已签收" },
+  { name: "6", label: "未退款" },
+  { name: "7", label: "已退款" },
+  { name: "8", label: "已完成" }
 ]
 
 const orderList = ref([])
@@ -40,10 +57,9 @@ const fetchOrders = async () => {
   try {
     const params = {
       userId: userStore.userInfo.id,
-      status: activeTab.value === 'all' ? undefined : parseInt(activeTab.value),
-      page: currentPage.value,
+      itemStatus: activeTab.value === 'all' ? undefined : activeTab.value.toString(), page: currentPage.value,
       page_size: 2
-    }
+}
     console.log('API请求参数:', params)
     
     const { data } = await getOrderByUserIdAPI(params)
@@ -51,12 +67,13 @@ const fetchOrders = async () => {
     
     orderList.value = data.results.map(order => ({
       id: order.id,
-      createTime: order.created_time,
-      orderState: order.status,
-      countdown: order.countdown || '00:00:00',
+      createTime: order.created_time || '无记录时间',
+      orderState: Math.max(...order.items.map(item => parseInt(item.status))), countdown: order.countdown || '00:00:00',
       skus: order.items.map(item => ({
         id: item.id,
+        createdTime: item.created_time,
         image: item.image || '/placeholder.svg',
+        status: item.item_status,
         name: item.name,
         attrsText: item.specs ? Object.entries(item.specs)
           .map(([k, v]) => `${k}:${v}`).join(' ') : '无规格',
@@ -119,6 +136,13 @@ const handleConfirmReceipt = async (orderId) => {
 onMounted(() => {
   fetchOrders()
 })
+
+// 添加时间格式化方法
+const formatDateTime = (timeString) => {
+  if (!timeString) return ''
+  const date = new Date(timeString)
+  return `${date.getFullYear()}-${(date.getMonth()+1).toString().padStart(2,'0')}-${date.getDate().toString().padStart(2,'0')} ${date.getHours().toString().padStart(2,'0')}:${date.getMinutes().toString().padStart(2,'0')}`
+}
 </script>
 
 <template>
@@ -143,8 +167,11 @@ onMounted(() => {
             :key="order.id"
           >
             <div class="head">
-              <span>下单时间：{{ order.createTime }}</span>
+              <span>下单时间：{{ formatDateTime(order.createTime) }}</span>
               <span>订单编号：{{ order.id }}</span>
+              <span class="filter-tip" v-if="activeTab !== 'all'">
+                当前显示：{{ tabTypes.find(t => t.name === activeTab)?.label }}
+              </span>
               <span class="down-time" v-if="order.orderState === 0">
                 <i class="iconfont icon-down-time"></i>
                 <b>付款截止: {{ order.countdown }}</b>
@@ -162,6 +189,16 @@ onMounted(() => {
                       <p class="attr ellipsis">
                         <span>{{ item.attrsText }}</span>
                       </p>
+                      <p class="time" v-if="item.createdTime">
+                        商品创建时间：{{ formatDateTime(item.createdTime) }}
+                      </p>
+                      <el-tag 
+                        :type="itemStateMap[item.status]?.type"
+                        size="small"
+                        class="status-tag"
+                      >
+                        {{ itemStateMap[item.status]?.text || '未知状态' }}
+                      </el-tag>
                     </div>
                     <div class="price">¥{{ (item.realPay || 0).toFixed(2) }}</div>
                     <div class="count">x{{ item.quantity }}</div>
@@ -278,6 +315,13 @@ onMounted(() => {
           font-weight: normal;
         }
       }
+
+      &.filter-tip {
+        margin-right: 0;
+        float: right;
+        color: #666;
+        font-size: 12px;
+      }
     }
   }
 
@@ -379,6 +423,23 @@ onMounted(() => {
         }
       }
     }
+  }
+}
+
+.info {
+  position: relative;
+  .status-tag {
+    position: absolute;
+    right: -10px;
+    top: 50%;
+    transform: translateY(-50%);
+    margin-right: 15px;
+  }
+  
+  p.time {
+    color: #666;
+    font-size: 12px;
+    margin-top: 5px;
   }
 }
 </style>
