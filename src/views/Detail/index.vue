@@ -21,10 +21,10 @@ const fetchRandomProducts = async () => {
     const res = await getSubcategoryProductAPI({
       subCategoryId: product.value.sub_category.id,
       page: 1,
-      pageSize: 20, 
+      pageSize: 20,
       sortField: 'created_time'
     });
-    
+
     const allProducts = res.data.products;
 
     // 随机选择 4 个商品
@@ -162,35 +162,33 @@ const addCart = () => {
           </div>
           <div class="goods-footer">
             <div class="goods-article">
-            <!-- Related Products -->
-            <div class="related-products" v-if="randomProducts.length > 0">
-              <div class="product-list">
-                <GoodsItem v-for="good in randomProducts" :key="good.id" :goods="good" />
+              <!-- Related Products -->
+              <div class="related-products" v-if="randomProducts.length > 0">
+                <div class="product-list">
+                  <GoodsItem v-for="good in randomProducts" :key="good.id" :goods="good" />
+                </div>
               </div>
-            </div>
-              <!-- 商品详情 -->
-              <div class="goods-tabs">
-                <nav>
-                  <a>Details</a>
-                </nav>
-                <div class="goods-detail">
-                  <!-- 属性 -->
-                  <ul class="attrs">
-                    <li v-for="(item, key) in product.details" :key="key">
-                      <span class="dt">{{ Object.keys(item)[0].charAt(0).toUpperCase() + Object.keys(item)[0].slice(1).toLowerCase() }}:</span>
-                      <span class="dd">{{ item[Object.keys(item)[0]] }}</span>
-                    </li>
+
+              <!-- 使用 el-tabs 实现标签页 -->
+              <el-tabs type="border-card">
+                <el-tab-pane label="Details">
+                  <div class="goods-detail">
+                    <ul class="attrs">
+                      <li v-for="(item, key) in product.details" :key="key">
+                        <span class="dt">{{ Object.keys(item)[0].charAt(0).toUpperCase() + Object.keys(item)[0].slice(1).toLowerCase() }}:</span>
+                        <span class="dd">{{ item[Object.keys(item)[0]] }}</span>
+                      </li>
+                    </ul>
+                  </div>
+                </el-tab-pane>
+                <el-tab-pane label="Comments">
+                  <ul class="comments">
+                    <!-- 这里可以添加评论内容 -->
+                    <li>评论1</li>
+                    <li>评论2</li>
                   </ul>
-                </div>
-              </div>
-              <div class="goods-tabs">
-                <nav>
-                  <a>Comments</a>
-                </nav>
-                <div>
-                  <ul class="comments"></ul>
-                </div>
-              </div>
+                </el-tab-pane>
+              </el-tabs>
             </div>
             <!-- 24热榜+专题推荐 -->
             <div class="goods-aside"></div>

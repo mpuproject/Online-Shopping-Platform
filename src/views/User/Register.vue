@@ -4,10 +4,12 @@ import 'element-plus/theme-chalk/el-message.css'
 import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { View, Hide } from '@element-plus/icons-vue';
-
 import { useUserStore } from '@/stores/user'
-
 import { addCartAPI } from '@/apis/cart';
+import { addRegisterAddressAPI } from '@/apis/address';
+
+const router = useRouter()
+const userStore = useUserStore();
 
 // switch display of password
 const showPassword = ref(false);
@@ -24,11 +26,13 @@ const toggleConfirmVisibility = () => {
 const form = ref({
   username: '',
   email: '',
+  firstName: '',
+  lastName: '',
   password: '',
   confirmPwd: '',
 })
 
-const rules = {
+const userRules = {
   username: [
     { required: true, message: 'The username cannot be empty', trigger: 'blur' },
     { min: 3, max: 20, message: 'Length of username must be in 3-20', trigger: "blur" }
@@ -40,6 +44,12 @@ const rules = {
       message: 'Please enter a valid email address',
       trigger: 'blur'
     }
+  ],
+  firstName: [
+    { required: true, message: 'The first name cannot be empty', trigger: 'blur' },
+  ],
+  lastName: [
+    { required: true, message: 'The last name cannot be empty', trigger: 'blur' },
   ],
   password: [
     { required: true, message: 'The password cannot be empty', trigger: 'blur' },
@@ -60,27 +70,133 @@ const rules = {
   ]
 }
 
+const addressRules = {
+  phone: [
+  { required: true, message: 'The phone cannot be empty', trigger: 'blur' },
+  ],
+  province: [
+    { required: true, message: 'The province cannot be empty', trigger: 'blur' },
+  ],
+  city: [
+    { required: true, message: 'The city cannot be empty', trigger: 'blur' },
+  ],
+  district: [
+    { required: true, message: 'The district cannot be empty', trigger: 'blur' },
+  ],
+  additional_addr: [
+    { required: true, message: 'The additional address cannot be empty', trigger: 'blur' },
+  ],
+  postal_code: [
+  { required: true, message: 'The postal code cannot be empty', trigger: 'blur' },
+  ],
+}
+
 const formRef = ref(null)
 
-const router = useRouter()
+const addressRef = ref(null)
 
-const userStore = useUserStore();
+const showAddDialog = ref(false)
+
+// 新增地址对象
+const newAddress = ref({
+  recipient: '',
+  phone: '',
+  province: '',
+  city: '',
+  district: '',
+  additional_addr: '',
+  postal_code: '',
+})
 
 const doRegister = () => {
-  const { username, email, password, confirmPwd } = form.value;
-
-  formRef.value.validate(async valid => {
+  formRef.value.validate(valid => {
     if(valid) {
-      const user = await userStore.register({ username, email, password, confirmPwd });
+      // 主表单验证通过后，设置收件人并弹出地址表单
+      newAddress.value.recipient = form.value.firstName + ' ' + form.value.lastName
+      showAddDialog.value = true
+    } else {
+      // 主表单验证失败时给出提示
+      ElMessage({
+        type: 'error',
+        message: 'Please fill in all required fields correctly'
+      })
+    }
+  })
+}
+
+const handleAddAddress = () => {
+  addressRef.value.validate(async (valid) => {
+    if (valid) {
+      // 地址表单验证成功
+      showAddDialog.value = false
+      const { username, email, firstName, lastName, password, confirmPwd } = form.value;
+      console.log(firstName+lastName)
+      const user = await userStore.register({ username, email, firstName, lastName, password, confirmPwd });
+
+      // 添加地址
+      newAddress.value.user_id = user.id
+      await addRegisterAddressAPI(newAddress.value, user.access)
+
+      // 添加购物车
       await addCartAPI(user.id);
       ElMessage({type:'success', message:'Registration successful!'});
+
+      showAddDialog.value = false
+    // 重置地址表单
+    newAddress.value = {
+      recipient: '',
+      phone: '',
+      province: '',
+      city: '',
+      district: '',
+      additional_addr: '',
+    }
       router.push({ path: '/login' });
+    } else {
+      // 地址表单验证失败时给出提示，但不关闭对话框
+      ElMessage({
+        type: 'error',
+        message: 'Please fill in all required fields correctly'
+      })
     }
   })
 }
 
 </script>
-<template>
+
+  <template>
+    <!-- 添加地址 -->
+    <el-dialog v-model="showAddDialog" title="Provide a default Address" width="50%" center>
+      <el-form  ref="addressRef" :model="newAddress" :rules="addressRules" label-width="120px" class="address-form">
+        <el-form-item label="Recipient">
+          <span>{{ newAddress.recipient }}</span>
+        </el-form-item>
+        <el-form-item label="Contact" prop="phone">
+          <el-input v-model="newAddress.phone" />
+        </el-form-item>
+        <el-form-item label="Province" prop="province">
+          <el-input v-model="newAddress.province" />
+        </el-form-item>
+        <el-form-item label="City" prop="city">
+          <el-input v-model="newAddress.city" />
+        </el-form-item>
+        <el-form-item label="District" prop="district">
+          <el-input v-model="newAddress.district" />
+        </el-form-item>
+        <el-form-item label="Detail Address" prop="additional_addr">
+          <el-input v-model="newAddress.additional_addr" />
+        </el-form-item>
+        <el-form-item label="Postal Code" prop="postal_code">
+          <el-input v-model="newAddress.postal_code" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="showAddDialog = false">Cancel</el-button>
+          <el-button type="primary" @click="handleAddAddress">Confirm</el-button>
+        </span>
+      </template>
+    </el-dialog>
     <div>
       <header class="login-header">
         <div class="container m-top-20">
@@ -101,16 +217,24 @@ const doRegister = () => {
           </nav>
           <div class="account-box">
             <div class="form">
-              <el-form ref="formRef" :model="form" :rules="rules" label-position="left" status-icon>
-                <el-form-item>
+              <el-form ref="formRef" :model="form" :rules="userRules" label-position="left" status-icon>
+                <el-form-item prop="username">
                   <span class="form-label">Username</span>
                   <el-input v-model="form.username" placeholder="Input Your Username" />
                 </el-form-item>
-                <el-form-item>
+                <el-form-item prop="email">
                   <span class="form-label">Email</span>
                   <el-input v-model="form.email" placeholder="Input Your Email" />
                 </el-form-item>
-                <el-form-item>
+                <el-form-item prop="firstName">
+                  <span class="form-label">First Name</span>
+                  <el-input v-model="form.firstName" placeholder="Input Your First Name" />
+                </el-form-item>
+                <el-form-item prop="lastName">
+                  <span class="form-label">Last Name</span>
+                  <el-input v-model="form.lastName" placeholder="Input Your Last Name" />
+                </el-form-item>
+                <el-form-item prop="password">
                   <span class="form-label">Password</span>
                   <el-input v-model="form.password" placeholder="Input Your Password" :type="showPassword ? 'text' : 'password'">
                     <template #suffix>
@@ -121,7 +245,7 @@ const doRegister = () => {
                   </el-input>
                 </el-form-item>
                 <el-form-item>
-                  <span class="form-label">Confirm Password</span>
+                  <span class="form-label" prop="confirmPwd">Confirm Password</span>
                   <el-input  v-model="form.confirmPwd" placeholder="Confirm Your Password" :type="showPassword ? 'text' : 'password'">
                     <template #suffix>
                       <el-icon :class="['password-icon', {'active': confirmPassword }]" @click="toggleConfirmVisibility">
@@ -160,6 +284,20 @@ const doRegister = () => {
   </template>
 
   <style scoped lang='scss'>
+  .address-form {
+    .el-form-item {
+      width: 100%;
+      max-width: 400px;
+      margin: 0 auto;
+      margin-top: 10px;
+      margin-bottom: 20px;
+
+      .el-input {
+        width: 100%;
+      }
+    }
+  }
+
   .login-header {
     background: #fff;
     border-bottom: 1px solid #e4e4e4;
@@ -206,7 +344,7 @@ const doRegister = () => {
 
   .login-section {
     background: url('@/assets/images/signup-bg.png') no-repeat center / cover;
-    height: 604px;
+    height: 730px;
     position: relative;
 
     .wrapper {

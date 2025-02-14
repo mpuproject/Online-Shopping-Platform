@@ -306,7 +306,7 @@ const updateCount = (id, count) => {
 }
 
 .disabled-item {
-  background-color: #f5f5f5;
+  background-color: #f0f0f0;
   color: #999;
 
   .goods img {

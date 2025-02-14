@@ -15,8 +15,8 @@ export const useUserStore = defineStore('user', () => {
         userInfo.value = {}
     }
 
-    const register = async ({ username, email, password, confirmPwd }) => {
-        const res = await signupAPI({ username, email, password, confirmPwd })
+    const register = async ({ username, email, firstName, lastName, password, confirmPwd }) => {
+        const res = await signupAPI({ username, email, firstName, lastName, password, confirmPwd })
         return res.data.user
     }
 

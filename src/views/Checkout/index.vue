@@ -2,10 +2,11 @@
 import { ref, computed, onMounted } from 'vue';
 import { useUserStore } from '@/stores/user';
 import { useCartStore } from '@/stores/cartStore';
-import { getAddressAPI } from '@/apis/address';
+import { getAddressAPI, addAddressAPI} from '@/apis/address';
 import { createOrderAPI } from '@/apis/checkout';
 import AddressDialog from './components/AddressDialog.vue'
 import { useRouter } from 'vue-router';
+import { ElMessage } from 'element-plus'
 
 const userStore = useUserStore()
 const cartStore = useCartStore()
@@ -50,9 +51,20 @@ const handleChangeAddress = (address) => {
 }
 
 // 处理地址添加
-const handleAddAddress = (newAddress) => {
+const handleAddAddress = async (newAddress) => {
+  newAddress.user_id = userStore.userInfo.id
+  if(addresses.value.length >= 5) ElMessage.error('You can only have 5 addresses in total.')
   // 处理添加地址的逻辑
-  console.log('New Address:', newAddress)
+  const res = await addAddressAPI(newAddress)
+  if(res.code === 1){
+    ElMessage.success('Address added successfully')
+    addresses.value.push({
+      ...res.data,
+      fullLocation: res.data.province === res.data.city
+      ? `${res.data.district}, ${res.data.province}`
+      : `${res.data.district}, ${res.data.city}, ${res.data.province}`
+    })
+  }
 }
 
 // 使用computed筛选出已选中的商品
@@ -229,6 +241,7 @@ const createOrder = async () => {
     </div>
   </div>
   <AddressDialog
+    :addresses="addresses"
     @change-address="handleChangeAddress"
     @add-address="handleAddAddress"
     ref="addressDialog"

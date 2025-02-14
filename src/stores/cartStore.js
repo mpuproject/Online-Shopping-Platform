@@ -6,7 +6,7 @@ export const useCartStore = defineStore("cart", () => {
   const cartList = ref([])
 
   const totalType = computed(() => {
-    return cartList.value.reduce(acc => acc + 1, 0)
+    return cartList.value.filter(item => item.status).reduce(acc => acc + 1, 0)
   })
 
   const totalCount = computed(() => {

@@ -22,3 +22,14 @@ export const addAddressAPI = async (data) => {
     data
   })
 }
+
+export const addRegisterAddressAPI = async (data, access) => {
+  return request({
+    'url': '/address/add/',
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${access}`
+    },
+    data
+  })
+}

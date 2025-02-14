@@ -11,13 +11,15 @@ export const loginAPI = ({ username, password }) => {
     })
 }
 
-export const signupAPI = ({ username, email, password, confirmPwd }) => {
+export const signupAPI = ({ username, email, firstName, lastName, password, confirmPwd }) => {
     return request({
         url: '/user/register/',
         method: 'POST',
         data: {
             username,
             email,
+            firstName,
+            lastName,
             password,
             confirmPwd
         }

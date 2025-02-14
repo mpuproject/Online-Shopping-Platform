@@ -13,7 +13,7 @@ const requestData = ref({
   category: route.query.category,
   page: 1,
   pageSize: 10,
-  sortField: 'created_time' // 默认按最新排序
+  sortField: 'default' // 默认按数据库默认排序
 })
 
 const fetchSearchResults = async () => {
@@ -71,6 +71,7 @@ const load = async () => {
     </div>
     <div class="sub-container">
       <el-tabs v-model="requestData.sortField" @tab-change="tabChange">
+        <el-tab-pane label="Default" name="default"></el-tab-pane>
         <el-tab-pane label="Newest" name="created_time"></el-tab-pane>
         <el-tab-pane label="Hotest" name="product_rating"></el-tab-pane>
       </el-tabs>
@@ -91,6 +92,10 @@ const load = async () => {
 .sub-container {
   padding: 20px 10px;
   background-color: #fff;
+
+  :deep(.el-tabs__nav-wrap) {
+    padding-left: 40px;
+  }
 
   .body {
     display: flex;

@@ -1,6 +1,15 @@
 <script setup>
 import { ref } from 'vue'
 
+// 定义props
+const props = defineProps({
+  addresses: {
+    type: Array,
+    required: true,
+    default: () => []
+  }
+})
+
 const showChangeDialog = ref(false)
 const showAddDialog = ref(false)
 
@@ -12,6 +21,7 @@ const newAddress = ref({
   city: '',
   district: '',
   additional_addr: '',
+  postal_code: '',
 })
 
 const emit = defineEmits(['change-address', 'add-address'])
@@ -53,17 +63,17 @@ defineExpose({
 
 <template>
   <!-- 切换地址 -->
-  <el-dialog v-model="showChangeDialog" title="Change Shipping Address" width="30%" center>
+  <el-dialog v-model="showChangeDialog" title="Change Shipping Address" width="30%" center :style="{ height: '500px' }">
     <div class="addressWrapper">
       <div class="text item"
            :class="{active: activeAddress.id === addr.id}"
            @click="switchAddress(addr)"
-           v-for="addr in addresses"
+           v-for="addr in props.addresses"
            :key="addr.id">
         <ul>
           <li><span>Recipient: </span>{{ addr.recipient }} </li>
           <li><span>Contact: </span>{{ addr.phone }}</li>
-          <li><span>Address: </span>{{ addr.additional_addr + addr.fullLocation }}</li>
+          <li><span>Address: </span>{{ addr.additional_addr + ' ' + addr.fullLocation }}</li>
         </ul>
       </div>
     </div>
@@ -96,6 +106,9 @@ defineExpose({
       <el-form-item label="Detail Address">
         <el-input v-model="newAddress.additional_addr" />
       </el-form-item>
+      <el-form-item label="Postal Code">
+        <el-input v-model="newAddress.postal_code" />
+      </el-form-item>
     </el-form>
     <template #footer>
       <span class="dialog-footer">
@@ -110,8 +123,9 @@ defineExpose({
 @use "sass:color";
 
 .addressWrapper {
-  max-height: 500px;
+  height: 370px;
   overflow-y: auto;
+  padding-right: 10px;
 }
 
 .text {
