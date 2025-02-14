@@ -1,7 +1,7 @@
 <script setup>
 import { getOrderByIdAPI, updateOrderAPI } from '@/apis/checkout';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { ref, onMounted, computed, onUnmounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router';
 import { useRouter } from 'vue-router';
 
@@ -9,45 +9,10 @@ const route = useRoute()
 const router = useRouter()
 
 const payInfo = ref({})
-const countdown = ref(0)
-const timer = ref(null)
-
-const getRemainingTime = (serverTime) => {
-  const now = new Date().getTime()
-  const serverDate = new Date(serverTime).getTime()
-  const timeDiff = Math.floor(((serverDate + 1800 * 1000) - now) / 1000) // 半小时有效期
-  return timeDiff > 0 ? timeDiff : 0
-}
-
-const formatTime = computed(() => {
-  const min = Math.floor((countdown.value % 3600) / 60)
-  const sec = countdown.value % 60
-  return `${min} m ${sec} s`
-})
-
-const startCountdown = (serverTime) => {
-  countdown.value = getRemainingTime(serverTime)
-  timer.value = setInterval(async () => {
-    if (countdown.value > 0) {
-      countdown.value--
-    } else {
-      clearInterval(timer.value)
-      if (payInfo.value.orderStatus === '0') {
-        await updateOrderAPI({
-          orderStatus: '2',   //修改成已取消
-          orderId: route.params.id
-        })
-      }
-    }
-  }, 1000)
-}
 
 const getPayInfo = async () => {
   const res = await getOrderByIdAPI(route.params.id)
   payInfo.value = res.data
-  if (payInfo.value.orderStatus === '0' && payInfo.value.createdTime) {
-    startCountdown(payInfo.value.createdTime)
-  }
 }
 
 onMounted(() => {
@@ -61,9 +26,6 @@ const getPaid = async (payMethod) => {
     payMethod: payMethod,
   })
   router.replace('/pay/success')
-  if (timer.value) {
-    clearInterval(timer.value)
-  }
 }
 
 const cancel = async () => {
@@ -86,17 +48,8 @@ const cancel = async () => {
     } else {
       ElMessage.error('Error: ' + res.msg)
     }
-    if (timer.value) {
-      clearInterval(timer.value)
-    }
   })
 }
-
-onUnmounted(() => {
-  if (timer.value) {
-    clearInterval(timer.value)
-  }
-})
 </script>
 
 
@@ -109,7 +62,7 @@ onUnmounted(() => {
           <span class="iconfont icon-queren2 green"></span>
           <div class="tip">
             <p>Order submitted successfully! Please complete the payment as soon as possible.</p>
-            <p>Payment remaining <span>{{ formatTime }}</span>, the order will be canceled after timeout</p>
+            <p>Choose one of pay methods below.</p>
           </div>
         </div>
         <div class="left" v-else-if="payInfo.orderStatus === '2'">
@@ -122,7 +75,7 @@ onUnmounted(() => {
         <div class="right">
           <div class="amount">
             <span>Amount: </span>
-            <span>&yen;{{ payInfo.amount }}</span>
+            <span v-if="!isNaN(parseFloat(payInfo.amount))">&yen;{{ parseFloat(payInfo.amount).toFixed(2) }}</span>
           </div>
           <button
             class="cancel-btn"
@@ -135,7 +88,7 @@ onUnmounted(() => {
         </div>
       </div>
       <!-- 付款方式 -->
-      <div class="pay-type" v-show="payInfo.orderStatus === '0' && countdown > 0">
+      <div class="pay-type" v-show="payInfo.orderStatus === '0'">
         <p class="head">Select a payment method below</p>
         <div class="item">
           <p>Payment Platform</p>
