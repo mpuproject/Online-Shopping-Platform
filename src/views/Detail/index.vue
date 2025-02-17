@@ -21,10 +21,10 @@ const fetchRandomProducts = async () => {
     const res = await getSubcategoryProductAPI({
       subCategoryId: product.value.sub_category.id,
       page: 1,
-      pageSize: 20,
+      pageSize: 20, 
       sortField: 'created_time'
     });
-
+    
     const allProducts = res.data.products;
 
     // 随机选择 4 个商品
@@ -162,13 +162,13 @@ const addCart = () => {
           </div>
           <div class="goods-footer">
             <div class="goods-article">
-              <!-- Related Products -->
-              <div class="related-products" v-if="randomProducts.length > 0">
-                <div class="product-list">
-                  <GoodsItem v-for="good in randomProducts" :key="good.id" :goods="good" />
-                </div>
+            <!-- Related Products -->
+            <div class="related-products" v-if="randomProducts.length > 0">
+              <div class="product-list">
+                <GoodsItem v-for="good in randomProducts" :key="good.id" :goods="good" />
               </div>
-
+            </div>
+            
               <!-- 使用 el-tabs 实现标签页 -->
               <el-tabs type="border-card">
                 <el-tab-pane label="Details">
@@ -196,7 +196,7 @@ const addCart = () => {
         </div>
       </div>
     </div>
-  </div>
+    </div>
 </template>
 
 <style scoped lang="scss">
