@@ -1,11 +1,16 @@
 <script setup>
 import { useUserStore } from '@/stores/user'
 import { saveCartToServer } from '@/composables/logout';
-
+import { useRouter } from 'vue-router'
+const router = useRouter()
 const userStore = useUserStore()
 
 const confirmLogout = async () => {
   await saveCartToServer('/')
+}
+const goToOrders = (event) => {
+  event.preventDefault()
+  router.push('/order')
 }
 </script>
 
@@ -23,7 +28,7 @@ const confirmLogout = async () => {
             </el-popconfirm>
           </li>
           <template v-if="!userStore.userInfo.is_staff">
-            <li><a href="javascript:;">My Order</a></li>
+            <li><a href="javascript:;" @click="goToOrders">My Order</a></li>
             <li><a href="javascript:;">My Address</a></li>
           </template>
           <template v-else>

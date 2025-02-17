@@ -62,3 +62,36 @@ export const getOrderByUserIdAPI = async (params) => {
     }
   })
 }
+
+/**
+ * @description 更新订单
+ *
+ * @param {*} data
+ * @returns
+ */
+export const updateOrderItemAPI = (data) => {
+  return request({
+    url: '/order/item/update/',
+    method: 'PUT',
+    data: {
+      item_id: data.itemId,  // 前端参数itemId对应后端item_id
+      item_status: data.itemStatus
+    }
+  })
+}
+
+// /**
+//  * @description 获取订单详情
+//  * 
+//  * @param {*} data
+//  * @returns 
+//  */
+// export const getOrderDetailAPI = (orderId, userId) => {
+//   return request({
+//     url: `/order/detail/${orderId}/`,  
+//     method: 'GET',
+//     params: {
+//       user_id: userId  // 参数名与后端一致
+//     }
+//   })
+// }

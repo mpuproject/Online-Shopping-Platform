@@ -20,6 +20,7 @@ import AdminSubcategory from '@/views/Admin/components/AdminSubcategory.vue'
 import ProductAdd from '@/views/Admin/components/Product/ProductAdd.vue'
 import ProductDetail from '@/views/Admin/components/Product/ProductDetail.vue'
 import Order from '@/views/Order/index.vue'
+import orderDetail from '@/views/Order/components/orderDetail.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -37,6 +38,7 @@ const router = createRouter({
         { path: 'checkout', component: Checkout, meta: { title: 'checkout' }, requiresUser: true },
         { path: 'pay/:id', component: Pay, meta: { title: 'place order', requiresUser: true } },
         { path: 'order', component: Order, meta: { title: 'Rabbuy - Orders', requiresUser: true } },
+        { path: 'order/detail/:id', component: orderDetail, meta: {title: 'Rabbuy - Order Detail', requiresUser: true}},
       ]
     },
     { path: '/pay/success', component: PaySuccess, meta: { title: 'Success' } },
