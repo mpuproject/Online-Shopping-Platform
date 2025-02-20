@@ -49,7 +49,7 @@ export const updateProductAPI = async (id, data) => {
  */
 export const deleteProductAPI = async (id) => {
   return request({
-    url: `/product/delete/${id}`,
+    url: `/product/delete/${id}/`,
     method: 'PATCH',
   })
 }
