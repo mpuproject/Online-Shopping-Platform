@@ -2,12 +2,10 @@
   import { ref, onMounted } from 'vue'
   import { useRoute, useRouter } from 'vue-router'
   import { ElMessage } from 'element-plus'
-  import { useUserStore } from '@/stores/user'
   import { getOrderByIdAPI } from '@/apis/checkout'
-  
+
   const route = useRoute()
   const router = useRouter()
-  const userStore = useUserStore()
   const order = ref(null)
   const loading = ref(true)
   const error = ref(null)
@@ -20,7 +18,7 @@
     '4': { text: '已送达', type: '' },
     '5': { text: '已签收', type: 'success' }
   }
-  
+
   const fetchOrderDetail = async () => {
     try {
       const orderId = route.params.id
@@ -34,7 +32,7 @@
         id: data.id,
         createTime: data.createdTime, // 注意字段名匹配
         status: data.orderStatus,
-        payMoney: data.amount,
+        payMoney: parseFloat(data.amount),
         postFee: data.post_fee || 0,
         skus: data.products.map(item => ({
           id: item.id,
@@ -55,7 +53,7 @@
     }
   }
 
-  const formatDateTime = (isoString) => {
+const formatDateTime = (isoString) => {
   if (!isoString) return ''
   const date = new Date(isoString)
   return date.toLocaleString('zh-CN', {
@@ -67,19 +65,16 @@
     second: '2-digit'
   }).replace(/\//g, '-')
 }
-  onMounted(() => {
-    console.log('当前用户ID:', userStore.userInfo?.id)
-    console.log('路由参数:', route.params)
-    fetchOrderDetail()
-  })
+
+onMounted(() => { fetchOrderDetail() })
 </script>
 
 <template>
   <div class="order-detail">
     <!-- 返回按钮 -->
-    <el-button 
-      type="text" 
-      @click="router.back()"
+    <el-button
+      type="text"
+      @click="router.push({ path: '/order' })"
       class="back-btn"
     >
       <i class="el-icon-arrow-left"></i>
@@ -98,8 +93,8 @@
 
       <!-- 商品列表 -->
       <div class="goods-list">
-        <div 
-          v-for="item in order.skus" 
+        <div
+          v-for="item in order.skus"
           :key="item.id"
           class="goods-item"
         >
@@ -116,9 +111,9 @@
       </div>
 
       <!-- 订单信息 -->
-      <el-descriptions 
-        title="订单信息" 
-        border 
+      <el-descriptions
+        title="订单信息"
+        border
         :column="2"
         class="order-info"
       >
@@ -126,7 +121,7 @@
           {{ formatDateTime(order.createTime) }}
         </el-descriptions-item>
         <el-descriptions-item label="商品总额">
-          ¥{{ order.payMoney }}
+          ¥{{ order?.payMoney.toFixed(2) }}
         </el-descriptions-item>
         <el-descriptions-item label="运费">
           ¥{{ order.postFee }}

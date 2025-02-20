@@ -1,19 +1,11 @@
 <!-- src/views/Order/index.vue -->
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useRouter, useRoute} from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { ElMessage } from 'element-plus'
-import { 
-  getOrderByUserIdAPI,
-  updateOrderAPI,
-  updateOrderItemAPI,
-} from '@/apis/checkout'
+import { getOrderByUserIdAPI, updateOrderAPI } from '@/apis/checkout'
 
-const router = useRouter()
-const route = useRoute()
 const userStore = useUserStore()
-//v-if="item.status of [3, 4, ,5, 6, 7, 8]"
 // 订单状态映射
 const stateMap = {
   '0': '未支付',
@@ -60,12 +52,10 @@ const fetchOrders = async () => {
       userId: userStore.userInfo.id,
       itemStatus: activeTab.value === 'all' ? undefined : activeTab.value.toString(), page: currentPage.value,
       page_size: 2
-}
-    console.log('API请求参数:', params)
-    
+    }
+
     const { data } = await getOrderByUserIdAPI(params)
-    console.log('API响应数据:', data)
-    
+
     orderList.value = data.results.map(order => ({
       id: order.id,
       createTime: order.created_time || '无记录时间',
@@ -86,8 +76,7 @@ const fetchOrders = async () => {
     }))
     total.value = data.count
   } catch (error) {
-
-    ElMessage.error('获取订单失败')
+    ElMessage.error(`${error}`)
   }
 }
 
@@ -106,41 +95,25 @@ const pageChange = (page) => {
 }
 // 取消订单
 const handleCancelOrder = async (orderId) => {
-  ElMessageBox.confirm(
-    'Are you sure to cancel the order? The operation is not reversible.',
-    'Reminder',
-    {
-      confirmButtonText: 'Confirm',
-        cancelButtonText: 'Cancel',
-        type: 'warning',
-    }
-  ).then( async () => {
-    const res = await updateOrderAPI({
-      orderStatus: '2',   
-      orderId: orderId,
+  try {
+    await updateOrderAPI({
+      id: orderId,
+      status: 2,
+      cancel_reason: '用户取消'
     })
-    if (res.code === 1) {
-      ElMessage.success('Order has been canceled')
-      await fetchOrders()
-      payInfo.value = res.data
-    } else {
-      ElMessage.error('Error: ' + res.msg)
-    }
-    if (timer.value) {
-      clearInterval(timer.value)
-    }
-  })
+    ElMessage.success('订单已取消')
+    await fetchOrders()
+  } catch (error) {
+    ElMessage.error(error.response?.data?.error || '取消失败')
+  }
 }
 
 // 确认收货
 const handleConfirmReceipt = async (itemId) => {
   try {
-    // 添加请求参数验证
-    console.log('确认收货参数:', { itemId: itemId, itemStatus: '5' })
-    
-    const res = await updateOrderItemAPI({
-      itemId: itemId,  // 
-      itemStatus: '5'   // 
+    const res = await updateOrderAPI({
+      id: itemId,
+      status: 5
     })
 
     // 添加响应状态判断
@@ -151,15 +124,8 @@ const handleConfirmReceipt = async (itemId) => {
       ElMessage.error(`操作失败: ${res.message || '未知错误'}`)
     }
   } catch (error) {
-    // 增强错误信息
-    console.error('确认收货错误详情:', error)
-    ElMessage.error(`操作失败: ${error.response?.data?.message || error.message}`)
+    ElMessage.error(`操作失败: ${error}`)
   }
-}
-
-// 查看详情
-const viewDetail = (orderId) => {
-  router.push(`/order/detail/${orderId}`)
 }
 
 // 初始化获取数据
@@ -179,21 +145,22 @@ const formatDateTime = (timeString) => {
 <template>
   <div class="order-container">
     <el-tabs v-model="activeTab" @tab-change="tabChange">
-      <el-tab-pane 
-        v-for="item in tabTypes" 
-        :key="item.name" 
+      <el-tab-pane
+        v-for="item in tabTypes"
+        :key="item.name"
         :label="item.label"
         :name="item.name"
       />
+
       <div class="main-container">
         <div class="holder-container" v-if="orderList.length === 0">
           <el-empty description="暂无订单数据" />
         </div>
         <div v-else>
           <!-- 订单列表 -->
-          <div 
-            class="order-item" 
-            v-for="order in orderList" 
+          <div
+            class="order-item"
+            v-for="order in orderList"
             :key="order.id"
           >
             <div class="head">
@@ -222,7 +189,7 @@ const formatDateTime = (timeString) => {
                       <p class="time" v-if="item.createdTime">
                         商品创建时间：{{ formatDateTime(item.createdTime) }}
                       </p>
-                      <el-tag 
+                      <el-tag
                         :type="itemStateMap[item.status]?.type"
                         size="small"
                         class="status-tag"
@@ -231,16 +198,6 @@ const formatDateTime = (timeString) => {
                       </el-tag>
                     </div>
                     <div class="price">¥{{ (item.realPay || 0).toFixed(2) }}</div>
-                    <div class="action">
-                      <el-button 
-                        v-if="item.status === '4'"
-                        type="success" 
-                        size="small"
-                        @click="handleConfirmReceipt(item.id)"
-                      >
-                        确认收货
-                      </el-button>
-                    </div>
                     <div class="count">x{{ item.quantity }}</div>
                   </li>
                 </ul>
@@ -256,25 +213,30 @@ const formatDateTime = (timeString) => {
                 <p v-if="order.postFee > 0">(含运费：¥{{ order.postFee.toFixed(2) }})</p>
               </div>
               <div class="column action">
-                <div class="button-group">
-                  <el-button 
-                    v-if="order.status === '0'" 
-                    type="primary" 
-                    size="small"
-                    @click="$router.push(`/pay/${order.id}`)"
-                  >
-                    立即付款
-                  </el-button>
-
-                  <el-button 
-                    v-if="order.status === '0'" 
-                    type="danger" 
-                    size="small"
-                    @click="handleCancelOrder(order.id)"
-                  >
-                    取消订单
-                  </el-button>
-                </div>
+                <el-button
+                  v-if="order.orderState === 0"
+                  type="primary"
+                  size="small"
+                  @click="$router.push(`/order/pay/${order.id}`)"
+                >
+                  立即付款
+                </el-button>
+                <el-button
+                  v-if="order.orderState === 4"
+                  type="success"
+                  size="small"
+                  @click="handleConfirmReceipt(order.id)"
+                >
+                  确认收货
+                </el-button>
+                <el-button
+                  v-if="order.orderState === 0"
+                  type="danger"
+                  size="small"
+                  @click="handleCancelOrder(order.id)"
+                >
+                  取消订单
+                </el-button>
                 <p><a @click="$router.push(`/order/detail/${order.id}`)">查看详情</a></p>
                 <p v-if="[3,4,5].includes(order.orderState)">
                   <a>再次购买</a>
@@ -282,10 +244,10 @@ const formatDateTime = (timeString) => {
               </div>
             </div>
           </div>
-          
+
           <!-- 分页 -->
           <div class="pagination-container">
-            <el-pagination 
+            <el-pagination
               :total="total"
               :current-page="currentPage"
               :page-size="2"
@@ -456,23 +418,6 @@ const formatDateTime = (timeString) => {
 
       &.action {
         width: 140px;
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        justify-content: center;
-        
-        .button-group {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-          width: 100%;
-          
-          .el-button {
-            width: 100%;
-            min-width: 0;
-            margin: 0 !important;
-          }
-        }
 
         a {
           display: block;
@@ -496,7 +441,7 @@ const formatDateTime = (timeString) => {
     transform: translateY(-50%);
     margin-right: 15px;
   }
-  
+
   p.time {
     color: #666;
     font-size: 12px;
