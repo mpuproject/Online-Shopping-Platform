@@ -246,6 +246,15 @@ const formatDate = (date) => {
         class="product-form"
       >
         <!-- 基本信息 -->
+        <el-form-item label="ID" prop="id">
+          <template v-if="isEditing">
+            <div class="detail-text">{{ formData.id }}</div>
+          </template>
+          <template v-else>
+            <div class="detail-text">{{ formData.id }}</div>
+          </template>
+        </el-form-item>
+
         <el-form-item label="Name" prop="name">
           <template v-if="isEditing">
             <el-input

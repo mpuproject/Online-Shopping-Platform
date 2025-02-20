@@ -168,7 +168,7 @@ const updateCount = (id, count) => {
           <span class="red">¥ {{ Number(selectedPrice).toFixed(2) }} </span>
         </div>
         <div class="total">
-          <el-button size="large" type="primary" @click="$router.push('/checkout')">Pay Now</el-button>
+          <el-button size="large" type="primary" @click="$router.push('/checkout')">Check out</el-button>
         </div>
       </div>
     </div>

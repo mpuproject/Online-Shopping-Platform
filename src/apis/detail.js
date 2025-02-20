@@ -35,7 +35,7 @@ export const addProductAPI = async (data) => {
  */
 export const updateProductAPI = async (id, data) => {
   return request({
-    url: `/product/${id}/`,
+    url: `/product/update/${id}/`,
     method: 'PUT',
     data
   })
@@ -49,7 +49,7 @@ export const updateProductAPI = async (id, data) => {
  */
 export const deleteProductAPI = async (id) => {
   return request({
-    url: `/product/${id}`,
+    url: `/product/delete/${id}`,
     method: 'PATCH',
   })
 }

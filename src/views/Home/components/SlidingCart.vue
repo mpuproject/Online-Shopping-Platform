@@ -30,6 +30,25 @@ const removeItem = (id) => {
   }
 }
 
+const cartList = computed(() => cartStore.cartList)
+// 初始化选中商品列表
+const selectedItems = ref(cartList.value.filter(item => item.status))
+
+const updateCount = (id, count) => {
+  const item = cartList.value.find(item => item.id === id)
+  if (item) {
+    const oldCount = item.count
+    item.count = count
+    // Manually update the total count and price
+    totalCount.value += count - oldCount
+    totalPrice.value += item.price * (count - oldCount)
+    // Update selected items if present
+    const selectedItem = selectedItems.value.find(selectedItem => selectedItem.id === id)
+    if (selectedItem) {
+      selectedItem.count = count
+    }
+  }
+}
 defineExpose({
   toggleCart
 })
@@ -81,7 +100,14 @@ const checkout = async () => {
               </div>
               <div class="right">
                 <p class="price">&yen;{{ item.price }}</p>
-                <p class="count">x{{ item.count }}</p>
+                <el-input-number
+                  size="small"
+                  v-model="item.count"
+                  @change="(value) => updateCount(item.id, value)"
+                  :min="1"
+                  :disabled="!item.status"
+                  class="input-number"
+                />
               </div>
             </RouterLink>
             <div v-else class="disabled-content">
@@ -107,7 +133,7 @@ const checkout = async () => {
             <p>&yen; {{ totalPrice.toFixed(2) }} </p>
           </div>
           <el-button size="large" type="primary" @click="checkout">
-            Check out
+            Open Cartlist
           </el-button>
         </div>
       </div>
@@ -117,6 +143,12 @@ const checkout = async () => {
 </template>
 
 <style scoped lang="scss">
+.input-number {
+  margin-top: 5px;
+  width: 100px;
+  margin-right: 20px;
+}
+
 .sliding-cart {
   .overlay {
     position: fixed;
@@ -132,7 +164,7 @@ const checkout = async () => {
     position: fixed;
     top: 0;
     right: 0;
-    width: 400px;
+    width: 450px;
     height: 100vh;
     background: #fff;
     z-index: 999;
@@ -221,7 +253,7 @@ const checkout = async () => {
 
           .center {
             padding: 0 10px;
-            width: 200px;
+            width: 300px;
 
             .name {
               font-size: 16px;
@@ -234,13 +266,14 @@ const checkout = async () => {
           }
 
           .right {
-            width: 100px;
+            width: 150px;
             padding-right: 20px;
             text-align: center;
 
             .price {
               font-size: 16px;
               color: $priceColor;
+              margin-right: 20px;
             }
 
             .count {
@@ -262,7 +295,7 @@ const checkout = async () => {
 
           .center {
             padding: 0 10px;
-            width: 200px;
+            width: 300px;
 
             .name {
               font-size: 16px;
@@ -276,7 +309,7 @@ const checkout = async () => {
           }
 
           .right {
-            width: 100px;
+            width: 200px;
             padding-right: 20px;
             text-align: center;
 
