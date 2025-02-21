@@ -163,14 +163,29 @@ const handleDelete = async () => {
 const handleSave = async () => {
   await formRef.value.validate( async (valid) => {
     if (valid) {
-      await editProductAPI(route.params.id, formData.value)
-      ElMessage.success('Information saved')
-      isEditing.value = false
+      // 在提交前统一处理 images 数组
+      const processedImages = formData.value.images.map(img => {
+        if (img && typeof img === 'object' && img.url) {
+          return img.url; // 如果是对象，提取 url
+        }
+        return img; // 如果是字符串，直接返回
+      });
+
+      // 更新 formData 中的 images
+      const payload = {
+        ...formData.value,
+        images: processedImages
+      };
+
+      await editProductAPI(route.params.id, payload);
+      ElMessage.success('Information saved');
+      isEditing.value = false;
+      getAdminProduct();
     } else {
-      ElMessage.error('Please check the form')
-      return false
+      ElMessage.error('Please check the form');
+      return false;
     }
-  })
+  });
 }
 
 // 处理图片上传成功
