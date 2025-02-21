@@ -2,10 +2,16 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
-import { ElMessage } from 'element-plus'
-import { getOrderByUserIdAPI, updateOrderAPI } from '@/apis/checkout'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { 
+  getOrderByUserIdAPI,
+  updateOrderAPI,
+  updateOrderItemAPI,
+} from '@/apis/checkout'
+
 
 const userStore = useUserStore()
+//v-if="item.status of [3, 4, ,5, 6, 7, 8]"
 // 订单状态映射
 const stateMap = {
   '0': 'Unpaid',
@@ -23,7 +29,9 @@ const itemStateMap = {
   '5': { text: 'Received', type: 'success' },
   '6': { text: 'Refund Pending', type: 'danger' },
   '7': { text: 'Refunded', type: 'info' },
-  '8': { text: 'Completed', type: 'success' }
+  '8': { text: 'Completed', type: 'success' },
+  // '9': {text: 'Hold', type: 'success'},
+  // '10': {text: 'Pending', type: 'warning'}
 }
 
 // 标签页配置
@@ -32,6 +40,8 @@ const tabTypes = [
   { name: "0", label: "Unpaid" },
   { name: "1", label: "Paid" },
   { name: "2", label: "Cancelled" },
+  // { name: "9", label: "Hold" },
+  // { name: "10", label: "Pending" },
   { name: "3", label: "Shipped" },
   { name: "4", label: "Delivered" },
   { name: "5", label: "Received" },
@@ -52,10 +62,12 @@ const fetchOrders = async () => {
       userId: userStore.userInfo.id,
       itemStatus: activeTab.value === 'all' ? undefined : activeTab.value.toString(), page: currentPage.value,
       page_size: 2
-    }
-
+}
+    console.log('API请求参数:', params)
+    
     const { data } = await getOrderByUserIdAPI(params)
-
+    console.log('API响应数据:', data)
+    
     orderList.value = data.results.map(order => ({
       id: order.id,
       createTime: order.created_time || '无记录时间',
@@ -76,7 +88,8 @@ const fetchOrders = async () => {
     }))
     total.value = data.count
   } catch (error) {
-    ElMessage.error(`${error}`)
+
+    ElMessage.error('获取订单失败')
   }
 }
 
@@ -124,9 +137,12 @@ const handleCancelOrder = async (orderId) => {
 // 确认收货
 const handleConfirmReceipt = async (itemId) => {
   try {
-    const res = await updateOrderAPI({
-      id: itemId,
-      status: 5
+    // 添加请求参数验证
+    console.log('确认收货参数:', { itemId: itemId, itemStatus: '5' })
+    
+    const res = await updateOrderItemAPI({
+      itemId: itemId,  // 
+      itemStatus: '5'   // 
     })
 
     // 添加响应状态判断
@@ -203,22 +219,21 @@ const formatDateTime = (timeString) => {
 <template>
   <div class="order-container">
     <el-tabs v-model="activeTab" @tab-change="tabChange">
-      <el-tab-pane
-        v-for="item in tabTypes"
-        :key="item.name"
+      <el-tab-pane 
+        v-for="item in tabTypes" 
+        :key="item.name" 
         :label="item.label"
         :name="item.name"
       />
-
       <div class="main-container">
         <div class="holder-container" v-if="orderList.length === 0">
           <el-empty description="No orders found" />
         </div>
         <div v-else>
           <!-- 订单列表 -->
-          <div
-            class="order-item"
-            v-for="order in orderList"
+          <div 
+            class="order-item" 
+            v-for="order in orderList" 
             :key="order.id"
           >
             <div class="head">
@@ -243,7 +258,7 @@ const formatDateTime = (timeString) => {
                       <p class="time" v-if="item.createdTime">
                         Product created at: {{ formatDateTime(item.createdTime) }}
                       </p>
-                      <el-tag
+                      <el-tag 
                         :type="itemStateMap[item.status]?.type"
                         size="small"
                         class="status-tag"
@@ -311,10 +326,10 @@ const formatDateTime = (timeString) => {
               </div>
             </div>
           </div>
-
+          
           <!-- 分页 -->
           <div class="pagination-container">
-            <el-pagination
+            <el-pagination 
               :total="total"
               :current-page="currentPage"
               :page-size="2"
@@ -485,6 +500,23 @@ const formatDateTime = (timeString) => {
 
       &.action {
         width: 140px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        justify-content: center;
+        
+        .button-group {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          width: 100%;
+          
+          .el-button {
+            width: 100%;
+            min-width: 0;
+            margin: 0 !important;
+          }
+        }
 
         a {
           display: block;
@@ -508,7 +540,7 @@ const formatDateTime = (timeString) => {
     transform: translateY(-50%);
     margin-right: 15px;
   }
-
+  
   p.time {
     color: #666;
     font-size: 12px;
