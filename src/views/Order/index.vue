@@ -8,36 +8,36 @@ import { getOrderByUserIdAPI, updateOrderAPI } from '@/apis/checkout'
 const userStore = useUserStore()
 // 订单状态映射
 const stateMap = {
-  '0': '未支付',
-  '1': '已支付',
-  '2': '已取消',
+  '0': 'Unpaid',
+  '1': 'Paid',
+  '2': 'Cancelled',
 }
 
 // 商品状态映射
 const itemStateMap = {
-  '0': { text: '未支付', type: 'warning' },
-  '1': { text: '已支付', type: 'success' },
-  '2': { text: '已取消', type: 'info' },
-  '3': { text: '已发货', type: 'primary' },
-  '4': { text: '已送达', type: '' },
-  '5': { text: '已签收', type: 'success' },
-  '6': { text: '未退款', type: 'danger' },
-  '7': { text: '已退款', type: 'info' },
-  '8': { text: '已完成', type: 'success' }
+  '0': { text: 'Unpaid', type: 'warning' },
+  '1': { text: 'Paid', type: 'success' },
+  '2': { text: 'Cancelled', type: 'info' },
+  '3': { text: 'Shipped', type: 'primary' },
+  '4': { text: 'Delivered', type: '' },
+  '5': { text: 'Received', type: 'success' },
+  '6': { text: 'Refund Pending', type: 'danger' },
+  '7': { text: 'Refunded', type: 'info' },
+  '8': { text: 'Completed', type: 'success' }
 }
 
 // 标签页配置
 const tabTypes = [
-  { name: "all", label: "全部订单" },
-  { name: "0", label: "未支付" },
-  { name: "1", label: "已支付" },
-  { name: "2", label: "已取消" },
-  { name: "3", label: "已发货" },
-  { name: "4", label: "已送达" },
-  { name: "5", label: "已签收" },
-  { name: "6", label: "未退款" },
-  { name: "7", label: "已退款" },
-  { name: "8", label: "已完成" }
+  { name: "all", label: "All Orders" },
+  { name: "0", label: "Unpaid" },
+  { name: "1", label: "Paid" },
+  { name: "2", label: "Cancelled" },
+  { name: "3", label: "Shipped" },
+  { name: "4", label: "Delivered" },
+  { name: "5", label: "Received" },
+  { name: "6", label: "Refund Pending" },
+  { name: "7", label: "Refunded" },
+  { name: "8", label: "Completed" }
 ]
 
 const orderList = ref([])
@@ -95,17 +95,30 @@ const pageChange = (page) => {
 }
 // 取消订单
 const handleCancelOrder = async (orderId) => {
-  try {
-    await updateOrderAPI({
-      id: orderId,
-      status: 2,
-      cancel_reason: '用户取消'
+  ElMessageBox.confirm(
+    'Are you sure to cancel this order? This operation cannot be undone.',
+    'Confirmation',
+    {
+      confirmButtonText: 'Confirm',
+      cancelButtonText: 'Cancel',
+      type: 'warning',
+    }
+  ).then( async () => {
+    const res = await updateOrderAPI({
+      orderStatus: '2',   
+      orderId: orderId,
     })
-    ElMessage.success('订单已取消')
-    await fetchOrders()
-  } catch (error) {
-    ElMessage.error(error.response?.data?.error || '取消失败')
-  }
+    if (res.code === 1) {
+      ElMessage.success('Order cancelled successfully')
+      await fetchOrders()
+      payInfo.value = res.data
+    } else {
+      ElMessage.error('Error: ' + res.msg)
+    }
+    if (timer.value) {
+      clearInterval(timer.value)
+    }
+  })
 }
 
 // 确认收货
@@ -118,16 +131,61 @@ const handleConfirmReceipt = async (itemId) => {
 
     // 添加响应状态判断
     if (res.code === 200) {
-      ElMessage.success('确认收货成功')
+      ElMessage.success('Receipt confirmed successfully')
       await fetchOrders()
     } else {
-      ElMessage.error(`操作失败: ${res.message || '未知错误'}`)
+      ElMessage.error(`Operation failed: ${res.message || 'Unknown error'}`)
     }
   } catch (error) {
-    ElMessage.error(`操作失败: ${error}`)
+    // 增强错误信息
+    console.error('确认收货错误详情:', error)
+    ElMessage.error(`Operation failed: ${error.response?.data?.message || error.message}`)
   }
 }
 
+// 退款处理函数
+const handleRefund = async (itemId) => {
+  try {
+    const currentItem = orderList.value
+      .flatMap(order => order.skus)
+      .find(item => item.id === itemId)
+
+    if (!currentItem) {
+      ElMessage.error('未找到对应订单项')
+      return
+    }
+
+    const isApplying = currentItem.status !== '6'
+    const actionName = isApplying ? 'request refund' : 'cancel refund'
+
+    // 添加确认对话框
+    await ElMessageBox.confirm(
+      `Are you sure to ${actionName}?`,
+      'Confirmation',
+      {
+        confirmButtonText: 'Confirm',
+        cancelButtonText: 'Cancel',
+        type: 'warning'
+      }
+    )
+
+    const targetStatus = isApplying ? '6' : '7'
+    const res = await updateOrderItemAPI({
+      itemId: itemId,
+      itemStatus: targetStatus
+    })
+    
+    if (res.code === 200) {
+      ElMessage.success(`${actionName} successful`)
+      await fetchOrders()
+    }
+  } catch (error) {
+    // 捕获用户取消操作的情况
+    if (error !== 'cancel') {
+      ElMessage.error(`Operation failed: ${error.response?.data?.message || error.message}`)
+    }
+  }
+}
 // 初始化获取数据
 onMounted(() => {
   fetchOrders()
@@ -154,7 +212,7 @@ const formatDateTime = (timeString) => {
 
       <div class="main-container">
         <div class="holder-container" v-if="orderList.length === 0">
-          <el-empty description="暂无订单数据" />
+          <el-empty description="No orders found" />
         </div>
         <div v-else>
           <!-- 订单列表 -->
@@ -164,14 +222,10 @@ const formatDateTime = (timeString) => {
             :key="order.id"
           >
             <div class="head">
-              <span>下单时间：{{ formatDateTime(order.createTime) }}</span>
-              <span>订单编号：{{ order.id }}</span>
+              <span>Order Time: {{ formatDateTime(order.createTime) }}</span>
+              <span>Order ID: {{ order.id }}</span>
               <span class="filter-tip" v-if="activeTab !== 'all'">
-                当前显示：{{ tabTypes.find(t => t.name === activeTab)?.label }}
-              </span>
-              <span class="down-time" v-if="order.orderState === 0">
-                <i class="iconfont icon-down-time"></i>
-                <b>付款截止: 剩余30分钟</b>
+                Current filter: {{ tabTypes.find(t => t.name === activeTab)?.label }}
               </span>
             </div>
             <div class="body">
@@ -187,59 +241,72 @@ const formatDateTime = (timeString) => {
                         <span>{{ item.attrsText }}</span>
                       </p>
                       <p class="time" v-if="item.createdTime">
-                        商品创建时间：{{ formatDateTime(item.createdTime) }}
+                        Product created at: {{ formatDateTime(item.createdTime) }}
                       </p>
                       <el-tag
                         :type="itemStateMap[item.status]?.type"
                         size="small"
                         class="status-tag"
                       >
-                        {{ itemStateMap[item.status]?.text || '未知状态' }}
+                        {{ itemStateMap[item.status]?.text || 'Unknown status' }}
                       </el-tag>
                     </div>
                     <div class="price">¥{{ (item.realPay || 0).toFixed(2) }}</div>
+                    <div class="action">
+                      <el-button 
+                        v-if="item.status === '4'"
+                        type="success" 
+                        size="small"
+                        @click="handleConfirmReceipt(item.id)"
+                      >
+                        Confirm Receipt
+                      </el-button>
+                      <el-button
+                        v-if="['1', '3', '4', '5'].includes(item.status)"
+                        type="warning"
+                        size="small"
+                        @click="handleRefund(item.id)"
+                      >
+                        {{ item.status === '6' ? 'Cancel Refund' : 'Request Refund' }}
+                      </el-button>
+                    </div>
                     <div class="count">x{{ item.quantity }}</div>
                   </li>
                 </ul>
               </div>
               <div class="column state">
-                <p>{{ stateMap[order.orderState] }}</p>
-                <p v-if="order.orderState === 4">
-                  <a class="green">查看物流</a>
+                <p>{{ stateMap[order.status] }}</p>
+                <p v-if="order.status === '4'">
+                  <a class="green">Track Shipping</a>
                 </p>
               </div>
               <div class="column amount">
                 <p class="red">¥{{ (order.payMoney + order.postFee).toFixed(2) }}</p>
-                <p v-if="order.postFee > 0">(含运费：¥{{ order.postFee.toFixed(2) }})</p>
+                <p v-if="order.postFee > 0">(Shipping: ¥{{ order.postFee.toFixed(2) }})</p>
               </div>
               <div class="column action">
-                <el-button
-                  v-if="order.orderState === 0"
-                  type="primary"
-                  size="small"
-                  @click="$router.push(`/order/pay/${order.id}`)"
-                >
-                  立即付款
-                </el-button>
-                <el-button
-                  v-if="order.orderState === 4"
-                  type="success"
-                  size="small"
-                  @click="handleConfirmReceipt(order.id)"
-                >
-                  确认收货
-                </el-button>
-                <el-button
-                  v-if="order.orderState === 0"
-                  type="danger"
-                  size="small"
-                  @click="handleCancelOrder(order.id)"
-                >
-                  取消订单
-                </el-button>
-                <p><a @click="$router.push(`/order/detail/${order.id}`)">查看详情</a></p>
-                <p v-if="[3,4,5].includes(order.orderState)">
-                  <a>再次购买</a>
+                <div class="button-group">
+                  <el-button 
+                    v-if="order.status === '0'" 
+                    type="primary" 
+                    size="small"
+                    @click="$router.push(`/pay/${order.id}`)"
+                  >
+                    Pay Now
+                  </el-button>
+
+                  <el-button 
+                    v-if="order.status === '0'" 
+                    type="danger" 
+                    size="small"
+                    @click="handleCancelOrder(order.id)"
+                  >
+                    Cancel Order
+                  </el-button>
+                </div>
+                <p><a @click="$router.push(`/order/detail/${order.id}`)">View Details</a></p>
+                <p v-if="[3,4,5].includes(order.status)">
+                  <a>Buy Again</a>
                 </p>
               </div>
             </div>

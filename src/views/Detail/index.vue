@@ -12,24 +12,50 @@ const route = useRoute();;
 const randomProducts = ref([]);
 
 const getDetail = async () => {
-  const res = await getDetailAPI(route.params.id);
-  product.value = res.data;
+  try {
+    const res = await getDetailAPI(route.params.id);
+    product.value = res.data;
+  } catch (error) {
+    console.error('获取商品详情失败:', error);
+  }
 };
 
 const fetchRandomProducts = async () => {
-  if (product.value.sub_category?.id) {
-    const res = await getSubcategoryProductAPI({
-      subCategoryId: product.value.sub_category.id,
-      page: 1,
-      pageSize: 20, 
-      sortField: 'created_time'
-    });
-    
-    const allProducts = res.data.products;
+  try {
+    console.log('开始获取推荐商品...')
+    if (product.value.sub_category?.id) {
+      console.log('当前子分类ID:', product.value.sub_category.id)
+      
+      let allProducts = []
+      let currentPage = 1
+      let totalPages = 1
+      
+      do {
+        console.log(`正在获取第 ${currentPage} 页数据`)
+        const res = await getSubcategoryProductAPI({
+          subCategoryId: product.value.sub_category.id,
+          page: currentPage,
+          pageSize: 100,
+          sortField: 'created_time'
+        })
+        console.log('第', currentPage, '页响应数据:', res.data)
+        
+        allProducts = [...allProducts, ...res.data.products]
+        totalPages = res.data.pages
+        currentPage++
+      } while (currentPage <= totalPages)
 
-    // 随机选择 4 个商品
-    const shuffled = allProducts.sort(() => 0.5 - Math.random());
-    randomProducts.value = shuffled.slice(0, 4);
+      console.log('总商品数:', allProducts.length)
+      
+      const filtered = allProducts.filter(p => p.id !== product.value.id)
+      console.log('过滤后商品数:', filtered.length)
+      
+      const shuffled = filtered.sort(() => 0.5 - Math.random())
+      randomProducts.value = shuffled.slice(0, 4)
+      console.log('最终推荐商品:', randomProducts.value)
+    }
+  } catch (error) {
+    console.error('获取推荐商品失败:', error)
   }
 };
 
@@ -37,6 +63,13 @@ onBeforeMount(() => {
   getDetail();
   fetchRandomProducts();
 });
+
+watch(() => route.params.id, (newId) => {
+  if (newId) {
+    getDetail()
+    fetchRandomProducts()
+  }
+}, { immediate: true })
 
 watch(() => product.value, () => {
   fetchRandomProducts();
@@ -164,8 +197,16 @@ const addCart = () => {
             <div class="goods-article">
             <!-- Related Products -->
             <div class="related-products" v-if="randomProducts.length > 0">
+              <h3>Recommended Products</h3>
               <div class="product-list">
-                <GoodsItem v-for="good in randomProducts" :key="good.id" :goods="good" />
+                <router-link 
+                  v-for="good in randomProducts" 
+                  :key="good.id" 
+                  :to="{ path: `/product/${good.id}` }"
+                  class="product-link"
+                >
+                  <GoodsItem :goods="good" />
+                </router-link>
               </div>
             </div>
             
@@ -465,8 +506,21 @@ const addCart = () => {
   }
 
   .product-list {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    padding: 20px 0;
+  }
+}
+
+.product-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  
+  &:hover {
+    transform: translateY(-5px);
+    transition: transform 0.3s ease;
   }
 }
 </style>
