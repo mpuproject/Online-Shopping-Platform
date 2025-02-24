@@ -30,8 +30,8 @@ const itemStateMap = {
   '6': { text: 'Refund Pending', type: 'danger' },
   '7': { text: 'Refunded', type: 'info' },
   '8': { text: 'Completed', type: 'success' },
-  // '9': {text: 'Hold', type: 'success'},
-  // '10': {text: 'Pending', type: 'warning'}
+  '9': {text: 'Pending', type: 'warning'},
+  '10': {text: 'Hold', type: 'success'}
 }
 
 // 标签页配置
@@ -40,8 +40,8 @@ const tabTypes = [
   { name: "0", label: "Unpaid" },
   { name: "1", label: "Paid" },
   { name: "2", label: "Cancelled" },
-  // { name: "9", label: "Hold" },
-  // { name: "10", label: "Pending" },
+  { name: "9", label: "Pending" },
+  { name: "10", label: "Hold" },
   { name: "3", label: "Shipped" },
   { name: "4", label: "Delivered" },
   { name: "5", label: "Received" },
