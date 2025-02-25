@@ -37,8 +37,8 @@ const router = createRouter({
         { path: 'search', component: Search, meta: { title: 'search results' } },
         { path: 'checkout', component: Checkout, meta: { title: 'checkout' }, requiresUser: true },
         { path: 'pay/:id', component: Pay, meta: { title: 'place order', requiresUser: true } },
-        { path: 'order', component: Order, meta: { title: 'Rabbuy - Orders', requiresUser: true } },
-        { path: 'order/detail/:id', component: orderDetail, meta: {title: 'Rabbuy - Order Detail', requiresUser: true}},
+        // { path: 'order', component: Order, meta: { title: 'Rabbuy - Orders', requiresUser: true } },
+        // { path: 'order/detail/:id', component: orderDetail, meta: {title: 'Rabbuy - Order Detail', requiresUser: true}},
       ]
     },
     { path: '/pay/success', component: PaySuccess, meta: { title: 'Success' } },
@@ -56,6 +56,9 @@ const router = createRouter({
         { path: 'subcategory', component: AdminSubcategory }
       ]
     },
+
+    { path: '/order', component: Order, meta: { title: 'Rabbuy - Orders', requiresUser: true } },
+    { path: '/order/detail/:id', component: orderDetail, meta: {title: 'Rabbuy - Order Detail', requiresUser: true}},
 
     { path: '/admin/product/add', component: ProductAdd, meta: { title: 'Add product' } },
     { path: '/admin/product/details/:id', component: ProductDetail, meta: { title: 'Product details' } },

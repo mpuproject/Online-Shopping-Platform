@@ -8,7 +8,8 @@ import {
   updateOrderAPI,
   updateOrderItemAPI,
 } from '@/apis/checkout'
-
+import LayoutHeader  from '@/views/Layout/components/LayoutHeader.vue'
+import LayoutStatus from '@/views/Layout/components/LayoutStatus.vue'
 
 const userStore = useUserStore()
 //v-if="item.status of [3, 4, ,5, 6, 7, 8]"
@@ -22,32 +23,30 @@ const stateMap = {
 // 商品状态映射
 const itemStateMap = {
   '0': { text: 'Unpaid', type: 'warning' },
-  '1': { text: 'Paid', type: 'success' },
+  '1': { text: 'Pending', type: 'success' },
   '2': { text: 'Cancelled', type: 'info' },
   '3': { text: 'Shipped', type: 'primary' },
   '4': { text: 'Delivered', type: '' },
   '5': { text: 'Received', type: 'success' },
   '6': { text: 'Refund Pending', type: 'danger' },
   '7': { text: 'Refunded', type: 'info' },
-  '8': { text: 'Completed', type: 'success' },
-  '9': {text: 'Pending', type: 'warning'},
-  '10': {text: 'Hold', type: 'success'}
+  '8': { text: 'Done', type: 'success' },
+  '9': {text: 'Hold', type: 'success'}
 }
 
 // 标签页配置
 const tabTypes = [
   { name: "all", label: "All Orders" },
   { name: "0", label: "Unpaid" },
-  { name: "1", label: "Paid" },
+  { name: "1", label: "Pending" },
   { name: "2", label: "Cancelled" },
-  { name: "9", label: "Pending" },
-  { name: "10", label: "Hold" },
+  { name: "9", label: "Hold" },
   { name: "3", label: "Shipped" },
   { name: "4", label: "Delivered" },
   { name: "5", label: "Received" },
   { name: "6", label: "Refund Pending" },
   { name: "7", label: "Refunded" },
-  { name: "8", label: "Completed" }
+  { name: "8", label: "Done" }
 ]
 
 const orderList = ref([])
@@ -217,6 +216,8 @@ const formatDateTime = (timeString) => {
 </script>
 
 <template>
+  <LayoutStatus />
+  <LayoutHeader />
   <div class="order-container">
     <el-tabs v-model="activeTab" @tab-change="tabChange">
       <el-tab-pane 
@@ -369,7 +370,7 @@ const formatDateTime = (timeString) => {
 .order-item {
   margin-bottom: 20px;
   border: 1px solid #f5f5f5;
-
+  margin-left: 0; 
   .head {
     height: 50px;
     line-height: 50px;
