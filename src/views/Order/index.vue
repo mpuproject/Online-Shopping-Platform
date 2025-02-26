@@ -74,6 +74,7 @@ const fetchOrders = async () => {
       skus: order.items.filter(item => activeTab.value === 'all' || item.item_status === activeTab.value).map(item => ({
         id: item.id,
         createdTime: item.created_time,
+        updatedTime: item.updated_time,
         image: item.image || '/placeholder.svg',
         status: item.item_status,
         name: item.name,
@@ -256,8 +257,8 @@ const formatDateTime = (timeString) => {
                       <p class="attr ellipsis">
                         <span>{{ item.attrsText }}</span>
                       </p>
-                      <p class="time" v-if="item.createdTime">
-                        Product created at: {{ formatDateTime(item.createdTime) }}
+                      <p class="time" v-if="item.updatedTime">
+                        Last update time: {{ formatDateTime(item.updatedTime) }}
                       </p>
                       <el-tag 
                         :type="itemStateMap[item.status]?.type"
