@@ -56,7 +56,8 @@ const afterLogin = () => {
 
   // 判断是否为管理员
   if(!userStore.userInfo.is_staff) {
-    router.replace({ path: '/' })
+    const redirect = router.currentRoute.value.query.redirect || '/'
+    router.push(redirect)
   }
   else {
     router.replace({ path: '/admin' })
@@ -102,7 +103,7 @@ const doLogin = () => {
 </script>
 
 <template>
-  <div>
+  <div @keyup.enter="doLogin">
     <header class="login-header">
       <div class="container m-top-20">
         <h1 class="logo">

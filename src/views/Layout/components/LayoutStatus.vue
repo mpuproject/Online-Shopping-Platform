@@ -1,15 +1,15 @@
 <script setup>
 import { useUserStore } from '@/stores/user'
 import { saveCartToServer } from '@/composables/logout';
-import { useRouter } from 'vue-router'
+import { useRouter } from 'vue-router';
+
 const router = useRouter()
 const userStore = useUserStore()
 
 const confirmLogout = async () => {
   await saveCartToServer('/')
 }
-const goToOrders = (event) => {
-  event.preventDefault()
+const goToOrders = () => {
   router.push('/order')
 }
 </script>

@@ -18,3 +18,34 @@ export const getSearchResultsAPI = async (data) => {
     params: data
   })
 }
+
+/**
+ * @description 获取所有产品信息
+ *
+ * @param {*} data = {
+      page: 1,
+      pageSize: 20,
+      query: route.query.q
+    }
+
+ * @returns
+ */
+    export const getProductAPI = async (data) => {
+      return request({
+        url: `/product/list/`,
+        method: 'GET',
+        params: data
+      })
+    }
+
+    /**
+     * @description 获取所有商品的存货状态
+     *
+     * @returns
+     */
+
+    export const getStockStatusAPI = async () => {
+      return request({
+        url: `/product/stock-count/`,
+      })
+    }

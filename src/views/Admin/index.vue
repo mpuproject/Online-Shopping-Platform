@@ -14,6 +14,7 @@
       <!-- 内容区域 -->
       <div class="content">
         <RouterView />
+        <BackToTop />
       </div>
     </div>
   </div>
@@ -24,6 +25,7 @@ import { ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import AdminStatus from './components/AdminStatus.vue'
 import AdminSidebar from './components/AdminSidebar.vue'
+import BackToTop from '@/components/TopView/BackToTop.vue'
 
 const route = useRoute()
 const currentPage = ref('')
@@ -39,17 +41,28 @@ watch(() => route.path, (newPath) => {
 }, { immediate: true })
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .admin-layout {
   display: flex;
   min-height: 100vh;
   background-color: #f0f2f5;
+  max-width: 1920px;
+  margin: 0 auto;
+}
+
+.admin-layout :deep(.admin-sidebar) {
+  position: sticky;
+  top: 35px;
+  height: calc(100vh - 35px);
+  z-index: 99;
 }
 
 .main-content {
   flex: 1;
   display: flex;
   flex-direction: column;
+  min-width: 1200px;
+  overflow: hidden;
 }
 
 .header {
@@ -60,11 +73,15 @@ watch(() => route.path, (newPath) => {
   align-items: center;
   justify-content: space-between;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
 .content {
   flex: 1;
   padding: 20px;
   overflow-y: auto;
+  min-width: 1200px;
 }
 </style>

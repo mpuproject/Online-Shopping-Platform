@@ -3,7 +3,7 @@
 import { ref, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { 
+import {
   getOrderByUserIdAPI,
   updateOrderAPI,
   updateOrderItemAPI,
@@ -12,7 +12,7 @@ import LayoutHeader  from '@/views/Layout/components/LayoutHeader.vue'
 import LayoutStatus from '@/views/Layout/components/LayoutStatus.vue'
 
 const userStore = useUserStore()
-//v-if="item.status of [3, 4, ,5, 6, 7, 8]"
+
 // 订单状态映射
 const stateMap = {
   '0': 'Unpaid',
@@ -62,11 +62,9 @@ const fetchOrders = async () => {
       itemStatus: activeTab.value === 'all' ? undefined : activeTab.value.toString(), page: currentPage.value,
       page_size: 2
 }
-    console.log('API请求参数:', params)
-    
+
     const { data } = await getOrderByUserIdAPI(params)
-    console.log('API响应数据:', data)
-    
+
     orderList.value = data.results.map(order => ({
       id: order.id,
       createTime: order.created_time || '无记录时间',
@@ -88,8 +86,7 @@ const fetchOrders = async () => {
     }))
     total.value = data.count
   } catch (error) {
-
-    ElMessage.error('获取订单失败')
+    ElMessage.error(error)
   }
 }
 
@@ -118,18 +115,14 @@ const handleCancelOrder = async (orderId) => {
     }
   ).then( async () => {
     const res = await updateOrderAPI({
-      orderStatus: '2',   
+      orderStatus: '2',
       orderId: orderId,
     })
     if (res.code === 1) {
       ElMessage.success('Order cancelled successfully')
       await fetchOrders()
-      payInfo.value = res.data
     } else {
       ElMessage.error('Error: ' + res.msg)
-    }
-    if (timer.value) {
-      clearInterval(timer.value)
     }
   })
 }
@@ -137,12 +130,10 @@ const handleCancelOrder = async (orderId) => {
 // 确认收货
 const handleConfirmReceipt = async (itemId) => {
   try {
-    // 添加请求参数验证
-    console.log('确认收货参数:', { itemId: itemId, itemStatus: '5' })
-    
+
     const res = await updateOrderItemAPI({
-      itemId: itemId,  // 
-      itemStatus: '5'   // 
+      itemId: itemId,  //
+      itemStatus: '5'   //
     })
 
     // 添加响应状态判断
@@ -154,7 +145,6 @@ const handleConfirmReceipt = async (itemId) => {
     }
   } catch (error) {
     // 增强错误信息
-    console.error('确认收货错误详情:', error)
     ElMessage.error(`Operation failed: ${error.response?.data?.message || error.message}`)
   }
 }
@@ -190,7 +180,7 @@ const handleRefund = async (itemId) => {
       itemId: itemId,
       itemStatus: targetStatus
     })
-    
+
     if (res.code === 200) {
       ElMessage.success(`${actionName} successful`)
       await fetchOrders()
@@ -221,9 +211,9 @@ const formatDateTime = (timeString) => {
   <LayoutHeader />
   <div class="order-container">
     <el-tabs v-model="activeTab" @tab-change="tabChange">
-      <el-tab-pane 
-        v-for="item in tabTypes" 
-        :key="item.name" 
+      <el-tab-pane
+        v-for="item in tabTypes"
+        :key="item.name"
         :label="item.label"
         :name="item.name"
       />
@@ -233,9 +223,9 @@ const formatDateTime = (timeString) => {
         </div>
         <div v-else>
           <!-- 订单列表 -->
-          <div 
-            class="order-item" 
-            v-for="order in orderList" 
+          <div
+            class="order-item"
+            v-for="order in orderList"
             :key="order.id"
           >
             <div class="head">
@@ -260,7 +250,7 @@ const formatDateTime = (timeString) => {
                       <p class="time" v-if="item.updatedTime">
                         Last update time: {{ formatDateTime(item.updatedTime) }}
                       </p>
-                      <el-tag 
+                      <el-tag
                         :type="itemStateMap[item.status]?.type"
                         size="small"
                         class="status-tag"
@@ -270,9 +260,9 @@ const formatDateTime = (timeString) => {
                     </div>
                     <div class="price">¥{{ (item.realPay || 0).toFixed(2) }}</div>
                     <div class="action">
-                      <el-button 
+                      <el-button
                         v-if="item.status === '4'"
-                        type="success" 
+                        type="success"
                         size="small"
                         @click="handleConfirmReceipt(item.id)"
                       >
@@ -285,6 +275,14 @@ const formatDateTime = (timeString) => {
                         @click="handleRefund(item.id)"
                       >
                         {{ item.status === '6' ? 'Cancel Refund' : 'Request Refund' }}
+                      </el-button>
+                      <el-button
+                        v-if="item.status === '5'"
+                        type='primary'
+                        size='small'
+                        @click="$router.push({ path: `/order/comment/add/${item.id}` })"
+                      >
+                        Comment
                       </el-button>
                     </div>
                     <div class="count">x{{ item.quantity }}</div>
@@ -303,18 +301,18 @@ const formatDateTime = (timeString) => {
               </div>
               <div class="column action">
                 <div class="button-group">
-                  <el-button 
-                    v-if="order.status === '0'" 
-                    type="primary" 
+                  <el-button
+                    v-if="order.status === '0'"
+                    type="primary"
                     size="small"
                     @click="$router.push(`/pay/${order.id}`)"
                   >
                     Pay Now
                   </el-button>
 
-                  <el-button 
-                    v-if="order.status === '0'" 
-                    type="danger" 
+                  <el-button
+                    v-if="order.status === '0'"
+                    type="danger"
                     size="small"
                     @click="handleCancelOrder(order.id)"
                   >
@@ -328,10 +326,10 @@ const formatDateTime = (timeString) => {
               </div>
             </div>
           </div>
-          
+
           <!-- 分页 -->
           <div class="pagination-container">
-            <el-pagination 
+            <el-pagination
               :total="total"
               :current-page="currentPage"
               :page-size="2"
@@ -371,7 +369,7 @@ const formatDateTime = (timeString) => {
 .order-item {
   margin-bottom: 20px;
   border: 1px solid #f5f5f5;
-  margin-left: 0; 
+  margin-left: 0;
   .head {
     height: 50px;
     line-height: 50px;
@@ -506,13 +504,13 @@ const formatDateTime = (timeString) => {
         flex-direction: column;
         gap: 8px;
         justify-content: center;
-        
+
         .button-group {
           display: flex;
           flex-direction: column;
           gap: 8px;
           width: 100%;
-          
+
           .el-button {
             width: 100%;
             min-width: 0;
@@ -542,7 +540,7 @@ const formatDateTime = (timeString) => {
     transform: translateY(-50%);
     margin-right: 15px;
   }
-  
+
   p.time {
     color: #666;
     font-size: 12px;

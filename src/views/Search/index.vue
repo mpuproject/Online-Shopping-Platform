@@ -96,7 +96,6 @@ const validateInput = (type) => {
       </el-breadcrumb>
     </div>
     <div class="sub-container">
-
       <div class="filter-bar">
         <div class="left">
           <a
@@ -112,8 +111,8 @@ const validateInput = (type) => {
             @click="fetchSearchResults('product_rating')"
           >Hotest
           </a>
-          <el-dropdown @command="fetchSearchResults">
-            <a :class="['filter-item',
+          <el-dropdown @command="fetchSearchResults" popper-class="dropdown">
+            <a :class="['price-filter-item',
               requestData.sortField === 'price' ||
               requestData.sortField === '-price' ? 'active' : '']">
               Price
@@ -121,8 +120,14 @@ const validateInput = (type) => {
             </a>
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item command="price">Low to high</el-dropdown-item>
-                <el-dropdown-item command="-price">High to low</el-dropdown-item>
+                <el-dropdown-item command="price"
+                  :class="{ 'is-active': requestData.sortField === 'price' }"
+                >
+                  Low to high
+                </el-dropdown-item>
+                <el-dropdown-item command="-price"
+                  :class="{ 'is-active': requestData.sortField === '-price' }"
+                >High to low</el-dropdown-item>
               </el-dropdown-menu>
             </template>
           </el-dropdown>
@@ -205,12 +210,24 @@ const validateInput = (type) => {
       border: 1px solid #dcdfe6;
       border-radius: 4px;
 
-      &:hover, &.active {
+      &:hover, &.active, &.active::after {
         color: $xtxColor;
         border: 1px solid $xtxColor;
       }
+    }
 
-      &.active::after {
+    .price-filter-item {
+      position: relative;
+      cursor: pointer;
+      color: #333;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 7px 10px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+
+      &:hover, &.active, &.active::after {
         color: $xtxColor;
         border: 1px solid $xtxColor;
       }
@@ -226,11 +243,6 @@ const validateInput = (type) => {
         gap: 8px;
       }
 
-      .button-row {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-      }
     }
   }
 
@@ -276,5 +288,17 @@ const validateInput = (type) => {
     display: flex;
     justify-content: center;
   }
+}
+
+:deep(.button-row) {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin: 10px 5px 0px 5px;
+}
+
+:deep(.is-active) {
+  background-color: rgba($xtxColor, 0.2);
+  color: $xtxColor;
 }
 </style>

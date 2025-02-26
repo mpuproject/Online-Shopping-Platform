@@ -1,12 +1,12 @@
 <template>
-  <div class="sidebar">
+  <div class="sidebar admin-sidebar">
     <el-menu
       :default-active="activeMenu"
       class="sidebar-menu"
       router
     >
       <div class="logo-container">
-        <h2 style="font-family:Georgia, 'Times New Roman', Times, serif;">
+        <h2 style="font-family:Georgia, 'Times New Roman', Times, serif; font-size: 18px;">
           Rabbuy system
         </h2>
       </div>

@@ -1,15 +1,14 @@
 <script setup>
 import ImageView from '@/components/ImageView/index.vue';
-import { getDetailAPI } from '@/apis/detail';
-import { ref, onBeforeMount, watch } from 'vue';
+import { getDetailAPI, getRecommendationAPI } from '@/apis/detail';
+import { ref, onBeforeMount } from 'vue';
 import { useRoute } from 'vue-router';
 import { useCartStore } from '@/stores/cartStore';
 import GoodsItem from '../Home/components/GoodsItem.vue';
-import { getSubcategoryProductAPI } from '@/apis/subcategory';
+import { getProductCommentAPI } from '@/apis/comment';
 
 const product = ref({});
 const route = useRoute();;
-const randomProducts = ref([]);
 
 const getDetail = async () => {
   try {
@@ -20,67 +19,17 @@ const getDetail = async () => {
   }
 };
 
-const fetchRandomProducts = async () => {
-  try {
-    console.log('开始获取推荐商品...')
-    if (product.value.sub_category?.id) {
-      console.log('当前子分类ID:', product.value.sub_category.id)
-      
-      let allProducts = []
-      let currentPage = 1
-      let totalPages = 1
-      
-      do {
-        console.log(`正在获取第 ${currentPage} 页数据`)
-        const res = await getSubcategoryProductAPI({
-          subCategoryId: product.value.sub_category.id,
-          page: currentPage,
-          pageSize: 100,
-          sortField: 'created_time'
-        })
-        console.log('第', currentPage, '页响应数据:', res.data)
-        
-        allProducts = [...allProducts, ...res.data.products]
-        totalPages = res.data.pages
-        currentPage++
-      } while (currentPage <= totalPages)
-
-      console.log('总商品数:', allProducts.length)
-      
-      const filtered = allProducts.filter(p => p.id !== product.value.id)
-      console.log('过滤后商品数:', filtered.length)
-      
-      const shuffled = filtered.sort(() => 0.5 - Math.random())
-      randomProducts.value = shuffled.slice(0, 4)
-      console.log('最终推荐商品:', randomProducts.value)
-    }
-  } catch (error) {
-    console.error('获取推荐商品失败:', error)
-  }
+const randomProducts = ref([]);
+const fetchRandomProducts = async (name, id) => {
+  const res = await getRecommendationAPI(name, id)
+  randomProducts.value = res.data;
 };
-
-onBeforeMount(() => {
-  getDetail();
-  fetchRandomProducts();
-});
-
-watch(() => route.params.id, (newId) => {
-  if (newId) {
-    getDetail()
-    fetchRandomProducts()
-  }
-}, { immediate: true })
-
-watch(() => product.value, () => {
-  fetchRandomProducts();
-}, { immediate: true });
 
 // 选择商品数量
 const cartStore = useCartStore()
 const count = ref(1)
 const handleChange = (num) => {
   count.value = num
-  console.log(count.value)
 }
 
 const addCart = () => {
@@ -94,6 +43,35 @@ const addCart = () => {
     selected: true,  // 默认标记为选中
   })
 }
+
+const comments = ref([]);
+
+// 翻页数据
+const currentPage = ref(1);
+const pageSize = ref(20);
+const totalComments = ref(0);
+
+const getProductComment = async () => {
+  const res = await getProductCommentAPI({
+    productId: route.params.id,
+    currentPage: currentPage.value,
+    pageSize: pageSize.value
+  });
+  comments.value = res.data.comments;
+  totalComments.value = res.data.total;
+};
+
+const handlePageChange = (page) => {
+  currentPage.value = page;
+  getProductComment();
+};
+
+
+onBeforeMount( async () => {
+  await getDetail();
+  await fetchRandomProducts(product.value.name, product.value.id);
+  await getProductComment()
+});
 </script>
 
 <template>
@@ -199,9 +177,9 @@ const addCart = () => {
             <div class="related-products" v-if="randomProducts.length > 0">
               <h3>Recommended Products</h3>
               <div class="product-list">
-                <router-link 
-                  v-for="good in randomProducts" 
-                  :key="good.id" 
+                <router-link
+                  v-for="good in randomProducts"
+                  :key="good.id"
                   :to="{ path: `/product/${good.id}` }"
                   class="product-link"
                 >
@@ -209,7 +187,7 @@ const addCart = () => {
                 </router-link>
               </div>
             </div>
-            
+
               <!-- 使用 el-tabs 实现标签页 -->
               <el-tabs type="border-card">
                 <el-tab-pane label="Details">
@@ -222,17 +200,49 @@ const addCart = () => {
                     </ul>
                   </div>
                 </el-tab-pane>
-                <el-tab-pane label="Comments">
+                <el-tab-pane label="Comments" @click="getProductComment();">
                   <ul class="comments">
-                    <!-- 这里可以添加评论内容 -->
-                    <li>评论1</li>
-                    <li>评论2</li>
+                    <li v-for="(comment, index) in comments" :key="index" class="comment-item">
+                      <img :src="comment.user.avatar" alt="" class="avatar" />
+                      <div class="comment-content">
+                        <p class="username">{{ comment.user.username }}</p>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                          <el-rate
+                            v-model="comment.rating"
+                            disabled
+                            :colors="['#99A9BF', '#F7BA2A', '#FF9900']"
+                            style="margin: 5px 0;"
+                          />
+                          <span style="color: #FFA500; font-size: 14px;">{{ comment.rating }}</span>
+                        </div>
+                        <p class="text">{{ comment.commentDesc }}</p>
+                        <div class="comment-images">
+                          <el-image
+                            v-for="(img, imgIndex) in comment.images"
+                            :key="imgIndex"
+                            :src="img"
+                            class="comment-image"
+                            :preview-src-list="comment.images"
+                            :fit="'contain'"
+                            :style="{ width: '100px', height: '100px' }"
+                          />
+                        </div>
+                      </div>
+                    </li>
                   </ul>
+                  <el-pagination
+                    v-if="totalComments > pageSize"
+                    background
+                    layout="prev, pager, next"
+                    :page-size="pageSize"
+                    :total="totalComments"
+                    :current-page="currentPage"
+                    @current-change="handlePageChange"
+                    style="margin-top: 20px; justify-content: center;"
+                  />
                 </el-tab-pane>
               </el-tabs>
             </div>
-            <!-- 24热榜+专题推荐 -->
-            <div class="goods-aside"></div>
           </div>
         </div>
       </div>
@@ -267,11 +277,6 @@ const addCart = () => {
 
     .goods-article {
       width: 100%;
-    }
-
-    .goods-aside {
-      width: 280px;
-      min-height: 1000px;
     }
   }
 
@@ -517,10 +522,64 @@ const addCart = () => {
   display: block;
   text-decoration: none;
   color: inherit;
-  
+
   &:hover {
     transform: translateY(-5px);
     transition: transform 0.3s ease;
+  }
+}
+
+.comments {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  .comment-item {
+    display: flex;
+    align-items: flex-start;
+    border-bottom: 1px solid #e0e0e0;
+    padding: 10px;
+
+    .avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      margin-right: 10px;
+    }
+
+    .comment-content {
+      flex: 1;
+
+      .username {
+        font-weight: bold;
+        margin: 0;
+        font-size: 18px;
+      }
+
+      .text {
+        margin: 0 0 10px 0;
+        font-size: 15px;
+      }
+
+      .comment-images {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 5px;
+        margin-top: 5px;
+        width: 300px;
+      }
+
+      .comment-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+    }
   }
 }
 </style>

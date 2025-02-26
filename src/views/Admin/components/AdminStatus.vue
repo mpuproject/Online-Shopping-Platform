@@ -12,7 +12,7 @@ const confirmLogout = () => {
 </script>
 
 <template>
-  <nav class="app-topnav">
+  <nav class="app-topnav admin-status">
     <div class="container">
       <ul>
         <template v-if="userStore.userInfo.username">
@@ -41,6 +41,13 @@ const confirmLogout = () => {
   </nav>
 </template>
 
+<style lang="scss">
+.admin-status {
+  position: sticky;
+  top: 0;
+  z-index: 101;
+}
+</style>
 
 <style scoped lang="scss">
 .app-topnav {
@@ -50,6 +57,7 @@ const confirmLogout = () => {
     height: 35px;
     justify-content: flex-end;
     align-items: center;
+
     li {
       a {
         padding: 0 15px;

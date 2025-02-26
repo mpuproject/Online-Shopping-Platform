@@ -21,6 +21,9 @@ import ProductAdd from '@/views/Admin/components/Product/ProductAdd.vue'
 import ProductDetail from '@/views/Admin/components/Product/ProductDetail.vue'
 import Order from '@/views/Order/index.vue'
 import orderDetail from '@/views/Order/components/orderDetail.vue'
+import CommentLayout from '@/views/Comment/index.vue'
+import CommentAdd from '@/views/Comment/component/CommentAdd.vue'
+import CommentReview from '@/views/Comment/component/CommentReview.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -37,11 +40,19 @@ const router = createRouter({
         { path: 'search', component: Search, meta: { title: 'search results' } },
         { path: 'checkout', component: Checkout, meta: { title: 'checkout' }, requiresUser: true },
         { path: 'pay/:id', component: Pay, meta: { title: 'place order', requiresUser: true } },
-        // { path: 'order', component: Order, meta: { title: 'Rabbuy - Orders', requiresUser: true } },
-        // { path: 'order/detail/:id', component: orderDetail, meta: {title: 'Rabbuy - Order Detail', requiresUser: true}},
       ]
     },
-    { path: '/pay/success', component: PaySuccess, meta: { title: 'Success' } },
+
+    { path: '/pay/success', component: PaySuccess, meta: { title: 'success' } },
+
+    {
+      path: '/order/comment/', component: CommentLayout,
+      children: [
+        { path: '/order/comment/add/:id', component: CommentAdd, meta: { title: 'add comment', requiresUser: true } },
+        { path: '/order/comment/review/:id', component: CommentReview, meta: { title: 'review comment', requiresUser: true } }
+      ]
+    },
+
 
     { path: '/login', component: Login, meta: { title: 'Rabbuy Login' } },
 
@@ -80,7 +91,7 @@ router.beforeEach((to, from, next) => {
   const isAdmin = userStore.userInfo.is_staff
 
   if (to.meta.requiresUser && !isUser) {
-    next({ name: 'Login' })
+    next({ path: '/login', query: { redirect: to.fullPath } })
   } else if (to.meta.requiresAdmin && !isAdmin) {
     alert("This page is for admin only!")
     next('/')

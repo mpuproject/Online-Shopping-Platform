@@ -22,10 +22,8 @@
   const fetchOrderDetail = async () => {
     try {
       const orderId = route.params.id
-      console.log('请求订单ID:', orderId)
 
       const { data } = await getOrderByIdAPI(orderId)
-      console.log('接口响应数据:', data)
 
       // 根据接口返回结构调整映射关系
       order.value = {
@@ -47,7 +45,6 @@
       }
       loading.value = false
     } catch (err) {
-      console.error('完整错误:', err)
       ElMessage.error(err.response?.data?.message || err.message)
       loading.value = false
     }

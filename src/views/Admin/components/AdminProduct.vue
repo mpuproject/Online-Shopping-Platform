@@ -1,8 +1,9 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import { Plus, Search, InfoFilled } from '@element-plus/icons-vue'
-import { getProductAPI, getStockStatusAPI, editProductAPI } from '@/apis/detail'
+import { editProductAPI } from '@/apis/detail'
 import { ElMessageBox, ElMessage } from 'element-plus'
+import { getProductAPI, getStockStatusAPI } from '@/apis/search'
 
 // 针对不同状态产品下的提示
 const setRowClassName = ({ row }) => {
@@ -17,9 +18,11 @@ const setRowClassName = ({ row }) => {
 // 获取产品数据
 const tableData = ref([])
 
+// 请求数据
 const requestData = ref({
   page: 1,
   pageSize: 10,
+  q: '',
 })
 
 // 计算序号的方法
@@ -62,6 +65,11 @@ onMounted(() => {
   getProducts();
   getStockStatus();
 })
+
+const querysearch = async () => {
+  requestData.value.page = 1  // 重置为第一页
+  await getProducts()
+}
 
 // 修改产品状态
 const editProductStatus = async(row) => {
@@ -119,13 +127,14 @@ const handleProductInfo = (row) => {
         <el-icon><Plus /></el-icon>Add
       </el-button>
       <el-input
-        v-model="searchKeyword"
+        v-model="requestData.q"
         placeholder="Search by keywords"
         class="search-bar"
         clearable
+        @keyup.enter="querysearch"
       >
-        <template #prefix>
-          <el-icon><Search /></el-icon>
+        <template #append>
+          <el-button @click="querysearch" :icon="Search" class="search-btn" />
         </template>
       </el-input>
     </div>
@@ -246,6 +255,19 @@ const handleProductInfo = (row) => {
 
 .search-bar {
   width: 25%;
+
+  .search-btn {
+    background-color: $xtxColor;
+    color:#ffffff;
+
+    &:hover {
+      background-color: #22978c;
+    }
+
+    &:active {
+      background-color: $sucColor;
+    }
+  }
 }
 
 .pagination {

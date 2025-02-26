@@ -91,13 +91,15 @@ const checkout = async () => {
         </div>
         <div class="list">
           <div class="item" v-for="item in cartItems" :key="item.id" :class="{ disabled: !item.status }">
-            <RouterLink v-if="item.status" :to="`/product/${item.id}`">
-              <img :src="item.image" alt="" />
-              <div class="center">
-                <p class="name ellipsis-2">
-                  {{ item.name }}
-                </p>
-              </div>
+            <div class="item-wrapper" v-if="item.status">
+              <RouterLink :to="`/product/${item.id}`">
+                <img :src="item.image" alt="" />
+                <div class="center">
+                  <p class="name ellipsis-2">
+                    {{ item.name }}
+                  </p>
+                </div>
+              </RouterLink>
               <div class="right">
                 <p class="price">&yen;{{ item.price }}</p>
                 <el-input-number
@@ -109,7 +111,7 @@ const checkout = async () => {
                   class="input-number"
                 />
               </div>
-            </RouterLink>
+            </div>
             <div v-else class="disabled-content">
               <img :src="item.image" alt="" />
               <div class="center">
@@ -241,27 +243,32 @@ const checkout = async () => {
           }
         }
 
-        a {
+        .item-wrapper {
           display: flex;
           align-items: center;
 
-          img {
-            height: 80px;
-            width: 80px;
-            object-fit: cover;
-          }
+          a {
+            display: flex;
+            align-items: center;
 
-          .center {
-            padding: 0 10px;
-            width: 300px;
-
-            .name {
-              font-size: 16px;
+            img {
+              height: 80px;
+              width: 80px;
+              object-fit: cover;
             }
 
-            .attr {
-              color: #999;
-              padding-top: 5px;
+            .center {
+              padding: 0 10px;
+              width: 280px;
+
+              .name {
+                font-size: 16px;
+              }
+
+              .attr {
+                color: #999;
+                padding-top: 5px;
+              }
             }
           }
 
@@ -269,6 +276,7 @@ const checkout = async () => {
             width: 150px;
             padding-right: 20px;
             text-align: center;
+            margin-right: 20px;
 
             .price {
               font-size: 16px;

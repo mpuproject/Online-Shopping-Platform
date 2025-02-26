@@ -80,18 +80,17 @@ export const updateOrderItemAPI = (data) => {
   })
 }
 
-// /**
-//  * @description 获取订单详情
-//  * 
-//  * @param {*} data
-//  * @returns 
-//  */
-// export const getOrderDetailAPI = (orderId, userId) => {
-//   return request({
-//     url: `/order/detail/${orderId}/`,  
-//     method: 'GET',
-//     params: {
-//       user_id: userId  // 参数名与后端一致
-//     }
-//   })
-// }
+/**
+ * @description 获取小订单
+ *
+ * @param {*} id
+ * @returns
+ */
+export const getOrderItemAPI = (id) => {
+  return request({
+    url: '/order/item/get/',
+    params: {
+      id
+    },
+  })
+}

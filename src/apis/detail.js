@@ -42,7 +42,7 @@ export const updateProductAPI = async (id, data) => {
 }
 
 /**
- * 删除商品
+ * @description 删除商品
  *
  * @param {*} id
  * @returns
@@ -51,36 +51,6 @@ export const deleteProductAPI = async (id) => {
   return request({
     url: `/product/delete/${id}/`,
     method: 'PATCH',
-  })
-}
-
-/**
- * @description 获取所有产品信息
- *
- * @param {*} data = {
-      page: 1,
-      pageSize: 20,
-    }
-
- * @returns
- */
-export const getProductAPI = async (data) => {
-  return request({
-    url: `/product/list/`,
-    method: 'GET',
-    params: data
-  })
-}
-
-/**
- * @description 获取所有商品的存货状态
- *
- * @returns
- */
-
-export const getStockStatusAPI = async () => {
-  return request({
-    url: `/product/stock-count/`,
   })
 }
 
@@ -108,5 +78,21 @@ export const editProductAPI = async (id, data) => {
 export const getAdminProductAPI = async (id) => {
   return request({
     url: `/product/admin/${id}/`,
+  })
+}
+
+/**
+ * @description 详情界面相似商品推荐
+ *
+ * @param {*} data
+ * @returns
+ */
+export const getRecommendationAPI = async (name, id) => {
+  return request({
+    url: '/product/recommend/',
+    params: {
+      name: name,
+      id: id
+    }
   })
 }
