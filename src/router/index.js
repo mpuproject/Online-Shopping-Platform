@@ -35,7 +35,7 @@ const router = createRouter({
         { path: '', component: Home, meta: { title: 'Rabbuy - Buy what you want' } },
         { path: 'category/:id', component: Category, meta: { title: 'Rabbuy - Category' } },
         { path: 'category/sub/:id', component: SubCategory, meta: { title: 'Rabbuy - Subcategory ' } },
-        { path: 'product/:id', component: Detail, meta: { title: 'product\'s details' } },
+        { path: 'product/:id', component: Detail, meta: { title: (route) => `${route.params.productName}` } },
         { path: 'cartlist', component: CartList, meta: { title: 'Rabbuy - cartList', requiresUser: true } },
         { path: 'search', component: Search, meta: { title: 'search results' } },
         { path: 'checkout', component: Checkout, meta: { title: 'checkout' }, requiresUser: true },
@@ -83,8 +83,13 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  const title = to.meta.title || "Rabbuy";
-  document.title = title;
+  let title = "Rabbuy"
+  if (typeof to.meta.title === 'function') {
+    title = to.meta.title(to)
+  } else if (to.meta.title) {
+    title = to.meta.title
+  }
+  document.title = title
 
   const userStore = useUserStore()
   const isUser = !!userStore.userInfo.access

@@ -20,12 +20,12 @@ const imageUrl = computed(() => {
 </script>
 
 <template>
-  <RouterLink :to="`/product/${goods.id}`" class="goods-item">
+  <a :href="`/product/${goods.id}`" target="_blank" class="goods-item">
     <img :src="imageUrl" :alt="goods.name" />
     <p class="name ellipsis">{{ goods.name }}</p>
     <p class="desc ellipsis">{{ goods.desc }}</p>
     <p class="price">&yen;{{ goods.price }}</p>
-  </RouterLink>
+  </a>
 </template>
 
 <style lang="scss" scoped>

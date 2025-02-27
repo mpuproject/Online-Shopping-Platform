@@ -1,19 +1,26 @@
 <script setup>
 import ImageView from '@/components/ImageView/index.vue';
 import { getDetailAPI, getRecommendationAPI } from '@/apis/detail';
-import { ref, onBeforeMount } from 'vue';
-import { useRoute } from 'vue-router';
+import { ref, onBeforeMount, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { useCartStore } from '@/stores/cartStore';
 import GoodsItem from '../Home/components/GoodsItem.vue';
 import { getProductCommentAPI } from '@/apis/comment';
 
 const product = ref({});
-const route = useRoute();;
+const route = useRoute();
+const router = useRouter();
 
 const getDetail = async () => {
   try {
     const res = await getDetailAPI(route.params.id);
     product.value = res.data;
+    router.replace({
+      params: {
+        ...route.params,
+        productName: product.value.name
+      }
+    });
   } catch (error) {
     console.error('获取商品详情失败:', error);
   }
@@ -72,6 +79,16 @@ onBeforeMount( async () => {
   await fetchRandomProducts(product.value.name, product.value.id);
   await getProductComment()
 });
+
+watch(
+  () => route.params.productName,
+  (newVal) => {
+    if (newVal) {
+      document.title = `Rabbuy - ${newVal}`
+    }
+  },
+  { immediate: true }
+)
 </script>
 
 <template>
