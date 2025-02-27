@@ -54,9 +54,14 @@ watch(
   () => route.query, // 监听 route.query
   (newQuery) => {
     // 更新 requestData 中的搜索参数
-    requestData.value.q = newQuery.q
-    requestData.value.category = newQuery.category
-    requestData.value.page = 1 // 重置页码
+    requestData.value = {
+      q: newQuery.q,
+      category: newQuery.category,
+      page: 1, // 重置页码
+      sortField: newQuery.sortField,
+      sortMin: newQuery.sortMin,
+      sortMax: newQuery.sortMax
+    }
     fetchSearchResults() // 重新获取搜索结果
   }
 )
