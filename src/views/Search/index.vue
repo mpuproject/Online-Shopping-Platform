@@ -58,9 +58,9 @@ watch(
       q: newQuery.q,
       category: newQuery.category,
       page: 1, // 重置页码
-      sortField: newQuery.sortField,
-      sortMin: newQuery.sortMin,
-      sortMax: newQuery.sortMax
+      sortField: 'default', // 重置排序方式
+      sortMin: null,
+      sortMax: null,    // 重置最小值和最大值
     }
     fetchSearchResults() // 重新获取搜索结果
   }
