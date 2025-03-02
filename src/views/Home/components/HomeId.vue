@@ -1,3 +1,53 @@
+<script setup>
+import { onBeforeMount, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import 'element-plus/theme-chalk/el-message.css'
+import { useUserStore } from '@/stores/user'
+import SlidingCart from './SlidingCart.vue'
+import { saveCartToServer } from '@/composables/logout'
+import { getMessageCountAPI } from '@/apis/home'
+
+const userStore = useUserStore()
+const slidingCartRef = ref(null)
+const router = useRouter()
+
+const confirmLogout = async () => {
+  await saveCartToServer('/')
+}
+
+const openCart = (event) => {
+  event.preventDefault()
+  slidingCartRef.value?.toggleCart()
+}
+
+const goToOrders = (event) => {
+  event.preventDefault()
+  router.push('/order')
+}
+
+const avatarUrl = userStore.userInfo.profile
+const stats = [
+  { icon: '&#x10186;', label: 'Mark', link: '#/favorites' },
+  { icon: '&#x10187;', label: 'Cart', link: '#/cart', onClick: openCart },
+  { icon: '&#x10188;', label: 'Note', link: '#/messages' },
+  { icon: '&#x10189;', label: 'Order', link: '#/order', onClick: goToOrders }
+]
+
+const pending = ref({})
+
+const getMessageCount = async () => {
+  const res = await getMessageCountAPI(userStore.userInfo.id)
+  pending.value = res.data
+}
+
+onBeforeMount( async () => {
+  if(userStore.userInfo.id) {
+    await getMessageCount()
+  }
+})
+
+</script>
+
 <template>
   <div v-if="userStore.userInfo.username" class="profile-card">
     <div class="avatar">
@@ -33,16 +83,16 @@
         <span class="label">Unpaid</span>
       </div>
       <div class="pending-item">
-        <span class="number">{{ pending.paid }}</span>
-        <span class="label">Paid</span>
+        <span class="number">{{ pending.pending }}</span>
+        <span class="label">Pending</span>
       </div>
       <div class="pending-item">
         <span class="number">{{ pending.review }}</span>
         <span class="label">Review</span>
       </div>
       <div class="pending-item">
-        <span class="number">{{ pending.returns }}</span>
-        <span class="label">Return</span>
+        <span class="number">{{ pending.refunding }}</span>
+        <span class="label">Refunding</span>
       </div>
     </div>
 
@@ -80,54 +130,6 @@
 
   <SlidingCart ref="slidingCartRef" />
 </template>
-
-<script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import 'element-plus/theme-chalk/el-message.css'
-import { useUserStore } from '@/stores/user'
-import SlidingCart from './SlidingCart.vue'
-import { saveCartToServer } from '@/composables/logout'
-// import { getOrderByUserIdAPI } from '@/apis/checkout'
-
-const userStore = useUserStore()
-const slidingCartRef = ref(null)
-const router = useRouter()
-
-const confirmLogout = async () => {
-  await saveCartToServer('/')
-}
-
-const openCart = (event) => {
-  event.preventDefault()
-  slidingCartRef.value?.toggleCart()
-}
-
-const goToOrders = (event) => {
-  event.preventDefault()
-  router.push('/order')
-}
-
-const avatarUrl = userStore.userInfo.profile
-const stats = [
-  { icon: '&#x10186;', label: 'Mark', link: '#/favorites' },
-  { icon: '&#x10187;', label: 'Cart', link: '#/cart', onClick: openCart },
-  { icon: '&#x10188;', label: 'Note', link: '#/messages' },
-  { icon: '&#x10189;', label: 'Order', link: '#/order', onClick: goToOrders }
-]
-
-const pending = ref({
-  unpaid: 0,
-  paid: 0,
-  review: 12,
-  returns: 0
-})
-
-// const getOrderByUserId = async () => {
-//   const res = await getOrderByUserIdAPI(userStore.userInfo.id)
-//   pending.value.
-// }
-</script>
 
 <style scoped lang="scss">
 @font-face {
@@ -287,7 +289,7 @@ const pending = ref({
     }
 
     .label {
-      font-size: 13px; /* Slightly increased for better readability */
+      font-size: 10px; /* Slightly increased for better readability */
       color: #666;
     }
   }

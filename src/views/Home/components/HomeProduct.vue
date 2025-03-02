@@ -11,10 +11,10 @@ const goodsProduct = ref([
     saleInfo: "Furniture",
     picture: "https://picsum.photos/200/600",
     goods: [
-      { id: 101, name: "Comfort Sofa", price: 1999, picture: "https://picsum.photos/200/200?random=1" },
-      { id: 102, name: "Dining Table", price: 2499, picture: "https://picsum.photos/200/200?random=2" },
-      { id: 103, name: "Soft Matress", price: 999, picture: "https://picsum.photos/200/200?random=3" },
-      { id: 104, name: "Simple Shelf", price: 599, picture: "https://picsum.photos/200/200?random=4" }
+      { id: 101, name: "Comfort Sofa", price: 1999, images: "https://picsum.photos/200/200?random=1" },
+      { id: 102, name: "Dining Table", price: 2499, images: "https://picsum.photos/200/200?random=2" },
+      { id: 103, name: "Soft Matress", price: 999, images: "https://picsum.photos/200/200?random=3" },
+      { id: 104, name: "Simple Shelf", price: 599, images: "https://picsum.photos/200/200?random=4" }
     ]
   },
   {
@@ -23,10 +23,10 @@ const goodsProduct = ref([
     saleInfo: "Delicacies",
     picture: "https://picsum.photos/200/600",
     goods: [
-      { id: 201, name: "Sirloin Steak", price: 199, picture: "https://picsum.photos/200/200?random=6" },
-      { id: 202, name: "Organic Vege", price: 29, picture: "https://picsum.photos/200/200?random=7" },
-      { id: 203, name: "Fresh Fruit", price: 39, picture: "https://picsum.photos/200/200?random=8" },
-      { id: 204, name: "Fine Red Wine", price: 299, picture: "https://picsum.photos/200/200?random=9" }
+      { id: 201, name: "Sirloin Steak", price: 199, images: "https://picsum.photos/200/200?random=6" },
+      { id: 202, name: "Organic Vege", price: 29, images: "https://picsum.photos/200/200?random=7" },
+      { id: 203, name: "Fresh Fruit", price: 39, images: "https://picsum.photos/200/200?random=8" },
+      { id: 204, name: "Fine Red Wine", price: 299, images: "https://picsum.photos/200/200?random=9" }
     ]
   }
 ]);

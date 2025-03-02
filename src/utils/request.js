@@ -2,11 +2,13 @@ import axios from "axios";
 import 'element-plus/theme-chalk/el-message.css'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from "@/stores/user"
-import { saveCartToServer } from "@/composables/logout";
+import { saveCartToServer } from "@/composables/logout"
+import router from '@/router/index'
 
 const httpInstance = axios.create({
     baseURL: '/api/',
     timeout: 5000,
+    headers: { 'Content-Type': 'application/json' }
 })
 
 let isRefreshing = false; // 标记是否正在刷新token
@@ -43,10 +45,7 @@ httpInstance.interceptors.response.use(res => res.data, async e => {
         e.config.headers.Authorization = `Bearer ${response.access}`;
         return httpInstance(e.config);
       } catch (refreshError) {
-        ElMessage({
-          type: 'error',
-          message: 'Token refresh failed. Please log in again.',
-        });
+        ElMessage.error('Token refresh failed. Please log in again.');
         isRefreshing = false; // 刷新失败，取消标记
         await saveCartToServer('/login');
         return Promise.reject(refreshError);
@@ -64,6 +63,9 @@ httpInstance.interceptors.response.use(res => res.data, async e => {
         });
       });
     }
+  } else if(e.response.status === 404) {
+    router.push({ path: '/404' })
+    return Promise.reject(e)
   } else {
     ElMessage({
       type: 'warning',

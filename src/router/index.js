@@ -24,6 +24,7 @@ import orderDetail from '@/views/Order/components/orderDetail.vue'
 import CommentLayout from '@/views/Comment/index.vue'
 import CommentAdd from '@/views/Comment/component/CommentAdd.vue'
 import CommentReview from '@/views/Comment/component/CommentReview.vue'
+import NotFound from '@/views/ExceptionHandlePages/NotFound.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -43,8 +44,14 @@ const router = createRouter({
       ]
     },
 
+    // 支付成功页面
     { path: '/pay/success', component: PaySuccess, meta: { title: 'success' } },
 
+    // 订单页面
+    { path: '/order', component: Order, meta: { title: 'Rabbuy - Orders', requiresUser: true } },
+    { path: '/order/detail/:id', component: orderDetail, meta: {title: 'Rabbuy - Order Detail', requiresUser: true}},
+
+    // 评论页面
     {
       path: '/order/comment/', component: CommentLayout,
       children: [
@@ -53,11 +60,11 @@ const router = createRouter({
       ]
     },
 
-
+    //用户登录与注册
     { path: '/login', component: Login, meta: { title: 'Rabbuy Login' } },
-
     { path: '/register', component: Register, meta: { title: 'Rabbuy registration' } },
 
+    //管理员界面
     {
       path: '/admin', redirect: '/admin/product', component: Admin,
       meta: { title: 'Rabbuy admin', requiresAdmin: true },
@@ -68,11 +75,12 @@ const router = createRouter({
       ]
     },
 
-    { path: '/order', component: Order, meta: { title: 'Rabbuy - Orders', requiresUser: true } },
-    { path: '/order/detail/:id', component: orderDetail, meta: {title: 'Rabbuy - Order Detail', requiresUser: true}},
-
+    //管理员登录界面
     { path: '/admin/product/add', component: ProductAdd, meta: { title: 'Add product' } },
     { path: '/admin/product/details/:id', component: ProductDetail, meta: { title: 'Product details' } },
+
+    // 处理错误
+    { path: '/:pathMatch(.*)*', component: NotFound, meta: { title: 'Page Not Found' } }
   ],
 
   scrollBehavior() {

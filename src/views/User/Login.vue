@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, getCurrentInstance } from 'vue'
 import 'element-plus/theme-chalk/el-message.css'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useRouter } from 'vue-router'
@@ -10,6 +10,9 @@ import { useCartStore } from '@/stores/cartStore';
 
 const userStore = useUserStore()
 const cartStore = useCartStore()
+const router = useRouter()
+
+const app = getCurrentInstance()?.appContext.config.globalProperties
 
 // switch display of password
 const showPassword = ref(false);
@@ -34,13 +37,12 @@ const rules = {
     { required: true, message: 'The password cannot be empty', trigger: 'blur' },
     { min: 6, max: 20, message: 'Length of password must be in 6-20', trigger: 'blur'  }
   ],
-  agree: [
-    {
+  agree: [{
       validator: (rule, value, callback) => {
         if(value === true) {
           callback()
         } else {
-          callback(new Error('Please conform our protocol'))
+          ElMessage.error('Please confirm our contract')
         }
       }
     }
@@ -48,8 +50,6 @@ const rules = {
 }
 
 const formRef = ref(null)
-
-const router = useRouter()
 
 const afterLogin = () => {
   ElMessage({ type: 'success', message: 'Login success' })
@@ -64,12 +64,30 @@ const afterLogin = () => {
   }
 }
 
+// 执行reCAPTCHA
+const executeRecaptcha = async () => {
+  try {
+    const token = await app?.$recaptcha('login')
+    return token
+  } catch (error) {
+    console.error('reCAPTCHA error:', error)
+    return null
+  }
+}
+
 const doLogin = () => {
   const { username, password } = form.value
 
   formRef.value.validate( async (valid) => {
     if(valid) {
-      const userInfo = await userStore.getUserInfo({ username, password })
+      // 调用 reCAPTCHA v3 获取 token
+      const token = await executeRecaptcha()
+      if (!token) {
+        ElMessage.error('reCAPTCHA verification failed')
+        return
+      }
+
+      const userInfo = await userStore.getUserInfo({ username, password, token })
       const dbcart = await cartStore.getCart(userInfo.id)
 
       // 若购物车不为空：是否合并本地购物车
@@ -80,7 +98,7 @@ const doLogin = () => {
           {
             confirmButtonText: 'Confirm',
             cancelButtonText: 'Cancel',
-            type: 'warning',
+             type: 'warning',
           }
         ).then(() => {
           // 确认：将dbcart中的东西加入购物车

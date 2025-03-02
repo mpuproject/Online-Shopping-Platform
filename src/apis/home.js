@@ -20,3 +20,12 @@ export const findHotAPI = () => {
     url: '/home/hot/'
   })
 }
+
+export const getMessageCountAPI = (userId) => {
+  return request({
+    url: '/home/message/',
+    params: {
+      userId
+    }
+  })
+}

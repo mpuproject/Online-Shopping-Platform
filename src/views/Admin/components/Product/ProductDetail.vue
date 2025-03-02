@@ -102,7 +102,7 @@ const getCategoryOptions = async () => {
   }))
 }
 
-onMounted(() => { getCategoryOptions() })
+onMounted( () => { getCategoryOptions() })
 
 // 获取分类路径
 const getCategoryPath = computed(() => {

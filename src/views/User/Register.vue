@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, getCurrentInstance } from 'vue'
 import 'element-plus/theme-chalk/el-message.css'
 import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
@@ -10,6 +10,7 @@ import { addRegisterAddressAPI } from '@/apis/address';
 
 const router = useRouter()
 const userStore = useUserStore();
+const app = getCurrentInstance()?.appContext.config.globalProperties
 
 // switch display of password
 const showPassword = ref(false);
@@ -108,8 +109,19 @@ const newAddress = ref({
   postal_code: '',
 })
 
+// reCAPTCHA 执行方法
+const executeRecaptcha = async () => {
+  try {
+    const token = await app?.$recaptcha('register')
+    return token
+  } catch (error) {
+    console.error('reCAPTCHA error:', error)
+    return null
+  }
+}
+
 const doRegister = () => {
-  formRef.value.validate(valid => {
+  formRef.value.validate(async (valid) => {
     if(valid) {
       // 主表单验证通过后，设置收件人并弹出地址表单
       newAddress.value.recipient = form.value.firstName + ' ' + form.value.lastName
@@ -129,9 +141,23 @@ const handleAddAddress = () => {
     if (valid) {
       // 地址表单验证成功
       showAddDialog.value = false
+      // 执行 reCAPTCHA 验证
+      const token = await executeRecaptcha()
+      if (!token) {
+        ElMessage.error('reCAPTCHA verification failed')
+        return
+      }
+
       const { username, email, firstName, lastName, password, confirmPwd } = form.value;
-      console.log(firstName+lastName)
-      const user = await userStore.register({ username, email, firstName, lastName, password, confirmPwd });
+      const user = await userStore.register({
+        username,
+        email,
+        firstName,
+        lastName,
+        password,
+        confirmPwd,
+        token
+      });
 
       // 添加地址
       newAddress.value.user_id = user.id

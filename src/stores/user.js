@@ -5,8 +5,8 @@ import { loginAPI, signupAPI } from '@/apis/user';
 export const useUserStore = defineStore('user', () => {
     const userInfo = ref({})
 
-    const getUserInfo = async ({ username, password }) => {
-        const res = await loginAPI({ username, password })
+    const getUserInfo = async ({ username, password, recaptchaToken }) => {
+        const res = await loginAPI({ username, password, recaptchaToken })
         userInfo.value = res.data
         return res.data
     }
@@ -15,8 +15,8 @@ export const useUserStore = defineStore('user', () => {
         userInfo.value = {}
     }
 
-    const register = async ({ username, email, firstName, lastName, password, confirmPwd }) => {
-        const res = await signupAPI({ username, email, firstName, lastName, password, confirmPwd })
+    const register = async ({ username, email, firstName, lastName, password, confirmPwd, recaptchaToken }) => {
+        const res = await signupAPI({ username, email, firstName, lastName, password, confirmPwd, recaptchaToken })
         return res.data.user
     }
 

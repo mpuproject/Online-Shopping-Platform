@@ -1,27 +1,29 @@
 import request from '@/utils/request'
 
-export const loginAPI = ({ username, password }) => {
+export const loginAPI = ({ username, password, recaptchaToken }) => {
     return request({
         url: '/user/login/',
         method: 'POST',
         data: {
             username,
-            password
+            password,
+            recaptchaToken
         }
     })
 }
 
-export const signupAPI = ({ username, email, firstName, lastName, password, confirmPwd }) => {
-    return request({
-        url: '/user/register/',
-        method: 'POST',
-        data: {
-            username,
-            email,
-            firstName,
-            lastName,
-            password,
-            confirmPwd
-        }
-    })
+export const signupAPI = ({ username, email, firstName, lastName, password, confirmPwd, recaptchaToken }) => {
+  return request({
+    url: '/user/register/',
+    method: 'POST',
+    data: {
+      username,
+      email,
+      firstName,
+      lastName,
+      password,
+      confirmPwd,
+      recaptchaToken
+    }
+  })
 }
