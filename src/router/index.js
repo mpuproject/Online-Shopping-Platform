@@ -25,6 +25,7 @@ import CommentLayout from '@/views/Comment/index.vue'
 import CommentAdd from '@/views/Comment/component/CommentAdd.vue'
 import CommentReview from '@/views/Comment/component/CommentReview.vue'
 import NotFound from '@/views/ExceptionHandlePages/NotFound.vue'
+import AdminOrder from '@/views/Admin/components/AdminOrder.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -71,7 +72,8 @@ const router = createRouter({
       children: [
         { path: 'product', component: AdminProduct, },
         { path: 'category', component: AdminCategory },
-        { path: 'subcategory', component: AdminSubcategory }
+        { path: 'subcategory', component: AdminSubcategory },
+        { path: 'order', component: AdminOrder }
       ]
     },
 

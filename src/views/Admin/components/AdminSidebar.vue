@@ -25,6 +25,11 @@
         <el-icon><Grid /></el-icon>
         <span>Sub-Category</span>
       </el-menu-item>
+
+      <el-menu-item index="/admin/order" class="sidebar-item">
+        <el-icon><Document /></el-icon>
+        <span>Orders</span>
+      </el-menu-item>
     </el-menu>
   </div>
 </template>
@@ -32,7 +37,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRoute } from 'vue-router'
-import { Goods, Grid, Menu } from '@element-plus/icons-vue'
+import { Goods, Grid, Menu, Document } from '@element-plus/icons-vue'
 
 const route = useRoute()
 
