@@ -1,14 +1,14 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import { Search, InfoFilled } from '@element-plus/icons-vue'
-import { getOrdersAPI, updateOrderStatusAPI } from '@/apis/order'
+import { getAdminOrdersAPI, updateOrderStatusAPI } from '@/apis/order'
 import { ElMessageBox, ElMessage } from 'element-plus'
 import dayjs from 'dayjs'
 
 // 完整订单状态映射（根据OrderItem状态）
 const statusMap = {
   '0': { text: 'Unpaid', type: 'warning' },
-  '1': { text: 'Paid', type: 'primary' },
+  '1': { text: 'Pending', type: 'primary' },
   '2': { text: 'Canceled', type: 'danger' },
   '3': { text: 'Undelivered', type: 'info' },
   '4': { text: 'Delivered', type: 'success' },
@@ -24,8 +24,6 @@ const tableData = ref([])
 const requestData = ref({
   page: 1,
   pageSize: 10,
-  sortField: 'created_time',
-  sortOrder: 'desc'
 })
 
 // 计算序号
@@ -36,7 +34,7 @@ const getIndex = (index) => {
 const total = ref(0)
 
 const getOrders = async () => {
-  const res = await getOrdersAPI(requestData.value)
+  const res = await getAdminOrdersAPI(requestData.value)
   tableData.value = res.data.results.map(order => ({
     ...order,
     created_time: dayjs(order.created_time).format('YYYY-MM-DD HH:mm')

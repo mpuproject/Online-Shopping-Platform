@@ -153,6 +153,17 @@ watch(
                 </span>
                 <span v-else>{{ product.stock_quantity }}</span>
               </p>
+              <p class="g-rating">
+                Rating:
+                <el-rate
+                  v-model="product.rating"
+                  disabled
+                  :colors="['#99A9BF', '#F7BA2A', '#FF9900']"
+                  size="large"
+                  style="display: inline-block; margin-left: 8px;"
+                />
+                <span style="color: #FFA500; margin-left: 8px;">{{ product.rating }}</span>
+              </p>
               <div class="g-service">
                 <dl>
                   <dt>On-Sale:</dt>
@@ -352,6 +363,11 @@ watch(
     .low-stock {
       color: #f33c3c;
     }
+  }
+
+  .g-rating {
+    margin-top: 10px;
+    font-size: 16px;
   }
 
   .g-service {

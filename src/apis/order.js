@@ -1,14 +1,30 @@
 
 import request from '@/utils/request'
 
-// 管理员获取所有订单
+/**
+ * @description 管理员获取所有订单
+ *
+ * @param {*} params
+ * @returns
+ */
 export const getAdminOrdersAPI = async (params) => {
   return request({
-    url: '/admin/orders/',
+    url: '/order/admin/list/',
     method: 'GET',
-    params: {
-      page: params.page,
-      page_size: params.pageSize
-    }
+    params
+  })
+}
+
+/**
+ * @description 管理员更新相关订单
+ *
+ * @param {*} data
+ * @returns
+ */
+export const updateOrderStatusAPI = async (data) => {
+  return request({
+    url: 'order/admin/update/',
+    method: 'PUT',
+    data
   })
 }
