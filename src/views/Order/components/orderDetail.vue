@@ -3,20 +3,21 @@
   import { useRoute, useRouter } from 'vue-router'
   import { ElMessage } from 'element-plus'
   import { getOrderByIdAPI } from '@/apis/checkout'
+  import { getAddressAPI } from '@/apis/address'
+  import { useUserStore } from '@/stores/user'
 
   const route = useRoute()
   const router = useRouter()
   const order = ref(null)
   const loading = ref(true)
   const error = ref(null)
+  const userStore = useUserStore()
+  const defaultAddress = ref(null)
 
   const statusMap = {
-    '0': { text: '未支付', type: 'warning' },
-    '1': { text: '已支付', type: 'success' },
-    '2': { text: '已取消', type: 'info' },
-    '3': { text: '已发货', type: 'primary' },
-    '4': { text: '已送达', type: '' },
-    '5': { text: '已签收', type: 'success' }
+    '0': { text: 'Unpaid', type: 'warning' },
+    '1': { text: 'Paid', type: 'success' },
+    '2': { text: 'Cancel', type: 'info' },
   }
 
   const fetchOrderDetail = async () => {
@@ -50,20 +51,40 @@
     }
   }
 
-const formatDateTime = (isoString) => {
-  if (!isoString) return ''
-  const date = new Date(isoString)
-  return date.toLocaleString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit'
-  }).replace(/\//g, '-')
-}
+  const formatDateTime = (isoString) => {
+    if (!isoString) return ''
+    const date = new Date(isoString)
+    return date.toLocaleString('zh-CN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    }).replace(/\//g, '-')
+  }
 
-onMounted(() => { fetchOrderDetail() })
+  const formatFullLocation = (address) => {
+    if (!address) return ''
+    return address.province === address.city 
+      ? `${address.district}, ${address.province}`
+      : `${address.district}, ${address.city}, ${address.province}`
+  }
+
+  const fetchDefaultAddress = async () => {
+    try {
+      const res = await getAddressAPI(userStore.userInfo.id)
+      const addresses = res.data || []
+      defaultAddress.value = addresses.find(addr => addr.is_default) || null
+    } catch (error) {
+      ElMessage.error('Failed to fetch address: ' + error.message)
+    }
+  }
+
+  onMounted(async () => {
+    await fetchOrderDetail()
+    await fetchDefaultAddress()
+  })
 </script>
 
 <template>
@@ -82,12 +103,26 @@ onMounted(() => { fetchOrderDetail() })
     <div v-if="order" class="content">
       <!-- 订单头 -->
       <div class="header">
-        <h2>Order ID:{{ order.id }}</h2>
+        <h2>Order ID: {{ order.id }}</h2>
         <el-tag :type="statusMap[order.status]?.type || 'info'">
           {{ statusMap[order.status]?.text || '未知状态' }}
         </el-tag>
       </div>
-
+      <!-- 地址显示 -->
+      <div class="address-section">
+        <h3 class="section-title">Address</h3>
+        <div class="address-content" v-if="defaultAddress">
+          <p><span class="label">Recipient:</span>{{ defaultAddress.recipient }}</p>
+          <p><span class="label">Contact:</span>{{ defaultAddress.phone }}</p>
+          <p><span class="label">Address:</span>
+            {{ defaultAddress.additional_addr }}, 
+            {{ formatFullLocation(defaultAddress) }}
+          </p>
+        </div>
+        <div class="empty-address" v-else>
+          <el-empty description="No default address found" :image-size="60" />
+        </div>
+      </div>
       <!-- 商品列表 -->
       <div class="goods-list">
         <div
@@ -109,7 +144,7 @@ onMounted(() => { fetchOrderDetail() })
 
       <!-- 订单信息 -->
       <el-descriptions
-        title="订单信息"
+        title="Order Info"
         border
         :column="2"
         class="order-info"
@@ -224,6 +259,37 @@ onMounted(() => { fetchOrderDetail() })
       color: #e4393c;
       font-size: 18px;
       font-weight: bold;
+    }
+  }
+
+  .address-section {
+    margin-top: 30px;
+    padding: 20px;
+    border: 1px solid #eee;
+    border-radius: 4px;
+
+    .section-title {
+      font-size: 16px;
+      color: #666;
+      margin-bottom: 15px;
+    }
+
+    .address-content {
+      p {
+        margin: 8px 0;
+        font-size: 14px;
+        
+        .label {
+          color: #999;
+          margin-right: 10px;
+          width: 80px;
+          display: inline-block;
+        }
+      }
+    }
+
+    .empty-address {
+      padding: 20px 0;
     }
   }
 }
