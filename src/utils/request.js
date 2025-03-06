@@ -64,7 +64,10 @@ httpInstance.interceptors.response.use(res => res.data, async e => {
       });
     }
   } else if(e.response.status === 404) {
-    router.push({ path: '/404' })
+    router.replace({ path: '/404' })
+    return Promise.reject(e)
+  } else if(e.response.status === 403) {
+    router.replace({ path: '/403' })
     return Promise.reject(e)
   } else {
     ElMessage({

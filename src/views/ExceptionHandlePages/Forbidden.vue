@@ -1,16 +1,16 @@
 <template>
-  <div class="not-found">
-    <h1>404 - Page Not Found</h1>
-    <p>Sorry, the page you are looking for does not exist.</p>
+  <div class="forbidden">
+    <h1>403 - Access Forbidden</h1>
+    <p>Sorry, you are not authorized to view this page.</p>
     <p v-if="$route.query.attempted">
-      You tried to access: <code>{{ $route.query.attempted }}</code>
+      Attempted access: <code>{{ $route.query.attempted }}</code>
     </p>
-    <router-link to="/">Go to Home</router-link>
+    <router-link to="/">Return to Home</router-link>
   </div>
 </template>
 
 <style scoped>
-.not-found {
+.forbidden {
   text-align: center;
   padding: 2rem;
 }

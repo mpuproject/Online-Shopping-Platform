@@ -282,7 +282,15 @@ const formatDateTime = (timeString) => {
                         size='small'
                         @click="$router.push({ path: `/order/comment/add/${item.id}` })"
                       >
-                        Comment
+                        Comment Now
+                      </el-button>
+                      <el-button
+                        v-if="item.status === '8'"
+                        type='default'
+                        size='small'
+                        @click="$router.push({ path: `/order/comment/review/${item.id}` })"
+                      >
+                        View my comment
                       </el-button>
                     </div>
                     <div class="count">x{{ item.quantity }}</div>

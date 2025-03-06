@@ -2,14 +2,12 @@
 import { ref, onMounted } from 'vue';
 import { getOrderItemAPI } from '@/apis/checkout';
 import { useRoute } from 'vue-router';
-import { useRouter } from 'vue-router';
 import { postImageAPI } from '@/apis/image';
 import { Plus } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus';
 import { addCommentAPI } from '@/apis/comment';
 
 const route = useRoute()
-const router = useRouter()
 
 const isCommented = ref(false)
 
@@ -61,7 +59,6 @@ const handleUploadSuccess = (response) => {
   if (response && response.url) {
     requestData.value.images.push(response.url)
     ElMessage.success('Image uploaded successfully')
-    router.push({ path: '/order' })
   } else {
     ElMessage.error('Failed: unvalid URL in return')
   }
@@ -129,7 +126,7 @@ const handleRemove = (file) => {
       <p>Thank you for your feedback! Your comment has been successfully submitted.</p>
       <div class="button-group">
         <el-button type="default" @click="$router.push('/order')">Back to Orders</el-button>
-        <el-button type="primary">View Comment</el-button>
+        <el-button type="primary" @click="$router.push(`/order/comment/review/${route.params.id}`)">View Comment</el-button>
       </div>
     </div>
   </div>

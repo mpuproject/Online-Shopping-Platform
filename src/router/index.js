@@ -25,6 +25,7 @@ import CommentLayout from '@/views/Comment/index.vue'
 import CommentAdd from '@/views/Comment/component/CommentAdd.vue'
 import CommentReview from '@/views/Comment/component/CommentReview.vue'
 import NotFound from '@/views/ExceptionHandlePages/NotFound.vue'
+import Forbidden from '@/views/ExceptionHandlePages/Forbidden.vue'
 import AdminOrder from '@/views/Admin/components/AdminOrder.vue'
 
 const router = createRouter({
@@ -77,12 +78,13 @@ const router = createRouter({
       ]
     },
 
-    //管理员登录界面
+    //管理员商品添加界面
     { path: '/admin/product/add', component: ProductAdd, meta: { title: 'Add product' } },
     { path: '/admin/product/details/:id', component: ProductDetail, meta: { title: 'Product details' } },
 
     // 处理错误
-    { path: '/:pathMatch(.*)*', component: NotFound, meta: { title: 'Page Not Found' } }
+    { path: '/:pathMatch(.*)*', component: NotFound, meta: { title: 'Page Not Found' } },
+    { path: '/403', component: Forbidden, meta: { title: 'Access Forbidden' }},
   ],
 
   scrollBehavior() {
