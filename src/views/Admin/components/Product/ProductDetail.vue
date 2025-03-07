@@ -33,6 +33,7 @@ const formData = ref({
 })
 
 const categoryPath = ref([])
+const originalFormData = ref({}) // 用于存储原始数据
 
 const getAdminProduct = async () => {
   const res = await getAdminProductAPI(route.params.id);
@@ -41,6 +42,9 @@ const getAdminProduct = async () => {
   formData.value = res.data;
   formData.value.price = Number(formData.value.price)
   formData.value.sub_category = [res.data.category.id, res.data.sub_category.id];
+
+  // 保存原始数据
+  originalFormData.value = { ...formData.value };
 
   // 转换图片格式
   formData.value.images = formData.value.images.map(url => ({
@@ -135,6 +139,27 @@ const handleEdit = () => {
   }
 }
 
+// 处理重置
+const handleReset = async () => {
+  try {
+    await ElMessageBox.confirm(
+      'Are you sure to reset the form? All unsaved changes will be lost.',
+      'Warning',
+      {
+        confirmButtonText: 'Confirm',
+        cancelButtonText: 'Cancel',
+        type: 'warning',
+      }
+    )
+    formData.value = { ...originalFormData.value }
+    ElMessage.success('Form reset successfully')
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error('Failed to reset form')
+    }
+  }
+}
+
 // 处理删除
 const handleDelete = async () => {
   try {
@@ -200,7 +225,7 @@ const handleUploadSuccess = (response) => {
 
 // 处理图片删除
 const handleRemove = (file) => {
-  const index = formData.value.images.indexOf(file.url)
+  const index = formData.value.images.findIndex(img => img.url === file.url)
   if (index !== -1) {
     formData.value.images.splice(index, 1)
   }
@@ -234,6 +259,13 @@ const formatDate = (date) => {
               @click="handleEdit"
             >
               {{ isEditing ? 'Undo' : 'Edit' }}
+            </el-button>
+            <el-button
+              v-if="isEditing"
+              type="default"
+              @click="handleReset()"
+            >
+              Reset
             </el-button>
             <el-button
               v-if="!isEditing"
