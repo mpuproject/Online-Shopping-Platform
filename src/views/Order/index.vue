@@ -292,6 +292,14 @@ const formatDateTime = (timeString) => {
                       >
                         View my comment
                       </el-button>
+                      <el-button
+                        v-if="activeTab === '8'"
+                        type="defult"
+                        size="small"
+                        @click="$router.push(`/order/comment/review/${item.id}`)"
+                      >
+                        View Comment
+                      </el-button>
                     </div>
                     <div class="count">x{{ item.quantity }}</div>
                   </li>
@@ -303,7 +311,7 @@ const formatDateTime = (timeString) => {
                   <a class="green">Track Shipping</a>
                 </p>
               </div>
-              <div class="column amount">
+              <div class="column amount" v-if="['all', '0'].includes(activeTab)">
                 <p class="red">¥{{ (order.payMoney + order.postFee).toFixed(2) }}</p>
                 <p v-if="order.postFee > 0">(Shipping: ¥{{ order.postFee.toFixed(2) }})</p>
               </div>
