@@ -7,6 +7,7 @@ import { View, Hide } from '@element-plus/icons-vue';
 
 import { useUserStore } from '@/stores/user'
 import { useCartStore } from '@/stores/cartStore';
+import { jwtDecode } from 'jwt-decode';
 
 const userStore = useUserStore()
 const cartStore = useCartStore()
@@ -54,8 +55,9 @@ const formRef = ref(null)
 const afterLogin = () => {
   ElMessage({ type: 'success', message: 'Login success' })
 
+  const is_staff = jwtDecode(userStore.userInfo.access).is_staff;
   // 判断是否为管理员
-  if(!userStore.userInfo.is_staff) {
+  if(!is_staff) {
     const redirect = router.currentRoute.value.query.redirect || '/'
     router.push(redirect)
   }

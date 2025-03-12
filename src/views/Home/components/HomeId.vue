@@ -17,7 +17,7 @@ const confirmLogout = async () => {
 
 const openCart = (event) => {
   event.preventDefault()
-  slidingCartRef.value?.toggleCart()
+  router.push('/cartlist')
 }
 
 const goToOrders = (event) => {
@@ -77,6 +77,7 @@ onBeforeMount( async () => {
         <span>{{ item.label }}</span>
       </a>
     </div>
+    <p class="orderstatus">Order Status:</p>
     <div class="pending">
       <div class="pending-item">
         <span class="number">{{ pending.unpaid }}</span>
@@ -264,6 +265,11 @@ onBeforeMount( async () => {
   justify-content: space-around;
   margin: 20px 0 25px; /* Adjusted margins */
   padding: 0 10px; /* Added padding */
+}
+
+.orderstatus {
+  text-align: left;
+  margin-left: 15px;
 }
 
 .pending {

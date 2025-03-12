@@ -15,6 +15,12 @@ export const getAddressAPI = async (id) => {
   })
 }
 
+/**
+ * @description 添加地址
+ *
+ * @param {*} data
+ * @returns
+ */
 export const addAddressAPI = async (data) => {
   return request({
     'url': '/address/add/',
@@ -23,6 +29,13 @@ export const addAddressAPI = async (data) => {
   })
 }
 
+/**
+ * @description 在注册前添加地址
+ *
+ * @param {*} data
+ * @param {*} access
+ * @returns
+ */
 export const addRegisterAddressAPI = async (data, access) => {
   return request({
     'url': '/address/add/',
@@ -31,5 +44,35 @@ export const addRegisterAddressAPI = async (data, access) => {
       Authorization: `Bearer ${access}`
     },
     data
+  })
+}
+
+/**
+ * @description 修改地址
+ *
+ * @param {*} data
+ * @returns
+ */
+export const editAddressAPI = async (data) => {
+  return request({
+    'url': '/address/update/',
+    method: 'PUT',
+    data
+  })
+}
+
+/**
+ * @description 删除地址
+ *
+ * @param {*} id
+ * @returns
+ */
+export const deleteAddressAPI = async (id) => {
+  return request({
+    'url': '/address/delete/',
+    method: 'DELETE',
+    data: {
+      id
+    }
   })
 }

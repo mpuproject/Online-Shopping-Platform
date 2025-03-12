@@ -22,7 +22,7 @@ const getDetail = async () => {
       }
     });
   } catch (error) {
-    console.error('获取商品详情失败:', error);
+    console.error(error);
   }
 };
 
@@ -124,7 +124,11 @@ watch(
                 </li>
                 <li>
                   <p>Comment</p>
-                  <p>200+</p>
+                  <p>{{
+                    product.rating_num === 0 ? 'No data' :
+                    product.rating_num < 100 ? product.rating_num :
+                    Math.min(Math.floor(product.rating_num / 100) * 100, 1000) + '+'
+                  }}</p>
                   <p><i class="iconfont icon-comment-filling"></i>Check</p>
                 </li>
                 <li>
@@ -155,14 +159,16 @@ watch(
               </p>
               <p class="g-rating">
                 Rating:
-                <el-rate
+                <el-rate v-if="product.rating_num > 0"
                   v-model="product.rating"
                   disabled
                   :colors="['#99A9BF', '#F7BA2A', '#FF9900']"
                   size="large"
                   style="display: inline-block; margin-left: 8px;"
                 />
-                <span style="color: #FFA500; margin-left: 8px;">{{ product.rating }}</span>
+                <span style="color: #FFA500; margin-left: 8px;">
+                  {{ product.rating_num > 0 ? product.rating : 'No data' }}
+                </span>
               </p>
               <div class="g-service">
                 <dl>

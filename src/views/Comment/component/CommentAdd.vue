@@ -6,6 +6,7 @@ import { postImageAPI } from '@/apis/image';
 import { Plus } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus';
 import { addCommentAPI } from '@/apis/comment';
+import DOMPurify from 'dompurify';
 
 const route = useRoute()
 
@@ -34,11 +35,12 @@ const requestData = ref({
 
 // 提交按钮
 const submitComment = async () => {
+    requestData.value.commentDesc = DOMPurify.sanitize(requestData.value)
+
     const res = await addCommentAPI(requestData.value);
     if (res.code === 1) {
         ElMessage.success('Comment success');
         isCommented.value = res.data.isCommented
-        // router.push({ path })
     } else {
         ElMessage.error('Submission failed');
     }

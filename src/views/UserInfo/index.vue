@@ -56,11 +56,11 @@ const fetchOrders = async () => {
   try {
     const params = {
       userId: userStore.userInfo.id,
-      page: 1,  
+      page: 1,
       page_size: 2,  // 限制获取1条最新订单
       ordering: '-created_time'
     }
-    
+
     const { data } = await getOrderByUserIdAPI(params)
     orderList.value = data.results.map(order => ({
       id: order.id,
@@ -87,7 +87,6 @@ const form = ref({
   username: '',
   email: '',
   phone: '',
-  profile: ''
 })
 
 const showEditForm = ref(false)
@@ -99,7 +98,6 @@ const toggleEditForm = () => {
       username: userStore.userInfo.username || '',
       email: userStore.userInfo.email || '',
       phone: userStore.userInfo.phone || '',
-      profile: userStore.userInfo.profile || ''
     }
   }
 }
@@ -112,7 +110,7 @@ const submitForm = async () => {
       id: userStore.userInfo.id,
       ...form.value
     })
-    
+
     // 更新store中的用户信息
     userStore.userInfo = { ...userStore.userInfo, ...res.data }
     ElMessage.success('Profile updated successfully')
@@ -136,15 +134,15 @@ onBeforeMount(async () => {
     <!-- 左侧边栏 -->
     <aside class="profile-sidebar">
       <div class="profile-card">
-        <img 
-          :src="avatarUrl" 
+        <img
+          :src="avatarUrl"
           alt="Avatar"
           class="avatar"
         >
         <div class="user-info">
           <h1 class="name">{{ userStore.userInfo.username || 'Guest' }}</h1>
           <p class="username">Member Level: {{ userStore.userInfo.level || 'Standard' }}</p>
-          
+
           <div class="stats">
             <div class="stat-item">
               <strong>{{ userStore.userInfo.points || 0 }}</strong>
@@ -167,14 +165,14 @@ onBeforeMount(async () => {
           <div class="security-item">
             <i class="el-icon-message"></i>
             <span>
-              Email: {{ email ? 
-                email.replace(/(.).*@/, '$1***@') : 
-                '未绑定' 
+              Email: {{ email ?
+                email.replace(/(.).*@/, '$1***@') :
+                '未绑定'
               }}
             </span>
-            <el-link 
+            <el-link
               v-if="!email"
-              type="primary" 
+              type="primary"
               :underline="false"
               @click="handleBindEmail"
             >
@@ -185,10 +183,10 @@ onBeforeMount(async () => {
 
         <!-- 在安全信息下方添加编辑按钮 -->
         <div class="edit-section">
-            <el-button 
-                type="primary" 
+            <el-button
+                type="primary"
                 class="edit-button"
-                @click="toggleEditForm" 
+                @click="toggleEditForm"
             >
                 {{ showEditForm ? 'Close Edit' : 'Edit Profile' }}
             </el-button>
@@ -198,13 +196,13 @@ onBeforeMount(async () => {
             <div v-if="showEditForm" class="edit-form">
               <el-form :model="form" label-width="80px">
                 <el-form-item label="Username">
-                  <el-input 
-                    v-model="form.username" 
+                  <el-input
+                    v-model="form.username"
                     size="small"
                     placeholder="Enter username"
                   />
                 </el-form-item>
-                
+
                 <el-form-item label="Email">
                   <el-input
                     v-model="form.email"
@@ -213,7 +211,7 @@ onBeforeMount(async () => {
                     placeholder="example@domain.com"
                   />
                 </el-form-item>
-                
+
                 <el-form-item label="Phone">
                   <el-input
                     v-model="form.phone"
@@ -222,24 +220,16 @@ onBeforeMount(async () => {
                     placeholder="138-1234-5678"
                   />
                 </el-form-item>
-                
-                <el-form-item label="Avatar">
-                  <el-input
-                    v-model="form.profile"
-                    size="small"
-                    placeholder="Image URL"
-                  />
-                </el-form-item>
 
                 <div class="form-actions">
-                  <el-button 
-                    size="small" 
+                  <el-button
+                    size="small"
                     @click="showEditForm = false"
                   >
                     Cancel
                   </el-button>
-                  <el-button 
-                    type="primary" 
+                  <el-button
+                    type="primary"
                     size="small"
                     @click="submitForm"
                   >
@@ -292,9 +282,9 @@ onBeforeMount(async () => {
         <div class="recent-orders">
           <h2>Latest Order</h2>
           <div class="order-list">
-            <div 
-              v-for="order in orderList" 
-              :key="order.id" 
+            <div
+              v-for="order in orderList"
+              :key="order.id"
               class="order-item"
             >
               <div class="order-header">
@@ -303,21 +293,21 @@ onBeforeMount(async () => {
               </div>
 
               <!-- 遍历所有商品项 -->
-              <div 
-                v-for="(item, index) in order.items"
+              <div
+                v-for="item in order.items"
                 :key="item.id"
                 class="order-content"
               >
-                <img 
-                  :src="item.image || '/placeholder.svg'" 
+                <img
+                  :src="item.image || '/placeholder.svg'"
                   class="product-img"
                   alt="Product"
                 >
                 <div class="product-info">
                   <h3>{{ item.name || 'Unnamed Product' }}</h3>
                   <p class="spec">
-                    <span 
-                      v-for="(value, key) in item.specs" 
+                    <span
+                      v-for="(value, key) in item.specs"
                       :key="key"
                       class="spec-item"
                     >
@@ -331,7 +321,7 @@ onBeforeMount(async () => {
                 </div>
               </div>
               <div class="order-footer">
-                <span>Total: ¥{{ order.total }}</span>
+                <span>Total: ¥{{ parseFloat(order.total).toFixed(2) }}</span>
                 <div class="actions">
                   <el-button type="primary" plain>View Details</el-button>
                   <el-button>Buy Again</el-button>
@@ -375,8 +365,8 @@ onBeforeMount(async () => {
     </main>
 
     <!-- 编辑资料对话框 -->
-    <el-dialog 
-      v-model="showEditDialog" 
+    <el-dialog
+      v-model="showEditDialog"
       title="Edit Profile"
       width="500px"
     >
@@ -384,20 +374,16 @@ onBeforeMount(async () => {
         <el-form-item label="Username">
           <el-input v-model="form.username" />
         </el-form-item>
-        
+
         <el-form-item label="Email">
           <el-input v-model="form.email" type="email" />
         </el-form-item>
-        
+
         <el-form-item label="Phone">
           <el-input v-model="form.phone" type="tel" />
         </el-form-item>
-        
-        <el-form-item label="Avatar URL">
-          <el-input v-model="form.profile" />
-        </el-form-item>
       </el-form>
-      
+
       <template #footer>
         <el-button @click="showEditDialog = false">Cancel</el-button>
         <el-button type="primary" @click="submitForm">Confirm</el-button>
@@ -705,7 +691,7 @@ onBeforeMount(async () => {
 
   .el-form-item {
     margin-bottom: 12px;
-    
+
     :deep(.el-form-item__label) {
       font-size: 13px;
       color: #6c757d;

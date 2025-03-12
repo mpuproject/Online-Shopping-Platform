@@ -292,14 +292,6 @@ const formatDateTime = (timeString) => {
                       >
                         View my comment
                       </el-button>
-                      <el-button
-                        v-if="activeTab === '8'"
-                        type="defult"
-                        size="small"
-                        @click="$router.push(`/order/comment/review/${item.id}`)"
-                      >
-                        View Comment
-                      </el-button>
                     </div>
                     <div class="count">x{{ item.quantity }}</div>
                   </li>

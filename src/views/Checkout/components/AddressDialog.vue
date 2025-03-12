@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 
 // 定义props
 const props = defineProps({
@@ -24,7 +24,7 @@ const newAddress = ref({
   postal_code: '',
 })
 
-const emit = defineEmits(['change-address', 'add-address'])
+const emit = defineEmits(['change-address', 'add-address', 'edit-address'])
 
 // 切换地址
 const activeAddress = ref({})
@@ -39,20 +39,104 @@ const confirmChange = () => {
   activeAddress.value = {}
 }
 
+const addAddressFormRef = ref(null)
+const editAddressFormRef = ref(null)
+
 // 添加地址
 const handleAddAddress = () => {
-  emit('add-address', newAddress.value)
-  showAddDialog.value = false
-  // 重置表单
-  newAddress.value = {
-    recipient: '',
-    phone: '',
-    province: '',
-    city: '',
-    district: '',
-    additional_addr: '',
-  }
+  addAddressFormRef.value.validate((valid) => {
+    if (valid) {
+      emit('add-address', newAddress.value)
+      showAddDialog.value = false
+      // 重置表单
+      newAddress.value = {
+        recipient: '',
+        phone: '',
+        province: '',
+        city: '',
+        district: '',
+        additional_addr: '',
+        postal_code: '',
+      }
+    } else {
+      return false
+    }
+  })
 }
+
+// 新增计算颜色函数
+const getTagColor = (tag) => {
+  switch (tag) {
+    case 'Home':
+      return '#27ba9b';
+    case 'Company':
+      return '#87CEEB';
+    case 'Friend':
+      return '#e26237';
+    default:
+      return '#909090';
+  }
+};
+
+const showEditDialog = ref(false)
+const editAddress = ref({
+  id: '',
+  recipient: '',
+  phone: '',
+  province: '',
+  city: '',
+  district: '',
+  additional_addr: '',
+  postal_code: '',
+})
+
+const handleEdit = (addr) => {
+  editAddress.value = { ...addr }
+  showEditDialog.value = true
+}
+
+const handleEditAddress = () => {
+  editAddressFormRef.value.validate((valid) => {
+    if (valid) {
+      emit('edit-address', editAddress.value)
+      showEditDialog.value = false
+    } else {
+      return false
+    }
+  })
+}
+
+const addressRules = {
+  recipient: [
+    { required: true, message: 'The recipient cannot be empty', trigger: 'blur' },
+  ],
+  phone: [
+    { required: true, message: 'The phone cannot be empty', trigger: 'blur' },
+  ],
+  province: [
+    { required: true, message: 'The province cannot be empty', trigger: 'blur' },
+  ],
+  city: [
+    { required: true, message: 'The city cannot be empty', trigger: 'blur' },
+  ],
+  district: [
+    { required: true, message: 'The district cannot be empty', trigger: 'blur' },
+  ],
+  additional_addr: [
+    { required: true, message: 'The additional address cannot be empty', trigger: 'blur' },
+  ],
+}
+
+// 在showChangeDialog打开时，设置activeAddress为默认地址
+watch(showChangeDialog, (newVal) => {
+  if (newVal) {
+    // 找到默认地址并设置为activeAddress
+    const defaultAddress = props.addresses.find(addr => addr.is_default)
+    if (defaultAddress) {
+      activeAddress.value = defaultAddress
+    }
+  }
+})
 
 defineExpose({
   showChangeDialog,
@@ -71,10 +155,26 @@ defineExpose({
            v-for="addr in props.addresses"
            :key="addr.id">
         <ul>
-          <li><span>Recipient: </span>{{ addr.recipient }} </li>
+          <li>
+            <span>Recipient: </span>{{ addr.recipient }}
+            <span class="tag" v-show="addr.is_default === true"
+              style="color: #27ba9b; background-color: #e8f8f5; border-color: #27ba9b">Default</span>
+            <span
+              class="tag"
+              :style="{
+                color: getTagColor(addr.tag),
+                backgroundColor: addr.tag === 'Home' ? '#e8f8f5' :
+                        addr.tag === 'Company' ? '#e8f6fa' :
+                        addr.tag === 'Friend' ? '#faf0eb' :
+                        '#f5f5f5',
+                borderColor: getTagColor(addr.tag)
+              }"
+            >{{ addr.tag }}</span>
+          </li>
           <li><span>Contact: </span>{{ addr.phone }}</li>
           <li><span>Address: </span>{{ addr.additional_addr + ' ' + addr.fullLocation }}</li>
         </ul>
+        <el-button type="text" class="edit-btn" @click="handleEdit(addr)">Edit</el-button>
       </div>
     </div>
     <template #footer>
@@ -87,26 +187,26 @@ defineExpose({
 
   <!-- 添加地址 -->
   <el-dialog v-model="showAddDialog" title="Add New Address" width="50%" center>
-    <el-form :model="newAddress" label-width="120px" class="address-form">
-      <el-form-item label="Recipient">
+    <el-form ref="addAddressFormRef" :model="newAddress" :rules="addressRules" label-width="120px" class="address-form">
+      <el-form-item label="Recipient" prop="recipient">
         <el-input v-model="newAddress.recipient" />
       </el-form-item>
-      <el-form-item label="Contact">
+      <el-form-item label="Contact" prop="phone">
         <el-input v-model="newAddress.phone" />
       </el-form-item>
-      <el-form-item label="Province">
+      <el-form-item label="Province" prop="province">
         <el-input v-model="newAddress.province" />
       </el-form-item>
-      <el-form-item label="City">
+      <el-form-item label="City" prop="city">
         <el-input v-model="newAddress.city" />
       </el-form-item>
-      <el-form-item label="District">
+      <el-form-item label="District" prop="district">
         <el-input v-model="newAddress.district" />
       </el-form-item>
-      <el-form-item label="Detail Address">
+      <el-form-item label="Detail Address" prop="additional_addr">
         <el-input v-model="newAddress.additional_addr" />
       </el-form-item>
-      <el-form-item label="Postal Code">
+      <el-form-item label="Postal Code" prop="postal_code">
         <el-input v-model="newAddress.postal_code" />
       </el-form-item>
     </el-form>
@@ -114,6 +214,39 @@ defineExpose({
       <span class="dialog-footer">
         <el-button @click="showAddDialog = false">Cancel</el-button>
         <el-button type="primary" @click="handleAddAddress">Confirm</el-button>
+      </span>
+    </template>
+  </el-dialog>
+
+  <!-- 编辑地址 -->
+  <el-dialog v-model="showEditDialog" title="Edit Address" width="50%" center>
+    <el-form ref="editAddressFormRef" :model="editAddress" :rules="addressRules" label-width="120px" class="address-form">
+      <el-form-item label="Recipient" prop="recipient">
+        <el-input v-model="editAddress.recipient" />
+      </el-form-item>
+      <el-form-item label="Contact" prop="phone">
+        <el-input v-model="editAddress.phone" />
+      </el-form-item>
+      <el-form-item label="Province" prop="province">
+        <el-input v-model="editAddress.province" />
+      </el-form-item>
+      <el-form-item label="City" prop="city">
+        <el-input v-model="editAddress.city" />
+      </el-form-item>
+      <el-form-item label="District" prop="district">
+        <el-input v-model="editAddress.district" />
+      </el-form-item>
+      <el-form-item label="Detail Address" prop="additional_addr">
+        <el-input v-model="editAddress.additional_addr" />
+      </el-form-item>
+      <el-form-item label="Postal Code">
+        <el-input v-model="editAddress.postal_code" />
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button @click="showEditDialog = false">Cancel</el-button>
+        <el-button type="primary" @click="handleEditAddress">Confirm</el-button>
       </span>
     </template>
   </el-dialog>
@@ -133,6 +266,7 @@ defineExpose({
   min-height: 90px;
   display: flex;
   align-items: center;
+  position: relative;
 
   &.item {
     border: 1px solid #f5f5f5;
@@ -150,6 +284,24 @@ defineExpose({
       font-size: 14px;
       line-height: 30px;
     }
+  }
+
+  .tag {
+    margin-left: 10px;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 1px 4px;
+    border-radius: 8px;
+    display: inline-block;
+    border-width: 1px;
+    border-style: dashed;
+  }
+
+  .edit-btn {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
   }
 }
 

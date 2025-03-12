@@ -1,5 +1,5 @@
 <script setup>
-import { ref, getCurrentInstance } from 'vue'
+import { ref, getCurrentInstance, watch } from 'vue'
 import 'element-plus/theme-chalk/el-message.css'
 import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
@@ -33,6 +33,59 @@ const form = ref({
   confirmPwd: '',
 })
 
+const passwordStrength = ref(1) // 密码强度值，1-5
+
+// 监听密码变化
+watch(() => form.value.password, (newVal) => {
+  passwordStrength.value = evaluatePasswordStrength(newVal)
+})
+
+// 密码强度评估函数
+const evaluatePasswordStrength = (password) => {
+  let strength = 1
+
+  // 检查密码长度
+  if (password.length >= 8) strength++
+
+  // 检查字符类型
+  const hasLowercase = /[a-z]/.test(password)
+  const hasUppercase = /[A-Z]/.test(password)
+  const hasNumber = /[0-9]/.test(password)
+  const hasSpecial = /[^A-Za-z0-9]/.test(password)
+
+  // 计算字符类型数量
+  const typeCount = [hasLowercase, hasUppercase, hasNumber, hasSpecial].filter(Boolean).length
+
+  // 只有当字符类型大于1时才增加强度
+  if (typeCount > 1) {
+    strength += typeCount - 1
+  }
+
+  // 确保强度在1-5之间
+  return Math.min(Math.max(strength, 1), 5)
+}
+
+// 密码输入限制
+const validatePassword = (rule, value, callback) => {
+  if (!/^[ -~]+$/.test(value)) {
+    callback(new Error('Password only accpets letters, digits, and other keyboard characters'))
+  } else if (passwordStrength.value < 4) {
+    callback(new Error('Your password isn\'t strong enough'))
+  } else {
+    passwordStrength.value = evaluatePasswordStrength(value)
+    callback()
+  }
+}
+
+// 添加颜色计算函数
+const getProgressColor = (percentage) => {
+  if (percentage <= 20) return '#ff4d4f'; // 红色
+  if (percentage <= 40) return '#ff7a45'; // 橙色
+  if (percentage <= 60) return '#ffc53d'; // 黄色
+  if (percentage <= 80) return '#a0d911'; // 黄绿色
+  return '#52c41a'; // 绿色
+}
+
 const userRules = {
   username: [
     { required: true, message: 'The username cannot be empty', trigger: 'blur' },
@@ -53,8 +106,8 @@ const userRules = {
     { required: true, message: 'The last name cannot be empty', trigger: 'blur' },
   ],
   password: [
-    { required: true, message: 'The password cannot be empty', trigger: 'blur' },
-    { min: 6, max: 20, message: 'Length of password must be in 6-20', trigger: 'blur'  }
+    { min: 6, max: 20, message: 'Length of password must be in 6-20', trigger: 'blur'  },
+    { validator: validatePassword, trigger: 'blur' }
   ],
   confirmPwd: [
     { required: true, message: 'Please confirm your password', trigger: 'blur' },
@@ -86,9 +139,6 @@ const addressRules = {
   ],
   additional_addr: [
     { required: true, message: 'The additional address cannot be empty', trigger: 'blur' },
-  ],
-  postal_code: [
-  { required: true, message: 'The postal code cannot be empty', trigger: 'blur' },
   ],
 }
 
@@ -212,7 +262,7 @@ const handleAddAddress = () => {
         <el-form-item label="Detail Address" prop="additional_addr">
           <el-input v-model="newAddress.additional_addr" />
         </el-form-item>
-        <el-form-item label="Postal Code" prop="postal_code">
+        <el-form-item label="Postal Code">
           <el-input v-model="newAddress.postal_code" />
         </el-form-item>
       </el-form>
@@ -269,6 +319,19 @@ const handleAddAddress = () => {
                       </el-icon>
                     </template>
                   </el-input>
+                  <div class="password-strength">
+                    <el-progress
+                      :percentage="(passwordStrength / 5) * 100"
+                      :color="getProgressColor((passwordStrength / 5) * 100)"
+                      :status="passwordStrength > 3 ? 'success' : 'exception'"
+                    />
+                    <div class="strength-text">
+                      Password strength:
+                      <span :style="{ color: getProgressColor((passwordStrength / 5) * 100) }">
+                        {{ ['very weak', 'weak', 'medium', 'strong', 'very strong'][passwordStrength-1] }}
+                      </span>
+                    </div>
+                  </div>
                 </el-form-item>
                 <el-form-item>
                   <span class="form-label" prop="confirmPwd">Confirm Password</span>
@@ -623,5 +686,23 @@ const handleAddAddress = () => {
     background: $xtxColor;
     width: 100%;
     color: #fff;
+  }
+
+  .password-strength {
+    margin-top: 8px;
+    width: 100%;
+
+    .el-progress {
+      width: 100%;
+    }
+
+    .strength-text {
+      font-size: 12px;
+      color: #606266;
+
+      span {
+        font-weight: bold;
+      }
+    }
   }
   </style>

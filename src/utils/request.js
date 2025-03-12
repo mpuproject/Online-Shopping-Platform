@@ -21,6 +21,10 @@ httpInstance.interceptors.request.use(config => {
     if(token) {
         config.headers.Authorization = `Bearer ${userStore.userInfo.access}`;
     }
+    const csrfToken = document.cookie.match(/csrftoken=([^;]+)/)?.[1];
+    if (csrfToken) {
+      config.headers['X-CSRFToken'] = csrfToken;
+    }
     return config
 }, e => Promise.reject(e))
 
