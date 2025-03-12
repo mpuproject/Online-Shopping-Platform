@@ -12,6 +12,9 @@ const confirmLogout = async () => {
 const goToOrders = () => {
   router.push('/order')
 }
+const goToUserInfo = () => {
+  router.push('/my_rabbuy')
+}
 </script>
 
 <template>
@@ -19,7 +22,7 @@ const goToOrders = () => {
     <div class="container">
       <ul>
         <template v-if="userStore.userInfo.username">
-          <li><a href="javascript:;"><i class="iconfont icon-user"></i>{{ userStore.userInfo.username }}</a></li>
+          <li><a href="javascript:;" @click="goToUserInfo"><i class="iconfont icon-user"></i>{{ userStore.userInfo.username }}</a></li>
           <li>
             <el-popconfirm @confirm="confirmLogout" title="Confirm logout?" confirm-button-text="Logout" cancel-button-text="Cancel">
               <template #reference>

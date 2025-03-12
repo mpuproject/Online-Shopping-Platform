@@ -27,3 +27,16 @@ export const signupAPI = ({ username, email, firstName, lastName, password, conf
     }
   })
 }
+
+export const updateUserProfileAPI = (data) => {
+  return request({
+    url: `/user/${data.id}/`,  
+    method: 'PUT',        
+    data: {
+      username: data.username,
+      email: data.email,
+      phone: data.phone,    
+      profile: data.profile 
+    }
+  })
+}

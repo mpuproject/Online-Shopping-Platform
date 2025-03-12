@@ -27,7 +27,7 @@ import CommentReview from '@/views/Comment/component/CommentReview.vue'
 import NotFound from '@/views/ExceptionHandlePages/NotFound.vue'
 import Forbidden from '@/views/ExceptionHandlePages/Forbidden.vue'
 import AdminOrder from '@/views/Admin/components/AdminOrder.vue'
-
+import userInfo from '@/views/UserInfo/index.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -43,6 +43,7 @@ const router = createRouter({
         { path: 'search', component: Search, meta: { title: 'search results' } },
         { path: 'checkout', component: Checkout, meta: { title: 'checkout' }, requiresUser: true },
         { path: 'pay/:id', component: Pay, meta: { title: 'place order', requiresUser: true } },
+        { path: 'my_rabbuy', component: userInfo, meta: { title: 'My Rubbuy', requiresUser: true } },
       ]
     },
 
