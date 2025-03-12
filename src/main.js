@@ -10,6 +10,8 @@ import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 
 import { VueReCaptcha } from 'vue-recaptcha-v3'
 
+import axios from 'axios';
+
 const app = createApp(App)
 
 const pinia = createPinia()
@@ -17,6 +19,16 @@ pinia.use(piniaPluginPersistedstate)
 
 app.use(pinia)
 app.use(router)
+
+axios.get('/api/get_csrf/')
+  .then(response => {
+    const csrfToken = response.data.data.csrftoken;
+    // 将 csrfToken 存储到 Cookie 或 localStorage
+    document.cookie = `csrftoken=${csrfToken}; path=/`;
+})
+  .catch(error => {
+    console.error(error);
+});
 
 // 挂载 recaptcha
 app.use(VueReCaptcha, {
