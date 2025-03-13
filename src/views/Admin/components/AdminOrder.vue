@@ -1,8 +1,8 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import { Search, InfoFilled } from '@element-plus/icons-vue'
-import { getAdminOrdersAPI, updateOrderStatusAPI } from '@/apis/order'
-import { ElMessageBox, ElMessage } from 'element-plus'
+import { getAdminOrdersAPI } from '@/apis/order'
+import { ElMessage } from 'element-plus'
 // import dayjs from 'dayjs'
 
 // 完整订单状态映射（根据OrderItem状态）
@@ -17,20 +17,6 @@ const statusMap = {
   '7': { text: 'Refunded', type: 'info' },
   '8': { text: 'Done', type: 'success' },
   '9': {text: 'Hold', type: 'success'}
-}
-
-// 首先定义状态转换规则
-const statusTransitionRules = {
-  '0': ['2'],      // 未支付 -> 可以改为已取消
-  '1': ['9'],      // 待处理 -> 可以改为暂挂
-  '2': [],         // 已取消 -> 不可更改
-  '3': [],         // 未发货 -> 不可更改
-  '4': [],         // 已发货 -> 不可更改
-  '5': [],         // 已收货 -> 不可更改
-  '6': ['7'],      // 待退款 -> 可以改为已退款
-  '7': [],         // 已退款 -> 不可更改
-  '8': [],         // 已完成 -> 不可更改
-  '9': ['3']       // 暂挂 -> 可以改为未发货
 }
 
 // 获取订单数据
@@ -77,48 +63,6 @@ const handleSizeChange = (newSize) => {
   requestData.value.pageSize = newSize
   requestData.value.page = 1
   getOrders()
-}
-
-// 获取当前状态可以转换的状态列表
-const getAvailableStatuses = (currentStatus) => {
-  // 获取允许转换的状态列表
-  const allowedStatuses = statusTransitionRules[currentStatus] || []
-
-  // 返回当前状态和允许转换的状态
-  return [currentStatus, ...allowedStatuses]
-}
-
-// 修改状态更新方法
-const updateOrderStatus = async (orderId, itemId, oldStatus, newStatus) => {
-  try {
-    // 检查状态转换是否允许
-    const currentStatus = tableData.value
-      .find(order => order.id === orderId)
-      ?.items.find(item => item.id === itemId)?.itemStatus
-
-    // 如果是选择了当前状态，不需要更新
-    if (currentStatus === newStatus) {
-      return
-    }
-
-    // 检查新状态是否在允许的转换列表中
-    if (!statusTransitionRules[currentStatus]?.includes(newStatus)) {
-      ElMessage.error('Invalid status transition')
-      return
-    }
-
-    await ElMessageBox.confirm(
-      `Confirm to change order status to "${statusMap[newStatus].text}"?`,
-      'Warning',
-      { confirmButtonText: 'Confirm', cancelButtonText: 'Cancel', type: 'warning' }
-    )
-
-    await updateOrderStatusAPI(itemId, { oldStatus: oldStatus, newStatus: newStatus })
-    ElMessage.success('Status updated')
-    getOrders()
-  } catch (error) {
-    if (error !== 'cancel') ElMessage.error('Update failed')
-  }
 }
 
 onMounted(() => getOrders())
@@ -195,21 +139,12 @@ const handleOrderDetail = (row) => {
       <el-table-column label="Status" width="150" align="center">
         <template v-slot:default="{ row }">
           <div v-for="item in row.items" :key="item.id" class="status-item">
-            <el-select
-              v-model="item.itemStatus"
-              v-on:change="(val) => updateOrderStatus(row.id, item.id, item.itemStatus, val)"
+            <el-tag
+              :type="statusMap[item.itemStatus].type"
               size="small"
-              class="status-select"
-              v-bind:disabled="!statusTransitionRules[item.itemStatus]?.length"
             >
-              <el-option
-                v-for="allowedStatus in getAvailableStatuses(item.itemStatus)"
-                :key="allowedStatus"
-                v-bind:label="statusMap[allowedStatus].text"
-                v-bind:value="allowedStatus"
-                v-bind:class="'status-' + allowedStatus"
-              />
-            </el-select>
+              {{ statusMap[item.itemStatus].text }}
+            </el-tag>
           </div>
         </template>
       </el-table-column>
@@ -242,18 +177,6 @@ const handleOrderDetail = (row) => {
 </template>
 
 <style scoped lang="scss">
-.status-select {
-  :deep(.el-select__tags) {
-    .el-tag {
-      &[data-status="0"] { background-color: #e6a23c20; color: #e6a23c; }
-      &[data-status="1"] { background-color: #409eff20; color: #409eff; }
-      &[data-status="2"] { background-color: #f56c6c20; color: #f56c6c; }
-      &[data-status="3"] { background-color: #90939920; color: #909399; }
-      &[data-status="4"] { background-color: #67c23a20; color: #67c23a; }
-    }
-  }
-}
-
 /* 保持原有样式不变 */
 .content-table {
   background-color: white;
@@ -306,10 +229,6 @@ const handleOrderDetail = (row) => {
   .item-name {
     font-size: 12px;
     color: #666;
-  }
-
-  .status-select {
-    width: 120px;
   }
 }
 </style>
