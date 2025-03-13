@@ -3,20 +3,34 @@ import { onMounted, ref } from 'vue'
 import { Search, InfoFilled } from '@element-plus/icons-vue'
 import { getAdminOrdersAPI, updateOrderStatusAPI } from '@/apis/order'
 import { ElMessageBox, ElMessage } from 'element-plus'
-import dayjs from 'dayjs'
+// import dayjs from 'dayjs'
 
 // 完整订单状态映射（根据OrderItem状态）
 const statusMap = {
   '0': { text: 'Unpaid', type: 'warning' },
-  '1': { text: 'Pending', type: 'primary' },
-  '2': { text: 'Canceled', type: 'danger' },
-  '3': { text: 'Undelivered', type: 'info' },
-  '4': { text: 'Delivered', type: 'success' },
+  '1': { text: 'Pending', type: 'success' },
+  '2': { text: 'Cancelled', type: 'info' },
+  '3': { text: 'Shipped', type: 'primary' },
+  '4': { text: 'Delivered', type: '' },
   '5': { text: 'Received', type: 'success' },
-  '6': { text: 'Unrefunded', type: 'warning' },
+  '6': { text: 'Refund Pending', type: 'danger' },
   '7': { text: 'Refunded', type: 'info' },
   '8': { text: 'Done', type: 'success' },
-  '9': { text: 'Hold', type: 'warning' }
+  '9': {text: 'Hold', type: 'success'}
+}
+
+// 首先定义状态转换规则
+const statusTransitionRules = {
+  '0': ['2'],      // 未支付 -> 可以改为已取消
+  '1': ['9'],      // 待处理 -> 可以改为暂挂
+  '2': [],         // 已取消 -> 不可更改
+  '3': [],         // 未发货 -> 不可更改
+  '4': [],         // 已发货 -> 不可更改
+  '5': [],         // 已收货 -> 不可更改
+  '6': ['7'],      // 待退款 -> 可以改为已退款
+  '7': [],         // 已退款 -> 不可更改
+  '8': [],         // 已完成 -> 不可更改
+  '9': ['3']       // 暂挂 -> 可以改为未发货
 }
 
 // 获取订单数据
@@ -24,6 +38,7 @@ const tableData = ref([])
 const requestData = ref({
   page: 1,
   pageSize: 10,
+  orderNo: '',  // 添加订单号参数
 })
 
 // 计算序号
@@ -34,12 +49,22 @@ const getIndex = (index) => {
 const total = ref(0)
 
 const getOrders = async () => {
-  const res = await getAdminOrdersAPI(requestData.value)
-  tableData.value = res.data.results.map(order => ({
-    ...order,
-    created_time: dayjs(order.created_time).format('YYYY-MM-DD HH:mm')
-  }))
-  total.value = res.data.count
+  try {
+    const res = await getAdminOrdersAPI(requestData.value)
+    // 调整数据结构，使用 items 中的 itemStatus
+    tableData.value = res.data.results.map(order => ({
+      id: order.id,
+      created_time: order.createdTime,
+      total_price: order.totalPrice,
+      // 使用第一个 item 的状态作为订单状态
+      status: order.items[0]?.itemStatus || '0', // 如果没有 items，默认状态为 0
+      items: order.items
+    }))
+    total.value = res.data.count
+  } catch (error) {
+    ElMessage.error('Failed to load orders')
+    console.error(error)
+  }
 }
 
 // 分页处理
@@ -54,16 +79,41 @@ const handleSizeChange = (newSize) => {
   getOrders()
 }
 
-// 更新订单状态
-const updateOrderStatus = async (orderId, newStatus) => {
+// 获取当前状态可以转换的状态列表
+const getAvailableStatuses = (currentStatus) => {
+  // 获取允许转换的状态列表
+  const allowedStatuses = statusTransitionRules[currentStatus] || []
+
+  // 返回当前状态和允许转换的状态
+  return [currentStatus, ...allowedStatuses]
+}
+
+// 修改状态更新方法
+const updateOrderStatus = async (orderId, itemId, oldStatus, newStatus) => {
   try {
+    // 检查状态转换是否允许
+    const currentStatus = tableData.value
+      .find(order => order.id === orderId)
+      ?.items.find(item => item.id === itemId)?.itemStatus
+
+    // 如果是选择了当前状态，不需要更新
+    if (currentStatus === newStatus) {
+      return
+    }
+
+    // 检查新状态是否在允许的转换列表中
+    if (!statusTransitionRules[currentStatus]?.includes(newStatus)) {
+      ElMessage.error('Invalid status transition')
+      return
+    }
+
     await ElMessageBox.confirm(
       `Confirm to change order status to "${statusMap[newStatus].text}"?`,
       'Warning',
       { confirmButtonText: 'Confirm', cancelButtonText: 'Cancel', type: 'warning' }
     )
 
-    await updateOrderStatusAPI(orderId, { status: newStatus })
+    await updateOrderStatusAPI(itemId, { oldStatus: oldStatus, newStatus: newStatus })
     ElMessage.success('Status updated')
     getOrders()
   } catch (error) {
@@ -77,6 +127,8 @@ onMounted(() => getOrders())
 const handleOrderDetail = (row) => {
   window.open(`/admin/order/${row.id}`, '_blank')
 }
+
+
 </script>
 
 <template>
@@ -117,28 +169,48 @@ const handleOrderDetail = (row) => {
         width="180"
         sortable
         align="center"
-      />
+      >
+        <template #default="{ row }">
+          {{ new Date(row.created_time).toLocaleString() }}
+        </template>
+      </el-table-column>
 
       <el-table-column label="Total Amount" width="120" align="right">
         <template #default="{ row }">¥{{ row.total_price.toFixed(2) }}</template>
       </el-table-column>
 
-      <el-table-column prop="status" label="Status" width="150" align="center">
+      <el-table-column label="Products" min-width="200">
         <template #default="{ row }">
-          <el-select
-            v-model="row.status"
-            @change="(val) => updateOrderStatus(row.id, val)"
-            size="small"
-            class="status-select"
-          >
-            <el-option
-              v-for="(item, key) in statusMap"
-              :key="key"
-              :label="item.text"
-              :value="key"
-              :class="`status-${key}`"
+          <div v-for="item in row.items" :key="item.id" class="product-item">
+            <el-image
+              :src="item.product.image"
+              :alt="item.product.name"
+              style="width: 50px; height: 50px"
             />
-          </el-select>
+            <span>{{ item.product.name }} x{{ item.product.count }}</span>
+          </div>
+        </template>
+      </el-table-column>
+
+      <el-table-column label="Status" width="150" align="center">
+        <template v-slot:default="{ row }">
+          <div v-for="item in row.items" :key="item.id" class="status-item">
+            <el-select
+              v-model="item.itemStatus"
+              v-on:change="(val) => updateOrderStatus(row.id, item.id, item.itemStatus, val)"
+              size="small"
+              class="status-select"
+              v-bind:disabled="!statusTransitionRules[item.itemStatus]?.length"
+            >
+              <el-option
+                v-for="allowedStatus in getAvailableStatuses(item.itemStatus)"
+                :key="allowedStatus"
+                v-bind:label="statusMap[allowedStatus].text"
+                v-bind:value="allowedStatus"
+                v-bind:class="'status-' + allowedStatus"
+              />
+            </el-select>
+          </div>
         </template>
       </el-table-column>
 
@@ -203,5 +275,41 @@ const handleOrderDetail = (row) => {
 
 .pagination {
   margin-top: 20px;
+}
+
+.product-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 5px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  img {
+    object-fit: cover;
+    border-radius: 4px;
+  }
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 5px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  .item-name {
+    font-size: 12px;
+    color: #666;
+  }
+
+  .status-select {
+    width: 120px;
+  }
 }
 </style>

@@ -1,4 +1,3 @@
-
 import request from '@/utils/request'
 
 /**
@@ -21,10 +20,14 @@ export const getAdminOrdersAPI = async (params) => {
  * @param {*} data
  * @returns
  */
-export const updateOrderStatusAPI = async (data) => {
+export const updateOrderStatusAPI = (itemId, data) => {
   return request({
-    url: 'order/admin/update/',
+    url: '/admin/orders/item/update/',
     method: 'PUT',
-    data
+    data: {
+      itemId: itemId,
+      oldStatus: data.oldStatus,
+      newStatus: data.newStatus
+    }
   })
 }

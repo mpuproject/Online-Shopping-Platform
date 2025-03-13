@@ -28,6 +28,8 @@ import NotFound from '@/views/ExceptionHandlePages/NotFound.vue'
 import Forbidden from '@/views/ExceptionHandlePages/Forbidden.vue'
 import AdminOrder from '@/views/Admin/components/AdminOrder.vue'
 import userInfo from '@/views/UserInfo/index.vue'
+import AdminOrderDetail from '@/views/Admin/components/Order/OrderDetail.vue'
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -80,8 +82,11 @@ const router = createRouter({
     },
 
     //管理员商品添加界面
-    { path: '/admin/product/add', component: ProductAdd, meta: { title: 'Add product' } },
-    { path: '/admin/product/details/:id', component: ProductDetail, meta: { title: 'Product details' } },
+    { path: '/admin/product/add', component: ProductAdd, meta: { title: 'Add product' }, requiresAdmin: true },
+    { path: '/admin/product/details/:id', component: ProductDetail, meta: { title: 'Product details' }, requiresAdmin: true },
+
+    // 管理员订单详情界面
+    { path: '/admin/order/:id', component: AdminOrderDetail, meta: { title: 'Order Detail' }, requiresAdmin: true },
 
     // 处理错误
     { path: '/:pathMatch(.*)*', component: NotFound, meta: { title: 'Page Not Found' } },
