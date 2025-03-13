@@ -269,7 +269,7 @@ const formatDateTime = (timeString) => {
                         Confirm Receipt
                       </el-button>
                       <el-button
-                        v-if="['1', '3', '4', '5'].includes(item.status)"
+                        v-if="['1', '3', '4', '5', '9'].includes(item.status)"
                         type="warning"
                         size="small"
                         @click="handleRefund(item.id)"
