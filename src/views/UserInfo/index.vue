@@ -6,6 +6,8 @@ import { getOrderByUserIdAPI } from '@/apis/checkout'
 import { ElMessage } from 'element-plus'
 import { jwtDecode } from 'jwt-decode'
 import { updateUserProfileAPI } from '@/apis/user'
+import { postImageAPI } from '@/apis/image'
+import { Upload } from '@element-plus/icons-vue'
 
 
 const userStore = useUserStore()
@@ -17,8 +19,9 @@ const pending = ref({
 })
 
 // 获取解码后的邮箱
-const email = ref('')
 const is_staff = ref(false)
+const email = ref('')
+const phone = ref('')
 
 // 监听access token变化
 watch(() => userStore.userInfo.access, (newVal) => {
@@ -26,17 +29,19 @@ watch(() => userStore.userInfo.access, (newVal) => {
     try {
       const decoded = jwtDecode(newVal)
       email.value = decoded.email || ''
+      phone.value = decoded.phone || ''
       is_staff.value = decoded.is_staff || false
     } catch (error) {
       console.error('JWT解码失败:', error)
       email.value = ''
+      phone.value = ''
       is_staff.value = false
     }
   }
 }, { immediate: true })
 
 // 获取动态头像URL
-const avatarUrl = userStore.userInfo.profile || '/default-avatar.jpg'
+const avatarUrl = ref(userStore.userInfo.profile || '/default-avatar.jpg')
 
 // 获取订单状态数据
 const fetchOrderStats = async () => {
@@ -96,8 +101,8 @@ const toggleEditForm = () => {
   if (showEditForm.value) {
     form.value = {
       username: userStore.userInfo.username || '',
-      email: userStore.userInfo.email || '',
-      phone: userStore.userInfo.phone || '',
+      email: email.value || '',
+      phone: phone.value || '',
     }
   }
 }
@@ -121,6 +126,55 @@ const submitForm = async () => {
   }
 }
 
+const showAvatarDialog = ref(false)
+
+const handleFileChange = async (file) => {
+  try {
+    // 调用 postImageAPI 上传文件
+    const response = await postImageAPI(file.raw);
+
+    // 确保返回的 response 包含 URL
+    if (!response || !response.url) {
+      throw new Error('Upload failed: Invalid response');
+    }
+
+    // 更新头像 URL
+    avatarUrl.value = response.url;
+
+    // 调用更新用户信息的API
+    await updateUserProfileAPI({
+      id: userStore.userInfo.id,
+      profile: response.url
+    });
+
+    userStore.userInfo.profile = response.url
+
+    ElMessage.success('Avatar updated successfully');
+    
+    showAvatarDialog.value = false;
+  } catch (error) {
+    // 细化错误处理
+    if (error.response) {
+      // 服务器返回的错误
+      ElMessage.error(`Failed to update avatar: ${error.response.data.message || error.message}`);
+    } else if (error.request) {
+      // 请求未收到响应
+      ElMessage.error('Network error: Please check your internet connection.');
+    } else {
+      // 其他错误
+      ElMessage.error(`Failed to update avatar: ${error.message}`);
+    }
+  }
+};
+
+const beforeAvatarUpload = (file) => {
+  const isJPG = file.type === 'image/jpeg' || file.type === 'image/png';
+  if (!isJPG) {
+    ElMessage.error('Upload avatar image must be JPG or PNG!');
+  }
+  return isJPG;
+};
+
 onBeforeMount(async () => {
   if (userStore.userInfo.id) {
     await fetchOrderStats()
@@ -138,6 +192,7 @@ onBeforeMount(async () => {
           :src="avatarUrl"
           alt="Avatar"
           class="avatar"
+          @click="showAvatarDialog = true"
         >
         <div class="user-info">
           <h1 class="name">{{ userStore.userInfo.username || 'Guest' }}</h1>
@@ -159,8 +214,20 @@ onBeforeMount(async () => {
           <h3>Account Security</h3>
           <div class="security-item">
             <i class="el-icon-mobile-phone"></i>
-            <span>Mobile: {{ userStore.userInfo.phone ? userStore.userInfo.phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2') : '未绑定' }}</span>
-            <el-link type="primary" :underline="false">Change</el-link>
+            <span>
+              Mobile: {{ phone ? 
+                phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2') : 
+                '未绑定' 
+                }}
+            </span>
+            <el-link 
+              v-if="!email"
+              type="primary" 
+              :underline="false"
+              @click="handleChangePhone"
+            >
+              Change
+            </el-link>
           </div>
           <div class="security-item">
             <i class="el-icon-message"></i>
@@ -389,6 +456,31 @@ onBeforeMount(async () => {
         <el-button type="primary" @click="submitForm">Confirm</el-button>
       </template>
     </el-dialog>
+
+    <!-- 头像修改对话框 -->
+    <el-dialog
+      v-model="showAvatarDialog"
+      title="Change Avatar"
+      width="400px"
+      class="avatar-dialog"
+    >
+      <el-upload
+        class="avatar-uploader"
+        :show-file-list="false"
+        :auto-upload="false"
+        :on-change="handleFileChange"
+        :change="beforeAvatarUpload"
+      >
+        <div class="upload-content">
+          <el-icon :size="50" class="upload-icon"><Upload /></el-icon>
+          <p class="upload-text">Click or drag to upload</p>
+          <p class="upload-tip">Supports JPG/PNG format, max size 2MB</p>
+        </div>
+      </el-upload>
+      <template #footer>
+        <el-button @click="showAvatarDialog = false">Cancel</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -419,6 +511,12 @@ onBeforeMount(async () => {
       margin: 0 auto 1rem;
       display: block;
       object-fit: cover;
+      cursor: pointer;
+      transition: filter 0.3s ease;
+
+      &:hover {
+        filter: brightness(0.8);
+      }
     }
 
     .user-info {
@@ -719,5 +817,59 @@ onBeforeMount(async () => {
   opacity: 0;
   max-height: 0;
   transform: translateY(-10px);
+}
+
+.avatar-dialog {
+  :deep(.el-dialog__header) {
+    border-bottom: 1px solid #ebeef5;
+    padding: 16px 20px;
+    margin: 0;
+  }
+
+  :deep(.el-dialog__body) {
+    padding: 20px;
+  }
+
+  :deep(.el-dialog__footer) {
+    border-top: 1px solid #ebeef5;
+    padding: 12px 20px;
+    text-align: right;
+  }
+}
+
+.avatar-uploader {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 2px dashed #dcdfe6;
+  border-radius: 8px;
+  padding: 20px;
+  background-color: #f8f9fa;
+  transition: border-color 0.3s ease;
+
+  &:hover {
+    border-color: #409eff;
+  }
+
+  .upload-content {
+    text-align: center;
+
+    .upload-icon {
+      color: #909399;
+      margin-bottom: 10px;
+    }
+
+    .upload-text {
+      font-size: 14px;
+      color: #606266;
+      margin: 0;
+    }
+
+    .upload-tip {
+      font-size: 12px;
+      color: #909399;
+      margin: 5px 0 0;
+    }
+  }
 }
 </style>

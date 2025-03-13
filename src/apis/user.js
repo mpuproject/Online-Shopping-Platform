@@ -36,7 +36,7 @@ export const updateUserProfileAPI = (data) => {
       username: data.username,
       email: data.email,
       phone: data.phone,    
-      profile: data.profile 
+      profile_picture: data.profile 
     }
   })
 }
