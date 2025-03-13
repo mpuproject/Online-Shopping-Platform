@@ -30,6 +30,8 @@ import AdminOrder from '@/views/Admin/components/AdminOrder.vue'
 import userInfo from '@/views/UserInfo/index.vue'
 import AdminOrderDetail from '@/views/Admin/components/Order/OrderDetail.vue'
 
+import { jwtDecode } from 'jwt-decode'
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -111,7 +113,7 @@ router.beforeEach((to, from, next) => {
 
   const userStore = useUserStore()
   const isUser = !!userStore.userInfo.access
-  const isAdmin = userStore.userInfo.is_staff
+  const isAdmin = userStore.userInfo.access ? jwtDecode(userStore.userInfo.access).is_staff : false
 
   if (to.meta.requiresUser && !isUser) {
     next({ path: '/login', query: { redirect: to.fullPath } })

@@ -74,10 +74,7 @@ httpInstance.interceptors.response.use(res => res.data, async e => {
     router.replace({ path: '/403' })
     return Promise.reject(e)
   } else {
-    ElMessage({
-      type: 'warning',
-      message: e.response.data.msg || 'Network Error',
-    });
+    ElMessage.warning(e.response.data.msg || 'Network Error');
     if (e.response.status === 401) {
       await saveCartToServer('/login');
     }

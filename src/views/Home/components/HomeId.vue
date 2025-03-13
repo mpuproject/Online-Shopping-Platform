@@ -6,6 +6,7 @@ import { useUserStore } from '@/stores/user'
 import SlidingCart from './SlidingCart.vue'
 import { saveCartToServer } from '@/composables/logout'
 import { getMessageCountAPI } from '@/apis/home'
+import { jwtDecode } from 'jwt-decode'
 
 const userStore = useUserStore()
 const slidingCartRef = ref(null)
@@ -24,6 +25,8 @@ const goToOrders = (event) => {
   event.preventDefault()
   router.push('/order')
 }
+
+const isStaff = ref(userStore.userInfo.access ? jwtDecode(userStore.userInfo.access).is_staff : false)
 
 const avatarUrl = userStore.userInfo.profile
 const stats = [
@@ -55,7 +58,7 @@ onBeforeMount( async () => {
     </div>
     <div class="user-info">
       <h2>{{ userStore.userInfo.username }}</h2>
-      <div v-if="userStore.userInfo.is_staff" class="admin-entrance">
+      <div v-if="isStaff" class="admin-entrance">
         <a href="/admin">Dashboard</a>
         <span> | </span>
       </div>
