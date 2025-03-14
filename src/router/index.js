@@ -26,6 +26,7 @@ import CommentAdd from '@/views/Comment/component/CommentAdd.vue'
 import CommentReview from '@/views/Comment/component/CommentReview.vue'
 import NotFound from '@/views/ExceptionHandlePages/NotFound.vue'
 import Forbidden from '@/views/ExceptionHandlePages/Forbidden.vue'
+import ServerError from '@/views/ExceptionHandlePages/ServerError.vue'
 import AdminOrder from '@/views/Admin/components/AdminOrder.vue'
 import userInfo from '@/views/UserInfo/index.vue'
 import AdminOrderDetail from '@/views/Admin/components/Order/OrderDetail.vue'
@@ -93,6 +94,7 @@ const router = createRouter({
     // 处理错误
     { path: '/:pathMatch(.*)*', component: NotFound, meta: { title: 'Page Not Found' } },
     { path: '/403', component: Forbidden, meta: { title: 'Access Forbidden' }},
+    { path: '/500', component: ServerError, meta: { title: 'Server Error' }},
   ],
 
   scrollBehavior() {

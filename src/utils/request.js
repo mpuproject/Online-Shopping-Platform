@@ -17,9 +17,11 @@ let refreshSubscribers = []; // 存储需要重新发送的请求
 // axios request interceptor
 httpInstance.interceptors.request.use(config => {
     const userStore = useUserStore()
-    const token = userStore.userInfo.access;
-    if(token) {
-        config.headers.Authorization = `Bearer ${userStore.userInfo.access}`;
+    if(config.url !== '/user/token-refresh/') {
+      const token = userStore.userInfo.access;
+      if(token) {
+          config.headers.Authorization = `Bearer ${userStore.userInfo.access}`;
+      }
     }
     const csrfToken = document.cookie.match(/csrftoken=([^;]+)/)?.[1];
     if (csrfToken) {
@@ -73,6 +75,8 @@ httpInstance.interceptors.response.use(res => res.data, async e => {
   } else if(e.response.status === 403) {
     router.replace({ path: '/403' })
     return Promise.reject(e)
+  } else if(e.response.status === 500) {
+    router.replace({ path: '/500' })
   } else {
     ElMessage.warning(e.response.data.msg || 'Network Error');
     if (e.response.status === 401) {

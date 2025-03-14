@@ -34,7 +34,7 @@ const isStaff = ref(userStore.userInfo.access ? jwtDecode(userStore.userInfo.acc
               </template>
             </el-popconfirm>
           </li>
-          <template v-if="isStaff">
+          <template v-if="!isStaff">
             <li><a href="javascript:;" @click="goToOrders">My Order</a></li>
             <li><a href="javascript:;">My Address</a></li>
           </template>

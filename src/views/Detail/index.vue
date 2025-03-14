@@ -58,11 +58,19 @@ const currentPage = ref(1);
 const pageSize = ref(20);
 const totalComments = ref(0);
 
+// 新增评论筛选条件
+const commentFilter = ref({
+  rating: 'default', // 'default': 默认, 5: 好评, 3: 中评, 1: 差评
+  hasImage: false // 是否有图片
+})
+
 const getProductComment = async () => {
   const res = await getProductCommentAPI({
     productId: route.params.id,
     currentPage: currentPage.value,
-    pageSize: pageSize.value
+    pageSize: pageSize.value,
+    rating: commentFilter.value.rating,
+    hasImage: commentFilter.value.hasImage
   });
   comments.value = res.data.comments;
   totalComments.value = res.data.total;
@@ -73,6 +81,28 @@ const handlePageChange = (page) => {
   getProductComment();
 };
 
+// 新增评论筛选方法
+const filterComments = (type) => {
+  switch (type) {
+    case 'default':
+      commentFilter.value.rating = 'default';
+      break;
+    case 'good':
+      commentFilter.value.rating = 5;
+      break;
+    case 'medium':
+      commentFilter.value.rating = 3;
+      break;
+    case 'bad':
+      commentFilter.value.rating = 1;
+      break;
+    case 'hasImage':
+      commentFilter.value.hasImage = !commentFilter.value.hasImage;
+      break;
+  }
+  currentPage.value = 1;
+  getProductComment();
+}
 
 onBeforeMount( async () => {
   await getDetail();
@@ -166,7 +196,7 @@ watch(
                   size="large"
                   style="display: inline-block; margin-left: 8px;"
                 />
-                <span style="color: #FFA500; margin-left: 8px;">
+                <span style="margin-left: 8px;" :style="{ color: product.rating_num > 0 ? '#FFA500' : '#000000' }">
                   {{ product.rating_num > 0 ? product.rating : 'No data' }}
                 </span>
               </p>
@@ -224,6 +254,7 @@ watch(
 
               <!-- 使用 el-tabs 实现标签页 -->
               <el-tabs type="border-card">
+                <!-- 产品详情 -->
                 <el-tab-pane label="Details">
                   <div class="goods-detail">
                     <ul class="attrs">
@@ -234,8 +265,35 @@ watch(
                     </ul>
                   </div>
                 </el-tab-pane>
+                <!-- 产品评论 -->
                 <el-tab-pane label="Comments" @click="getProductComment();">
-                  <ul class="comments">
+                  <!-- 评论筛选栏 -->
+                  <div class="filter-bar" style="margin-bottom: 20px;">
+                    <div class="left">
+                      <a
+                        :class="['filter-item', commentFilter.rating === 'default' ? 'active' : '']"
+                        @click="filterComments('default')"
+                      >Default</a>
+                      <a
+                        :class="['filter-item', commentFilter.rating === 5 ? 'active' : '']"
+                        @click="filterComments('good')"
+                      >Good</a>
+                      <a
+                        :class="['filter-item', commentFilter.rating === 3 ? 'active' : '']"
+                        @click="filterComments('medium')"
+                      >Medium</a>
+                      <a
+                        :class="['filter-item', commentFilter.rating === 1 ? 'active' : '']"
+                        @click="filterComments('bad')"
+                      >Bad</a>
+                      <a
+                        :class="['filter-item', commentFilter.hasImage ? 'active' : '']"
+                        @click="filterComments('hasImage')"
+                      >With Images</a>
+                    </div>
+                  </div>
+                  <el-empty v-if="comments.length === 0" description="No comment yet" />
+                  <ul v-else class="comments">
                     <li v-for="(comment, index) in comments" :key="index" class="comment-item">
                       <img :src="comment.user.avatar" alt="" class="avatar" />
                       <div class="comment-content">
@@ -618,6 +676,35 @@ watch(
         border-radius: 5px;
         cursor: pointer;
       }
+    }
+  }
+}
+
+.filter-bar {
+  display: flex;
+  align-items: center;
+  padding: 0 25px;
+
+  .left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .filter-item {
+    position: relative;
+    cursor: pointer;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border: 1px solid #dcdfe6;
+    border-radius: 4px;
+
+    &:hover, &.active, &.active::after {
+      color: $xtxColor;
+      border: 1px solid $xtxColor;
     }
   }
 }

@@ -23,6 +23,6 @@ export const saveCartToServer = async (url) => {
     userStore.clearUserInfo()
     cartStore.clearCart()
     // 3. 跳转登录页
-    router.push(router.push({ path: url }))
+    router.push({ path: url })
   }
 }
