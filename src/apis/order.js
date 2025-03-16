@@ -22,12 +22,28 @@ export const getAdminOrdersAPI = async (params) => {
  */
 export const updateOrderStatusAPI = (itemId, data) => {
   return request({
-    url: '/admin/orders/item/update/',
+    url: '/order/admin/item/update/',
     method: 'PUT',
     data: {
       itemId: itemId,
       oldStatus: data.oldStatus,
       newStatus: data.newStatus
+    }
+  })
+}
+
+/**
+ * @description 获取指定订单详情
+ *
+ * @param {*} params - 订单的 ID
+ * @returns {Promise} - 返回请求的 Promise 对象
+ */
+export const getOrderDetailAPI = async (id) => {
+  return request({
+    url: '/order/admin/detail/', // 假设这是获取订单详情的正确路径
+    method: 'GET',
+    params: {
+      id
     }
   })
 }

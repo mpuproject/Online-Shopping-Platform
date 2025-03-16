@@ -24,7 +24,7 @@ const tableData = ref([])
 const requestData = ref({
   page: 1,
   pageSize: 10,
-  orderNo: '',  // 添加订单号参数
+  q: '',  // 添加订单号参数
 })
 
 // 计算序号
@@ -34,18 +34,21 @@ const getIndex = (index) => {
 
 const total = ref(0)
 
+// 添加搜索关键词
+const searchKeyword = ref('')
+
 const getOrders = async () => {
   try {
     const res = await getAdminOrdersAPI(requestData.value)
-    // 调整数据结构，使用 items 中的 itemStatus
-    tableData.value = res.data.results.map(order => ({
-      id: order.id,
-      created_time: order.createdTime,
-      total_price: order.totalPrice,
-      // 使用第一个 item 的状态作为订单状态
-      status: order.items[0]?.itemStatus || '0', // 如果没有 items，默认状态为 0
-      items: order.items
-    }))
+    // 过滤掉包含未支付商品的订单
+    tableData.value = res.data.results
+      .map(order => ({
+        id: order.id,
+        created_time: order.createdTime,
+        total_price: order.totalPrice,
+        status: order.items[0]?.itemStatus || '0',
+        items: order.items
+      }))
     total.value = res.data.count
   } catch (error) {
     ElMessage.error('Failed to load orders')
@@ -63,6 +66,13 @@ const handleSizeChange = (newSize) => {
   requestData.value.pageSize = newSize
   requestData.value.page = 1
   getOrders()
+}
+
+// 搜索方法
+const querySearch = async () => {
+  requestData.value.page = 1 // 重置为第一页
+  requestData.value.q = searchKeyword.value // 使用订单号搜索
+  await getOrders()
 }
 
 onMounted(() => getOrders())
@@ -84,12 +94,13 @@ const handleOrderDetail = (row) => {
       </div>
       <el-input
         v-model="searchKeyword"
-        placeholder="Search orders..."
+        placeholder="Search by order number..."
         class="search-bar"
         clearable
+        @keyup.enter="querySearch"
       >
-        <template #prefix>
-          <el-icon><Search /></el-icon>
+        <template #append>
+          <el-button @click="querySearch" :icon="Search" class="search-btn" />
         </template>
       </el-input>
     </div>
@@ -194,6 +205,31 @@ const handleOrderDetail = (row) => {
 
 .search-bar {
   width: 300px;
+
+  .search-btn {
+    background-color: $xtxColor;
+    color: #ffffff;
+
+    &:hover {
+      background-color: #22978c;
+    }
+
+    &:active {
+      background-color: $sucColor;
+    }
+  }
+}
+
+.order-stats {
+  display: flex;
+  gap: 20px;
+  margin-right: auto;
+  margin-left: 10px;
+}
+
+.stat-item {
+  font-size: 14px;
+  color: #606266;
 }
 
 .pagination {
