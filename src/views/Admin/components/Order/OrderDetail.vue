@@ -126,6 +126,9 @@ onMounted(() => {
       <el-descriptions-item label="订单总额">
         ¥{{ calculateTotalPrice(orderDetail.items)?.toFixed(2) }}
       </el-descriptions-item>
+      <el-descriptions-item label="用户ID">
+        {{ orderDetail.user_id }}
+      </el-descriptions-item>
     </el-descriptions>
 
     <!-- 商品列表 -->
@@ -145,7 +148,7 @@ onMounted(() => {
           </template>
         </el-table-column>
 
-        <el-table-column prop="product.name" label="商品名称" />
+        <el-table-column prop="product.name" label="商品名称" min-width="180" />
 
         <el-table-column label="数量" width="100" align="center">
           <template #default="{ row }">{{ row.quantity }}</template>
@@ -155,13 +158,28 @@ onMounted(() => {
           <template #default="{ row }">¥{{ row.price.toFixed(2) }}</template>
         </el-table-column>
 
-        <el-table-column label="状态" width="200" align="center">
+        <el-table-column label="小计" width="120" align="right">
+          <template #default="{ row }">
+            ¥{{ (row.price * row.quantity).toFixed(2) }}
+          </template>
+        </el-table-column>
+
+        <el-table-column label="当前状态" width="150" align="center">
+          <template #default="{ row }">
+            <el-tag :type="statusMap[row.itemStatus].type">
+              {{ statusMap[row.itemStatus].text }}
+            </el-tag>
+          </template>
+        </el-table-column>
+
+        <el-table-column label="状态操作" width="200" align="center">
           <template #default="{ row }">
             <el-button-group>
               <el-button
                 v-for="status in getAvailableStatuses(row.itemStatus)"
                 :key="status"
                 :type="statusMap[status].type"
+                size="small"
                 @click="updateStatus(row.id, row.itemStatus, status)"
               >
                 {{ statusMap[status].text }}
@@ -212,6 +230,21 @@ onMounted(() => {
         color: #333;
       }
     }
+
+    .el-table {
+      margin-top: 10px;
+    }
+
+    .el-button-group {
+      .el-button {
+        margin: 0 2px;
+      }
+    }
+  }
+
+  .el-tag {
+    min-width: 90px;
+    text-align: center;
   }
 
   .el-image {

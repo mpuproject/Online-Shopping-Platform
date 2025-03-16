@@ -5,20 +5,6 @@ import { getAdminOrdersAPI } from '@/apis/order'
 import { ElMessage } from 'element-plus'
 // import dayjs from 'dayjs'
 
-// 完整订单状态映射（根据OrderItem状态）
-const statusMap = {
-  '0': { text: 'Unpaid', type: 'warning' },
-  '1': { text: 'Pending', type: 'success' },
-  '2': { text: 'Cancelled', type: 'info' },
-  '3': { text: 'Shipped', type: 'primary' },
-  '4': { text: 'Delivered', type: '' },
-  '5': { text: 'Received', type: 'success' },
-  '6': { text: 'Refund Pending', type: 'danger' },
-  '7': { text: 'Refunded', type: 'info' },
-  '8': { text: 'Done', type: 'success' },
-  '9': {text: 'Hold', type: 'success'}
-}
-
 // 获取订单数据
 const tableData = ref([])
 const requestData = ref({
@@ -40,13 +26,12 @@ const searchKeyword = ref('')
 const getOrders = async () => {
   try {
     const res = await getAdminOrdersAPI(requestData.value)
-    // 过滤掉包含未支付商品的订单
     tableData.value = res.data.results
       .map(order => ({
         id: order.id,
         created_time: order.createdTime,
         total_price: order.totalPrice,
-        status: order.items[0]?.itemStatus || '0',
+        user_id: order.userId,  // 添加用户ID
         items: order.items
       }))
     total.value = res.data.count
@@ -147,18 +132,7 @@ const handleOrderDetail = (row) => {
         </template>
       </el-table-column>
 
-      <el-table-column label="Status" width="150" align="center">
-        <template v-slot:default="{ row }">
-          <div v-for="item in row.items" :key="item.id" class="status-item">
-            <el-tag
-              :type="statusMap[item.itemStatus].type"
-              size="small"
-            >
-              {{ statusMap[item.itemStatus].text }}
-            </el-tag>
-          </div>
-        </template>
-      </el-table-column>
+      <el-table-column prop="user_id" label="User ID" width="200" align="center" />
 
       <el-table-column label="Actions" width="110" fixed="right" align="center">
         <template #default="{ row }">
@@ -253,18 +227,6 @@ const handleOrderDetail = (row) => {
 }
 
 .status-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 5px;
-
-  &:last-child {
-    margin-bottom: 0;
-  }
-
-  .item-name {
-    font-size: 12px;
-    color: #666;
-  }
+  display: none;
 }
 </style>
