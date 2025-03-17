@@ -256,7 +256,8 @@ watch(
               <el-tabs type="border-card">
                 <!-- 产品详情 -->
                 <el-tab-pane label="Details">
-                  <div class="goods-detail">
+                  <el-empty v-if="product.details?.length === 0" description="No details provided" />
+                  <div class="goods-detail" v-else>
                     <ul class="attrs">
                       <li v-for="(item, key) in product.details" :key="key">
                         <span class="dt">{{ Object.keys(item)[0].charAt(0).toUpperCase() + Object.keys(item)[0].slice(1).toLowerCase() }}:</span>
@@ -268,7 +269,7 @@ watch(
                 <!-- 产品评论 -->
                 <el-tab-pane label="Comments" @click="getProductComment();">
                   <!-- 评论筛选栏 -->
-                  <div class="filter-bar" style="margin-bottom: 20px;">
+                  <div class="filter-bar" style="margin-bottom: 20px;" v-show="comments.length !== 0">
                     <div class="left">
                       <a
                         :class="['filter-item', commentFilter.rating === 'default' ? 'active' : '']"

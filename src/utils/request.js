@@ -1,7 +1,8 @@
 import axios from "axios";
 import 'element-plus/theme-chalk/el-message.css'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { useUserStore } from "@/stores/user"
+import { useCartStore } from "@/stores/cartStore";
 import { saveCartToServer } from "@/composables/logout"
 import router from '@/router/index'
 
@@ -33,6 +34,7 @@ httpInstance.interceptors.request.use(config => {
 // axios response interceptor
 httpInstance.interceptors.response.use(res => res.data, async e => {
   const userStore = useUserStore();
+  const cartStore = useCartStore();
   const refreshToken = userStore.userInfo.refresh;
 
   if (e.response.status === 401 && refreshToken) {
@@ -80,7 +82,21 @@ httpInstance.interceptors.response.use(res => res.data, async e => {
   } else {
     ElMessage.warning(e.response.data.msg || 'Network Error');
     if (e.response.status === 401) {
-      await saveCartToServer('/login');
+      userStore.clearUserInfo()
+      cartStore.clearCart()
+      ElMessageBox.confirm(
+        'User authentication expired, please log in again.',
+        'Warning',
+        {
+          confirmButtonText: 'OK',
+          cancelButtonText: 'Cancel',
+          type: 'warning',
+        }
+      ).then(() => {
+        router.push('/login');
+      }).catch(() => {
+        router.push('/');
+      });
     }
     return Promise.reject(e);
   }

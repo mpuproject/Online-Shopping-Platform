@@ -25,11 +25,6 @@ const requestData = ref({
   q: '',
 })
 
-// 计算序号的方法
-const getIndex = (index) => {
-  return (requestData.value.page - 1) * requestData.value.pageSize + index + 1;
-};
-
 const total = ref(0)
 
 const understockCount = ref(0) // 库存不足数量
@@ -146,9 +141,9 @@ const handleProductInfo = (row) => {
       border
       :row-class-name="setRowClassName"
     >
-    <el-table-column label="Index" width="70" align="center">
-      <template #default="{ $index }">
-        {{ getIndex($index) }}
+    <el-table-column prop='id' label="ID" width="100" align="center">
+      <template #default="{ row }">
+        <span class="ellipsis-text">{{ row.id }}</span>
       </template>
     </el-table-column>
       <el-table-column prop="name" label="Name" min-width="120" />
@@ -284,5 +279,13 @@ const handleProductInfo = (row) => {
 
 .custom-button {
   background-color: #ff9800;
+}
+
+.ellipsis-text {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 </style>

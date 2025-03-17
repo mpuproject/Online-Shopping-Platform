@@ -54,10 +54,10 @@ onBeforeMount( async () => {
 <template>
   <div v-if="userStore.userInfo.username" class="profile-card">
     <div class="avatar">
-      <img :src="avatarUrl" alt="profile" />
+      <img :src="avatarUrl" alt="profile" @click="$router.push('/my_rabbuy')" />
     </div>
     <div class="user-info">
-      <h2>{{ userStore.userInfo.username }}</h2>
+      <h2 @click="$router.push('/my_rabbuy')">{{ userStore.userInfo.username }}</h2>
       <div v-if="isStaff" class="admin-entrance">
         <a href="/admin">Dashboard</a>
         <span> | </span>
@@ -160,11 +160,11 @@ onBeforeMount( async () => {
   align-items: center;
   text-decoration: none;
   color: #333;
-  gap: 8px; /* Added gap between icon and label */
+  gap: 8px;
 }
 
 .stat-item:hover {
-  color: $xtxColor; /* 替换为你想要的颜色 */
+  color: $xtxColor;
 }
 
 .profile-card {
@@ -179,11 +179,21 @@ onBeforeMount( async () => {
     width: 80px;
     height: 80px;
     border-radius: 50%;
+    transition: filter 0.3s ease;
+    &:hover {
+      filter: brightness(0.8);
+      cursor: pointer;
+    }
   }
 
   div.user-info h2 {
     margin: 10px 0;
     font-size: 18px;
+    transition: color 0.3s ease;
+    &:hover {
+      color: $xtxColor;
+      cursor: pointer;
+    }
   }
 
   div.user-info a {

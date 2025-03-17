@@ -6,6 +6,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 
 const route = useRoute()
 const orderDetail = ref(null)
+const defaultAddress = ref(null)
 
 // 完整状态映射
 const statusMap = {
@@ -24,7 +25,7 @@ const statusMap = {
 // 修改状态转换规则
 const getAvailableStatuses = (currentStatus) => {
   switch (currentStatus) {
-    case '1': return ['9', '2']  // 待处理 -> 可改为暂挂或取消
+    case '1': return ['9', '7']  // 待处理 -> 可改为暂挂或退款
     case '9': return ['3']       // 暂挂 -> 可改为已发货
     case '3': return ['4']       // 已发货 -> 可改为已送达
     case '6': return ['7']       // 退款中 -> 可改为已退款
@@ -46,14 +47,23 @@ const formatDateTime = (isoString) => {
   }).replace(/\//g, '-')
 }
 
+// 添加地址格式化函数
+const formatFullLocation = (address) => {
+  if (!address) return ''
+  return address.province === address.city
+    ? `${address.district}, ${address.province}`
+    : `${address.district}, ${address.city}, ${address.province}`
+}
+
 const fetchOrderDetail = async () => {
   try {
     const orderId = route.params.id
     const res = await getOrderDetailAPI(orderId)
-    // 根据新的数据结构调整映射
     orderDetail.value = {
       id: res.data.id,
       orderStatus: res.data.order_status,
+      userid: res.data.user_id,
+      address: res.data.address,  // 添加地址信息
       items: res.data.items.map(item => ({
         id: item.id,
         product: {
@@ -68,9 +78,9 @@ const fetchOrderDetail = async () => {
         createdTime: item.created_time
       }))
     }
-    console.log('订单详情数据:', orderDetail.value)
+    defaultAddress.value = res.data.address  // 设置默认地址
   } catch (error) {
-    ElMessage.error('获取订单详情失败: ' + error.message)
+    ElMessage.error(error.message)
   }
 }
 
@@ -80,21 +90,21 @@ const updateStatus = async (itemId, oldStatus, newStatus) => {
     if (oldStatus === newStatus) return
 
     if (!getAvailableStatuses(oldStatus).includes(newStatus)) {
-      ElMessage.error('非法的状态转换')
+      ElMessage.error('Ilegal status transformation')
       return
     }
 
     await ElMessageBox.confirm(
-      `确认将状态从【${statusMap[oldStatus].text}】改为【${statusMap[newStatus].text}】?`,
-      '警告',
-      { confirmButtonText: '确认', cancelButtonText: '取消', type: 'warning' }
+      `Do you confirm to transform '${statusMap[oldStatus].text}' into '${statusMap[newStatus].text}' ?`,
+      'Warning',
+      { confirmButtonText: 'OK', cancelButtonText: 'Cancel', type: 'warning' }
     )
 
     await updateOrderStatusAPI(itemId, { oldStatus, newStatus })
-    ElMessage.success('状态更新成功')
+    ElMessage.success('Status update successfully')
     fetchOrderDetail() // 刷新数据
   } catch (error) {
-    if (error !== 'cancel') ElMessage.error('更新失败: ' + error.message)
+    if (error !== 'cancel') ElMessage.error('Update error: ' + error.message)
   }
 }
 
@@ -115,30 +125,50 @@ onMounted(() => {
   <div class="order-detail" v-if="orderDetail">
     <!-- 订单头 -->
     <div class="header">
-      <h2>订单编号：{{ orderDetail.id }}</h2>
+      <h2>Order ID: {{ orderDetail.id }}</h2>
     </div>
 
     <!-- 基本信息 -->
     <el-descriptions border :column="2" class="order-info">
-      <el-descriptions-item label="下单时间">
+      <el-descriptions-item label="order time">
         {{ formatDateTime(orderDetail.items[0]?.createdTime) }}
       </el-descriptions-item>
-      <el-descriptions-item label="订单总额">
+      <el-descriptions-item label="total amount">
         ¥{{ calculateTotalPrice(orderDetail.items)?.toFixed(2) }}
       </el-descriptions-item>
-      <el-descriptions-item label="用户ID">
-        {{ orderDetail.user_id }}
+      <el-descriptions-item label="user ID">
+        {{ orderDetail.userid }}
+      </el-descriptions-item>
+    </el-descriptions>
+
+    <!-- 地址显示 -->
+    <h3 class="section-title">Address Info</h3>
+    <el-descriptions border :column="1" class="order-info">
+      <el-descriptions-item label="recipient">
+        {{ orderDetail.address?.recipient }}
+      </el-descriptions-item>
+      <el-descriptions-item label="phone">
+        {{ orderDetail.address?.phone }}
+      </el-descriptions-item>
+      <el-descriptions-item label="address">
+        {{ formatFullLocation(orderDetail.address) }}
+      </el-descriptions-item>
+      <el-descriptions-item label="additional address">
+        {{ orderDetail.address?.additional_address }}
+      </el-descriptions-item>
+      <el-descriptions-item label="postal code" v-show="orderDetail.address?.postal_code !== '000000'">
+        {{ orderDetail.address?.postal_code }}
       </el-descriptions-item>
     </el-descriptions>
 
     <!-- 商品列表 -->
     <el-card class="goods-list">
       <template #header>
-        <h3>商品明细 (共{{ orderDetail.items?.length || 0 }}件)</h3>
+        <h3>{{ orderDetail.items?.length || 0 }} item(s) in total</h3>
       </template>
 
       <el-table :data="orderDetail.items" border>
-        <el-table-column label="商品图片" width="120">
+        <el-table-column label="image" width="120">
           <template #default="{ row }">
             <el-image
               :src="row.product.image"
@@ -148,23 +178,23 @@ onMounted(() => {
           </template>
         </el-table-column>
 
-        <el-table-column prop="product.name" label="商品名称" min-width="180" />
+        <el-table-column prop="product.name" label="product name" min-width="180" />
 
-        <el-table-column label="数量" width="100" align="center">
+        <el-table-column label="quantity" width="100" align="center">
           <template #default="{ row }">{{ row.quantity }}</template>
         </el-table-column>
 
-        <el-table-column label="单价" width="120" align="right">
+        <el-table-column label="unit price" width="120" align="right">
           <template #default="{ row }">¥{{ row.price.toFixed(2) }}</template>
         </el-table-column>
 
-        <el-table-column label="小计" width="120" align="right">
+        <el-table-column label="subtotal" width="120" align="right">
           <template #default="{ row }">
             ¥{{ (row.price * row.quantity).toFixed(2) }}
           </template>
         </el-table-column>
 
-        <el-table-column label="当前状态" width="150" align="center">
+        <el-table-column label="current status" width="150" align="center">
           <template #default="{ row }">
             <el-tag :type="statusMap[row.itemStatus].type">
               {{ statusMap[row.itemStatus].text }}
@@ -172,7 +202,7 @@ onMounted(() => {
           </template>
         </el-table-column>
 
-        <el-table-column label="状态操作" width="200" align="center">
+        <el-table-column label="status operations" width="200" align="center">
           <template #default="{ row }">
             <el-button-group>
               <el-button
@@ -186,7 +216,7 @@ onMounted(() => {
               </el-button>
             </el-button-group>
             <el-tag v-if="!getAvailableStatuses(row.itemStatus).length" type="info">
-              不可修改
+              inconvertible
             </el-tag>
           </template>
         </el-table-column>
