@@ -3,7 +3,6 @@ import 'element-plus/theme-chalk/el-message.css'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useUserStore } from "@/stores/user"
 import { useCartStore } from "@/stores/cartStore";
-import { saveCartToServer } from "@/composables/logout"
 import router from '@/router/index'
 
 const httpInstance = axios.create({
@@ -37,12 +36,22 @@ httpInstance.interceptors.response.use(res => res.data, async e => {
   const cartStore = useCartStore();
   const refreshToken = userStore.userInfo.refresh;
 
-  if (e.response.status === 401 && refreshToken) {
+  if (e.status === 401 && refreshToken) {
     if (!isRefreshing) {
-      isRefreshing = true; // 标记正在刷新token
       try {
-        const response = await httpInstance.post('/user/token-refresh/', { refresh: refreshToken });
-        userStore.setAccessToken(response.access);
+        isRefreshing = true; // 标记正在刷新token
+        const response = await axios.post('/api/user/token-refresh/', {
+          refresh: refreshToken
+        }, {
+          headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (response.code === 'token_not_valid') {
+          throw new Error('Token refresh failed');
+        }
+
+        const access = response.data.access
+        userStore.setAccessToken(access);
         isRefreshing = false; // 刷新完成，取消标记
 
         // 重新发送之前失败的请求
@@ -55,7 +64,21 @@ httpInstance.interceptors.response.use(res => res.data, async e => {
       } catch (refreshError) {
         ElMessage.error('Token refresh failed. Please log in again.');
         isRefreshing = false; // 刷新失败，取消标记
-        await saveCartToServer('/login');
+        userStore.clearUserInfo()
+        cartStore.clearCart()
+        ElMessageBox.confirm(
+          'User authentication expired, please log in again.',
+          'Warning',
+          {
+            confirmButtonText: 'OK',
+            cancelButtonText: 'Cancel',
+            type: 'warning',
+          }
+        ).then(() => {
+          router.push('/login');
+        }).catch(() => {
+          router.push('/');
+        });
         return Promise.reject(refreshError);
       }
     } else {
@@ -71,33 +94,16 @@ httpInstance.interceptors.response.use(res => res.data, async e => {
         });
       });
     }
-  } else if(e.response.status === 404) {
+  } else if(e.status === 404) {
     router.replace({ path: '/404' })
     return Promise.reject(e)
-  } else if(e.response.status === 403) {
+  } else if(e.status === 403) {
     router.replace({ path: '/403' })
     return Promise.reject(e)
-  } else if(e.response.status === 500) {
+  } else if(e.status === 500) {
     router.replace({ path: '/500' })
   } else {
     ElMessage.warning(e.response.data.msg || 'Network Error');
-    if (e.response.status === 401) {
-      userStore.clearUserInfo()
-      cartStore.clearCart()
-      ElMessageBox.confirm(
-        'User authentication expired, please log in again.',
-        'Warning',
-        {
-          confirmButtonText: 'OK',
-          cancelButtonText: 'Cancel',
-          type: 'warning',
-        }
-      ).then(() => {
-        router.push('/login');
-      }).catch(() => {
-        router.push('/');
-      });
-    }
     return Promise.reject(e);
   }
 });
