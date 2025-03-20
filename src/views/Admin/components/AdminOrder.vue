@@ -31,7 +31,7 @@ const getOrders = async () => {
         id: order.id,
         created_time: order.createdTime,
         total_price: order.totalPrice,
-        user_id: order.userId,  // 添加用户ID
+        username: order.username,
         items: order.items
       }))
     total.value = res.data.count
@@ -132,7 +132,7 @@ const handleOrderDetail = (row) => {
         </template>
       </el-table-column>
 
-      <el-table-column prop="user_id" label="User ID" width="200" align="center" />
+      <el-table-column prop="username" label="Username" width="200" align="center" />
 
       <el-table-column label="Actions" width="110" fixed="right" align="center">
         <template #default="{ row }">

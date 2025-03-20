@@ -63,6 +63,7 @@ const fetchOrderDetail = async () => {
       id: res.data.id,
       orderStatus: res.data.order_status,
       userid: res.data.user_id,
+      username: res.data.username,
       address: res.data.address,  // 添加地址信息
       items: res.data.items.map(item => ({
         id: item.id,
@@ -129,7 +130,7 @@ onMounted(() => {
     </div>
 
     <!-- 基本信息 -->
-    <el-descriptions border :column="2" class="order-info">
+    <el-descriptions border :column="1" class="order-info">
       <el-descriptions-item label="order time">
         {{ formatDateTime(orderDetail.items[0]?.createdTime) }}
       </el-descriptions-item>
@@ -138,6 +139,9 @@ onMounted(() => {
       </el-descriptions-item>
       <el-descriptions-item label="user ID">
         {{ orderDetail.userid }}
+      </el-descriptions-item>
+      <el-descriptions-item label="username">
+        {{ orderDetail.username }}
       </el-descriptions-item>
     </el-descriptions>
 
