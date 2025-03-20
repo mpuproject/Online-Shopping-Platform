@@ -1,35 +1,20 @@
 <script setup>
 import HomePanel from './HomePanel.vue'
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import GoodsItem from './GoodsItem.vue'
+import { getHomeProductAPI } from '@/apis/home';
 
 // 静态数据
-const goodsProduct = ref([
-  {
-    id: 1,
-    name: "Living",
-    saleInfo: "Furniture",
-    picture: "https://picsum.photos/200/600",
-    goods: [
-      { id: 101, name: "Comfort Sofa", price: 1999, images: "https://picsum.photos/200/200?random=1" },
-      { id: 102, name: "Dining Table", price: 2499, images: "https://picsum.photos/200/200?random=2" },
-      { id: 103, name: "Soft Matress", price: 999, images: "https://picsum.photos/200/200?random=3" },
-      { id: 104, name: "Simple Shelf", price: 599, images: "https://picsum.photos/200/200?random=4" }
-    ]
-  },
-  {
-    id: 2,
-    name: "Food",
-    saleInfo: "Delicacies",
-    picture: "https://picsum.photos/200/600",
-    goods: [
-      { id: 201, name: "Sirloin Steak", price: 199, images: "https://picsum.photos/200/200?random=6" },
-      { id: 202, name: "Organic Vege", price: 29, images: "https://picsum.photos/200/200?random=7" },
-      { id: 203, name: "Fresh Fruit", price: 39, images: "https://picsum.photos/200/200?random=8" },
-      { id: 204, name: "Fine Red Wine", price: 299, images: "https://picsum.photos/200/200?random=9" }
-    ]
-  }
-]);
+const goodsProduct = ref([]);
+
+const getHomeProduct = async () => {
+  const res = await getHomeProductAPI();
+  goodsProduct.value = res.data;
+}
+
+onMounted(() => {
+  getHomeProduct()
+})
 </script>
 
 <template>

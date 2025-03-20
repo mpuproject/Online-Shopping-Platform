@@ -21,11 +21,28 @@ export const findHotAPI = () => {
   })
 }
 
+/**
+ * @description 获取详细信息
+ *
+ * @param {*} userId
+ * @returns
+ */
 export const getMessageCountAPI = (userId) => {
   return request({
     url: '/home/message/',
     params: {
       userId
     }
+  })
+}
+
+/**
+ * @description 获取主页随机推荐好物
+ *
+ * @returns
+ */
+export const getHomeProductAPI = () => {
+  return request({
+    url: '/home/products/',
   })
 }
