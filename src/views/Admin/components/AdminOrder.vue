@@ -3,7 +3,6 @@ import { onMounted, ref } from 'vue'
 import { Search, InfoFilled } from '@element-plus/icons-vue'
 import { getAdminOrdersAPI } from '@/apis/order'
 import { ElMessage } from 'element-plus'
-// import dayjs from 'dayjs'
 
 // 获取订单数据
 const tableData = ref([])

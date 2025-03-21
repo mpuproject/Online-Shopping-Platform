@@ -172,7 +172,6 @@ const handleDelete = async () => {
         type: 'warning',
       }
     )
-    // TODO: 实现删除逻辑
     await deleteProductAPI(route.params.id)
     ElMessage.success('Product deleted')
     // 删除后跳转到列表页
@@ -442,32 +441,32 @@ const formatDate = (date) => {
                   :key="index"
                   class="detail-item"
                 >
-                <el-input
-                  v-model="Object.keys(detail)[0]"
-                  placeholder="attribute"
-                  class="detail-input"
-                />
-                <el-input
-                  v-model="detail[Object.keys(detail)[0]]"
-                  placeholder="value"
-                  class="detail-input"
-                />
-                <el-button type="danger" @click="removeDetail(index)">Delete</el-button>
+                  <el-input
+                    v-model="detail.key"
+                    placeholder="attribute"
+                    class="detail-input"
+                  />
+                  <el-input
+                    v-model="detail.value"
+                    placeholder="value"
+                    class="detail-input"
+                  />
+                  <el-button type="danger" @click="removeDetail(index)">Delete</el-button>
+                </div>
+              </div>
+              <div class="add-detail-button">
+                <el-button type="primary" @click="addDetail">Add details</el-button>
               </div>
             </div>
-            <div class="add-detail-button">
-              <el-button type="primary" @click="addDetail">Add details</el-button>
-            </div>
-          </div>
           </template>
           <template v-else>
             <el-descriptions :column="1" border>
               <el-descriptions-item
                 v-for="(detail, index) in formData.details"
                 :key="index"
-                :label="Object.keys(detail)[0]"
+                :label="detail.key"
               >
-                {{ detail[Object.keys(detail)[0]] }}
+                {{ detail.value }}
               </el-descriptions-item>
             </el-descriptions>
           </template>
