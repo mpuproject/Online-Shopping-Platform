@@ -172,6 +172,7 @@ onBeforeMount( async () => {
   border-radius: 10px;
   padding: 20px;
   width: 250px;
+  height: 500px;
   text-align: center;
   background-color: #fff;
 

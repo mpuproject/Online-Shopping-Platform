@@ -6,19 +6,25 @@ import { getCategoriesAPI } from '@/apis/category'
 
 const route = useRoute()
 
-// Banner写死的信息
-const bannerList = ref([
-  { id: 1, imgUrl: 'https://picsum.photos/1200/500.jpg?random=4' },
-  { id: 2, imgUrl: 'https://picsum.photos/1200/500.jpg?random=5' },
-  { id: 3, imgUrl: 'https://picsum.photos/1200/500.jpg?random=6' },
-])
+// Banner 数据
+const bannerList = ref([])
 
 // 获取并组装一级分类下的信息
 const categories = ref({})
 
 const fetchCategoryData = async (id) => {
   const res = await getCategoriesAPI(id)
-  categories.value = res.data;
+  categories.value = res.data
+
+  // 从 category_data.images 中获取轮播图数据
+  if (res.data.images && res.data.images.length > 0) {
+    bannerList.value = res.data.images
+      .slice(0, 3) // 最多取 3 张图片
+      .map((image, index) => ({
+        id: index + 1,
+        imgUrl: image // 直接使用图片 URL
+      }))
+  }
 }
 
 onMounted(() => {
