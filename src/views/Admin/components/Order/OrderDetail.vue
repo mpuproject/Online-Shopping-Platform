@@ -33,18 +33,21 @@ const getAvailableStatuses = (currentStatus) => {
   }
 }
 
-// 添加时间格式化函数
-const formatDateTime = (isoString) => {
+// 修改时间格式化函数
+const formatDateTime = (isoString, withLineBreak = false) => {
   if (!isoString) return ''
   const date = new Date(isoString)
-  return date.toLocaleString('zh-CN', {
+  const dateStr = date.toLocaleDateString('zh-CN', {
     year: 'numeric',
     month: '2-digit',
-    day: '2-digit',
+    day: '2-digit'
+  }).replace(/\//g, '-')
+  const timeStr = date.toLocaleTimeString('zh-CN', {
     hour: '2-digit',
     minute: '2-digit',
     second: '2-digit'
-  }).replace(/\//g, '-')
+  })
+  return withLineBreak ? `${dateStr}<br/>${timeStr}` : `${dateStr} ${timeStr}`
 }
 
 // 添加地址格式化函数
@@ -76,7 +79,8 @@ const fetchOrderDetail = async () => {
         itemStatus: item.item_status,
         quantity: item.quantity,
         price: item.price,
-        createdTime: item.created_time
+        createdTime: item.created_time,
+        updatedTime: item.updated_time
       }))
     }
     defaultAddress.value = res.data.address  // 设置默认地址
@@ -203,6 +207,12 @@ onMounted(() => {
             <el-tag :type="statusMap[row.itemStatus].type">
               {{ statusMap[row.itemStatus].text }}
             </el-tag>
+          </template>
+        </el-table-column>
+
+        <el-table-column label="update time" width="120" align="center">
+          <template #default="{ row }">
+            <span v-html="formatDateTime(row.updatedTime, true)" />
           </template>
         </el-table-column>
 
