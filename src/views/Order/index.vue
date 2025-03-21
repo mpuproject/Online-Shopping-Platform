@@ -237,65 +237,26 @@ const formatDateTime = (timeString) => {
             </div>
             <div class="body">
               <div class="column goods">
-                <ul>
-                  <li v-for="item in order.skus" :key="item.id">
-                    <a class="image" href="javascript:;">
-                      <img :src="item.image" alt="" />
-                    </a>
-                    <div class="info">
-                      <p class="name ellipsis-2">{{ item.name }}</p>
-                      <p class="attr ellipsis">
-                        <span>{{ item.attrsText }}</span>
-                      </p>
-                      <p class="time" v-if="item.updatedTime">
-                        Last update time: {{ formatDateTime(item.updatedTime) }}
-                      </p>
-                      <el-tag
-                        :type="itemStateMap[item.status]?.type"
-                        size="small"
-                        class="status-tag"
-                      >
-                        {{ itemStateMap[item.status]?.text || 'Unknown status' }}
-                      </el-tag>
-                    </div>
-                    <div class="price">¥{{ (item.realPay || 0).toFixed(2) }}</div>
-                    <div class="action">
-                      <el-button
-                        v-if="item.status === '4'"
-                        type="success"
-                        size="small"
-                        @click="handleConfirmReceipt(item.id)"
-                      >
-                        Confirm Receipt
-                      </el-button>
-                      <el-button
-                        v-if="['1', '3', '4', '5', '9'].includes(item.status)"
-                        type="warning"
-                        size="small"
-                        @click="handleRefund(item.id)"
-                      >
-                        {{ item.status === '6' ? 'Cancel Refund' : 'Request Refund' }}
-                      </el-button>
-                      <el-button
-                        v-if="item.status === '5'"
-                        type='primary'
-                        size='small'
-                        @click="$router.push({ path: `/order/comment/add/${item.id}` })"
-                      >
-                        Comment Now
-                      </el-button>
-                      <el-button
-                        v-if="item.status === '8'"
-                        type='default'
-                        size='small'
-                        @click="$router.push({ path: `/order/comment/review/${item.id}` })"
-                      >
-                        View my comment
-                      </el-button>
-                    </div>
-                    <div class="count">x{{ item.quantity }}</div>
-                  </li>
-                </ul>
+                <div v-if="order.skus.length <= 8" class="goods-list-wrap">
+                  <ul class="goods-list">
+                    <li v-for="(item, index) in order.skus.slice(0, 8)" :key="item.id">
+                      <img :src="item.image" alt="" class="goods-image" />
+                      <div v-if="index === 7 && order.skus.length > 8" class="more-overlay" @click="$router.push(`/order/detail/${order.id}`)">
+                        More
+                      </div>
+                    </li>
+                  </ul>
+                </div>
+                <div v-else class="goods-list-container">
+                  <ul class="goods-list">
+                    <li v-for="(item, index) in order.skus.slice(0, 8)" :key="item.id">
+                      <img :src="item.image" alt="" class="goods-image" />
+                      <div v-if="index === 7 && order.skus.length > 8" class="more-overlay" @click="$router.push(`/order/detail/${order.id}`)">
+                        More
+                      </div>
+                    </li>
+                  </ul>
+                </div>
               </div>
               <div class="column state">
                 <p>{{ stateMap[order.status] }}</p>
@@ -430,63 +391,7 @@ const formatDateTime = (timeString) => {
       &.goods {
         flex: 1;
         padding: 0;
-        align-self: center;
-
-        ul {
-          li {
-            border-bottom: 1px solid #f5f5f5;
-            padding: 10px;
-            display: flex;
-            position: relative;
-
-            &:last-child {
-              border-bottom: none;
-            }
-
-            .image {
-              width: 70px;
-              height: 70px;
-              border: 1px solid #f5f5f5;
-            }
-
-            .info {
-              width: 220px;
-              text-align: left;
-              padding: 0 10px;
-
-              p {
-                margin-bottom: 5px;
-
-                &.name {
-                  height: 38px;
-                }
-
-                &.attr {
-                  color: #999;
-                  font-size: 12px;
-                }
-              }
-            }
-
-            .price {
-              width: 100px;
-            }
-
-            .count {
-              width: 80px;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              text-align: center;
-            }
-
-            .action {
-              position: absolute;
-              right: 20px;
-              bottom: 10px;
-            }
-          }
-        }
+        align-self: flex-start;
       }
 
       &.state {
@@ -554,5 +459,62 @@ const formatDateTime = (timeString) => {
     font-size: 12px;
     margin-top: 5px;
   }
+}
+
+.goods-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 10px;
+  justify-content: flex-start;
+
+  li {
+    list-style: none;
+    position: relative;
+    text-align: left;
+  }
+
+  .goods-image {
+    width: 70px;
+    height: 70px;
+    border: 1px solid #f5f5f5;
+    border-radius: 4px;
+    display: block;
+  }
+
+  .more-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background 0.3s;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.7);
+    }
+  }
+}
+
+.goods-list-wrap {
+  overflow-x: auto;
+  white-space: nowrap;
+  padding: 10px;
+  text-align: left;
+}
+
+.goods-list-container {
+  overflow-x: auto;
+  white-space: nowrap;
+  padding: 10px;
+  text-align: left;
 }
 </style>

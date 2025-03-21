@@ -1,8 +1,8 @@
 <script setup>
   import { ref, onMounted } from 'vue'
   import { useRoute, useRouter } from 'vue-router'
-  import { ElMessage } from 'element-plus'
-  import { getOrderByIdAPI } from '@/apis/checkout'
+  import { ElMessage, ElMessageBox } from 'element-plus'
+  import { getOrderByIdAPI, updateOrderItemAPI } from '@/apis/checkout'
   import { getAddressAPI } from '@/apis/address'
   import { useUserStore } from '@/stores/user'
 
@@ -20,11 +20,26 @@
     '2': { text: 'Cancel', type: 'info' },
   }
 
+  const itemStateMap = {
+    '0': { text: 'Unpaid', type: 'warning' },
+    '1': { text: 'Pending', type: 'success' },
+    '2': { text: 'Cancelled', type: 'info' },
+    '3': { text: 'Shipped', type: 'primary' },
+    '4': { text: 'Delivered', type: '' },
+    '5': { text: 'Received', type: 'success' },
+    '6': { text: 'Refund Pending', type: 'danger' },
+    '7': { text: 'Refunded', type: 'info' },
+    '8': { text: 'Done', type: 'success' },
+    '9': { text: 'Hold', type: 'success' }
+  };
+
   const fetchOrderDetail = async () => {
     try {
       const orderId = route.params.id
 
       const { data } = await getOrderByIdAPI(orderId)
+
+      console.log('API Response:', data); // Debug the entire API response
 
       // 根据接口返回结构调整映射关系
       order.value = {
@@ -33,16 +48,23 @@
         status: data.orderStatus,
         payMoney: parseFloat(data.amount),
         postFee: data.post_fee || 0,
-        skus: data.products.map(item => ({
-          id: item.id,
-          image: item.image || '/placeholder.svg',
-          status: item.item_status,
-          name: item.name,
-          attrsText: item.attrsText || '无规格',
-          realPay: item.price,
-          quantity: item.count,  // 注意字段名对应
-          createdTime: item.created_time
-        }))
+        totalQuantity: data.products.reduce((total, item) => total + item.count, 0), // 计算商品总数
+        skus: data.products.map(item => {
+          console.log('Item Status:', item.item_status); // Debug item_status
+          console.log('Item Id:', item.item_id); 
+          console.log('Time:', item.updated_time); 
+          return {
+            id: item.item_id,
+            image: item.image || '/placeholder.svg',
+            status: item.item_status,
+            name: item.name,
+            attrsText: item.attrsText,
+            realPay: item.price,
+            quantity: item.count, 
+            updatedTime: item.updated_time,
+            subtotal: item.price * item.count // 计算 subtotal
+          }
+        })
       }
       loading.value = false
     } catch (err) {
@@ -50,7 +72,6 @@
       loading.value = false
     }
   }
-
   const formatDateTime = (isoString) => {
     if (!isoString) return ''
     const date = new Date(isoString)
@@ -80,6 +101,65 @@
       ElMessage.error('Failed to fetch address: ' + error.message)
     }
   }
+
+  // Confirm receipt
+  const handleConfirmReceipt = async (itemId) => {
+    try {
+      const res = await updateOrderItemAPI({
+        itemId: itemId,
+        itemStatus: '5'
+      });
+
+      if (res.code === 200) {
+        ElMessage.success('Receipt confirmed successfully');
+        await fetchOrderDetail(); // Refresh order details
+      } else {
+        ElMessage.error(`Operation failed: ${res.message || 'Unknown error'}`);
+      }
+    } catch (error) {
+      ElMessage.error(`Operation failed: ${error.response?.data?.message || error.message}`);
+    }
+  };
+
+  // Handle refund
+  const handleRefund = async (itemId) => {
+    try {
+      const currentItem = order.value.skus.find(item => item.id === itemId);
+
+      if (!currentItem) {
+        ElMessage.error('未找到对应订单项');
+        return;
+      }
+
+      const isApplying = currentItem.status !== '6';
+      const actionName = isApplying ? 'request refund' : 'cancel refund';
+
+      await ElMessageBox.confirm(
+        `Are you sure to ${actionName}?`,
+        'Confirmation',
+        {
+          confirmButtonText: 'Confirm',
+          cancelButtonText: 'Cancel',
+          type: 'warning'
+        }
+      );
+
+      const targetStatus = isApplying ? '6' : '7';
+      const res = await updateOrderItemAPI({
+        itemId: itemId,
+        itemStatus: targetStatus
+      });
+
+      if (res.code === 200) {
+        ElMessage.success(`${actionName} successful`);
+        await fetchOrderDetail(); // Refresh order details
+      }
+    } catch (error) {
+      if (error !== 'cancel') {
+        ElMessage.error(`Operation failed: ${error.response?.data?.message || error.message}`);
+      }
+    }
+  };
 
   onMounted(async () => {
     await fetchOrderDetail()
@@ -137,6 +217,54 @@
             <div class="price-line">
               <span class="price">¥{{ item.realPay }}</span>
               <span class="quantity">x{{ item.quantity }}</span>
+              <span class="subtotal">¥{{ item.subtotal.toFixed(2) }}</span>
+            </div>
+            <el-tag
+              :type="itemStateMap[item.status]?.type"
+              size="small"
+              class="status-tag"
+            >
+              {{ itemStateMap[item.status]?.text || 'Unknown status' }}
+            </el-tag>
+            <p class="time" v-if="item.updatedTime">
+              Last updated: {{ formatDateTime(item.updatedTime) }}
+            </p>
+            <p class="time" v-else>
+              Last updated: Unknown
+            </p>
+            <div class="action">
+              <el-button
+                v-if="item.status === '4'"
+                type="success"
+                size="small"
+                @click="handleConfirmReceipt(item.id)"
+              >
+                Confirm Receipt
+              </el-button>
+              <el-button
+                v-if="['1', '3', '4', '5', '9'].includes(item.status)"
+                type="warning"
+                size="small"
+                @click="handleRefund(item.id)"
+              >
+                {{ item.status === '6' ? 'Cancel Refund' : 'Request Refund' }}
+              </el-button>
+              <el-button
+                v-if="item.status === '5'"
+                type='primary'
+                size='small'
+                @click="$router.push({ path: `/order/comment/add/${item.id}` })"
+              >
+                Comment Now
+              </el-button>
+              <el-button
+                v-if="item.status === '8'"
+                type='default'
+                size='small'
+                @click="$router.push({ path: `/order/comment/review/${item.id}` })"
+              >
+                View my comment
+              </el-button>
             </div>
           </div>
         </div>
@@ -149,14 +277,17 @@
         :column="2"
         class="order-info"
       >
-        <el-descriptions-item label="Product created at">
+        <el-descriptions-item label="Order created at">
           {{ formatDateTime(order.createTime) }}
         </el-descriptions-item>
-        <el-descriptions-item label="Pay Money">
+        <el-descriptions-item label="Account Paid">
           ¥{{ order?.payMoney.toFixed(2) }}
         </el-descriptions-item>
         <el-descriptions-item label="Post Fee">
           ¥{{ order.postFee }}
+        </el-descriptions-item>
+        <el-descriptions-item label="Total Quantity">
+          {{ order.totalQuantity }}
         </el-descriptions-item>
       </el-descriptions>
     </div>
@@ -239,7 +370,7 @@
           align-items: center;
 
           .price {
-            color: #e4393c;
+            color: #333;
             font-size: 16px;
             font-weight: bold;
           }
@@ -247,6 +378,28 @@
           .quantity {
             color: #666;
           }
+
+          .subtotal {
+            color: #e4393c;
+            font-size: 16px;
+            font-weight: bold;
+          }
+        }
+
+        .status-tag {
+          margin-top: 8px;
+        }
+
+        .time {
+          color: #999;
+          font-size: 12px;
+          margin-top: 8px;
+        }
+
+        .action {
+          margin-top: 8px;
+          display: flex;
+          gap: 8px;
         }
       }
     }

@@ -128,7 +128,7 @@ const categoryList = ref([
 <style scoped lang="scss">
 .home-category {
   width: 250px;
-  height: auto; /* 修改为 auto，以便根据内容自适应高度 */
+  height: 500px; /* 修改为 auto，以便根据内容自适应高度 */
   background: rgba(0, 0, 0, 0.8);
   position: relative;
   z-index: 99;
