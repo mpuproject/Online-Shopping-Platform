@@ -22,31 +22,29 @@ const stateMap = {
 
 // 商品状态映射
 const itemStateMap = {
-  '0': { text: 'Unpaid', type: 'warning' },
-  '1': { text: 'Pending', type: 'success' },
-  '2': { text: 'Cancelled', type: 'info' },
-  '3': { text: 'Shipped', type: 'primary' },
-  '4': { text: 'Delivered', type: '' },
-  '5': { text: 'Received', type: 'success' },
-  '6': { text: 'Refund Pending', type: 'danger' },
-  '7': { text: 'Refunded', type: 'info' },
-  '8': { text: 'Done', type: 'success' },
-  '9': {text: 'Hold', type: 'success'}
+  '0': { text: '未支付', type: 'warning' },
+  '1': { text: '已支付', type: 'success' },
+  '2': { text: '已取消', type: 'info' },
+  '3': { text: '已发货', type: 'primary' },
+  '4': { text: '已送达', type: '' },
+  '5': { text: '已签收', type: 'success' },
+  '6': { text: '未退款', type: 'danger' },
+  '7': { text: '已退款', type: 'info' },
+  '8': { text: '已完成', type: 'success' }
 }
 
 // 标签页配置
 const tabTypes = [
-  { name: "all", label: "All Orders" },
-  { name: "0", label: "Unpaid" },
-  { name: "1", label: "Pending" },
-  { name: "2", label: "Cancelled" },
-  { name: "9", label: "Hold" },
-  { name: "3", label: "Shipped" },
-  { name: "4", label: "Delivered" },
-  { name: "5", label: "Received" },
-  { name: "6", label: "Refund Pending" },
-  { name: "7", label: "Refunded" },
-  { name: "8", label: "Done" }
+  { name: "all", label: "全部订单" },
+  { name: "0", label: "未支付" },
+  { name: "1", label: "已支付" },
+  { name: "2", label: "已取消" },
+  { name: "3", label: "已发货" },
+  { name: "4", label: "已送达" },
+  { name: "5", label: "已签收" },
+  { name: "6", label: "未退款" },
+  { name: "7", label: "已退款" },
+  { name: "8", label: "已完成" }
 ]
 
 const orderList = ref([])
@@ -145,53 +143,16 @@ const handleConfirmReceipt = async (itemId) => {
     }
   } catch (error) {
     // 增强错误信息
-    ElMessage.error(`Operation failed: ${error.response?.data?.message || error.message}`)
+    console.error('确认收货错误详情:', error)
+    ElMessage.error(`操作失败: ${error.response?.data?.message || error.message}`)
   }
 }
 
-// 退款处理函数
-const handleRefund = async (itemId) => {
-  try {
-    const currentItem = orderList.value
-      .flatMap(order => order.skus)
-      .find(item => item.id === itemId)
-
-    if (!currentItem) {
-      ElMessage.error('未找到对应订单项')
-      return
-    }
-
-    const isApplying = currentItem.status !== '6'
-    const actionName = isApplying ? 'request refund' : 'cancel refund'
-
-    // 添加确认对话框
-    await ElMessageBox.confirm(
-      `Are you sure to ${actionName}?`,
-      'Confirmation',
-      {
-        confirmButtonText: 'Confirm',
-        cancelButtonText: 'Cancel',
-        type: 'warning'
-      }
-    )
-
-    const targetStatus = isApplying ? '6' : '7'
-    const res = await updateOrderItemAPI({
-      itemId: itemId,
-      itemStatus: targetStatus
-    })
-
-    if (res.code === 200) {
-      ElMessage.success(`${actionName} successful`)
-      await fetchOrders()
-    }
-  } catch (error) {
-    // 捕获用户取消操作的情况
-    if (error !== 'cancel') {
-      ElMessage.error(`Operation failed: ${error.response?.data?.message || error.message}`)
-    }
-  }
+// 查看详情
+const viewDetail = (orderId) => {
+  router.push(`/order/detail/${orderId}`)
 }
+
 // 初始化获取数据
 onMounted(() => {
   fetchOrders()
@@ -237,26 +198,41 @@ const formatDateTime = (timeString) => {
             </div>
             <div class="body">
               <div class="column goods">
-                <div v-if="order.skus.length <= 8" class="goods-list-wrap">
-                  <ul class="goods-list">
-                    <li v-for="(item, index) in order.skus.slice(0, 8)" :key="item.id">
-                      <img :src="item.image" alt="" class="goods-image" />
-                      <div v-if="index === 7 && order.skus.length > 8" class="more-overlay" @click="$router.push(`/order/detail/${order.id}`)">
-                        More
-                      </div>
-                    </li>
-                  </ul>
-                </div>
-                <div v-else class="goods-list-container">
-                  <ul class="goods-list">
-                    <li v-for="(item, index) in order.skus.slice(0, 8)" :key="item.id">
-                      <img :src="item.image" alt="" class="goods-image" />
-                      <div v-if="index === 7 && order.skus.length > 8" class="more-overlay" @click="$router.push(`/order/detail/${order.id}`)">
-                        More
-                      </div>
-                    </li>
-                  </ul>
-                </div>
+                <ul>
+                  <li v-for="item in order.skus" :key="item.id">
+                    <a class="image" href="javascript:;">
+                      <img :src="item.image" alt="" />
+                    </a>
+                    <div class="info">
+                      <p class="name ellipsis-2">{{ item.name }}</p>
+                      <p class="attr ellipsis">
+                        <span>{{ item.attrsText }}</span>
+                      </p>
+                      <p class="time" v-if="item.createdTime">
+                        商品创建时间：{{ formatDateTime(item.createdTime) }}
+                      </p>
+                      <el-tag 
+                        :type="itemStateMap[item.status]?.type"
+                        size="small"
+                        class="status-tag"
+                      >
+                        {{ itemStateMap[item.status]?.text || '未知状态' }}
+                      </el-tag>
+                    </div>
+                    <div class="price">¥{{ (item.realPay || 0).toFixed(2) }}</div>
+                    <div class="action">
+                      <el-button 
+                        v-if="item.status === '4'"
+                        type="success" 
+                        size="small"
+                        @click="handleConfirmReceipt(item.id)"
+                      >
+                        确认收货
+                      </el-button>
+                    </div>
+                    <div class="count">x{{ item.quantity }}</div>
+                  </li>
+                </ul>
               </div>
               <div class="column state">
                 <p>{{ stateMap[order.status] }}</p>

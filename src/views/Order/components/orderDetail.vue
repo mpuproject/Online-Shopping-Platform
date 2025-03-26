@@ -15,24 +15,14 @@
   const defaultAddress = ref(null)
 
   const statusMap = {
-    '0': { text: 'Unpaid', type: 'warning' },
-    '1': { text: 'Paid', type: 'success' },
-    '2': { text: 'Cancel', type: 'info' },
+    '0': { text: '未支付', type: 'warning' },
+    '1': { text: '已支付', type: 'success' },
+    '2': { text: '已取消', type: 'info' },
+    '3': { text: '已发货', type: 'primary' },
+    '4': { text: '已送达', type: '' },
+    '5': { text: '已签收', type: 'success' }
   }
-
-  const itemStateMap = {
-    '0': { text: 'Unpaid', type: 'warning' },
-    '1': { text: 'Pending', type: 'success' },
-    '2': { text: 'Cancelled', type: 'info' },
-    '3': { text: 'Shipped', type: 'primary' },
-    '4': { text: 'Delivered', type: '' },
-    '5': { text: 'Received', type: 'success' },
-    '6': { text: 'Refund Pending', type: 'danger' },
-    '7': { text: 'Refunded', type: 'info' },
-    '8': { text: 'Done', type: 'success' },
-    '9': { text: 'Hold', type: 'success' }
-  };
-
+  
   const fetchOrderDetail = async () => {
     try {
       const orderId = route.params.id
@@ -73,97 +63,21 @@
     }
   }
   const formatDateTime = (isoString) => {
-    if (!isoString) return ''
-    const date = new Date(isoString)
-    return date.toLocaleString('zh-CN', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
-    }).replace(/\//g, '-')
-  }
-
-  const formatFullLocation = (address) => {
-    if (!address) return ''
-    return address.province === address.city 
-      ? `${address.district}, ${address.province}`
-      : `${address.district}, ${address.city}, ${address.province}`
-  }
-
-  const fetchDefaultAddress = async () => {
-    try {
-      const res = await getAddressAPI(userStore.userInfo.id)
-      const addresses = res.data || []
-      defaultAddress.value = addresses.find(addr => addr.is_default) || null
-    } catch (error) {
-      ElMessage.error('Failed to fetch address: ' + error.message)
-    }
-  }
-
-  // Confirm receipt
-  const handleConfirmReceipt = async (itemId) => {
-    try {
-      const res = await updateOrderItemAPI({
-        itemId: itemId,
-        itemStatus: '5'
-      });
-
-      if (res.code === 200) {
-        ElMessage.success('Receipt confirmed successfully');
-        await fetchOrderDetail(); // Refresh order details
-      } else {
-        ElMessage.error(`Operation failed: ${res.message || 'Unknown error'}`);
-      }
-    } catch (error) {
-      ElMessage.error(`Operation failed: ${error.response?.data?.message || error.message}`);
-    }
-  };
-
-  // Handle refund
-  const handleRefund = async (itemId) => {
-    try {
-      const currentItem = order.value.skus.find(item => item.id === itemId);
-
-      if (!currentItem) {
-        ElMessage.error('未找到对应订单项');
-        return;
-      }
-
-      const isApplying = currentItem.status !== '6';
-      const actionName = isApplying ? 'request refund' : 'cancel refund';
-
-      await ElMessageBox.confirm(
-        `Are you sure to ${actionName}?`,
-        'Confirmation',
-        {
-          confirmButtonText: 'Confirm',
-          cancelButtonText: 'Cancel',
-          type: 'warning'
-        }
-      );
-
-      const targetStatus = isApplying ? '6' : '7';
-      const res = await updateOrderItemAPI({
-        itemId: itemId,
-        itemStatus: targetStatus
-      });
-
-      if (res.code === 200) {
-        ElMessage.success(`${actionName} successful`);
-        await fetchOrderDetail(); // Refresh order details
-      }
-    } catch (error) {
-      if (error !== 'cancel') {
-        ElMessage.error(`Operation failed: ${error.response?.data?.message || error.message}`);
-      }
-    }
-  };
-
-  onMounted(async () => {
-    await fetchOrderDetail()
-    await fetchDefaultAddress()
+  if (!isoString) return ''
+  const date = new Date(isoString)
+  return date.toLocaleString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  }).replace(/\//g, '-')
+}
+  onMounted(() => {
+    console.log('当前用户ID:', userStore.userInfo?.id)
+    console.log('路由参数:', route.params)
+    fetchOrderDetail()
   })
 </script>
 
@@ -176,7 +90,7 @@
       class="back-btn"
     >
       <i class="el-icon-arrow-left"></i>
-      Return
+      返回订单列表
     </el-button>
 
     <!-- 订单主体内容 -->
@@ -185,7 +99,7 @@
       <div class="header">
         <h2>Order ID: {{ order.id }}</h2>
         <el-tag :type="statusMap[order.status]?.type || 'info'">
-          {{ statusMap[order.status]?.text || '未知状态' }}
+          {{ statusMap[order.status]?.text || 'Unknown Status' }}
         </el-tag>
       </div>
       <!-- 地址显示 -->
@@ -271,19 +185,19 @@
       </div>
 
       <!-- 订单信息 -->
-      <el-descriptions
-        title="Order Info"
-        border
+      <el-descriptions 
+        title="订单信息" 
+        border 
         :column="2"
         class="order-info"
       >
-        <el-descriptions-item label="Order created at">
+        <el-descriptions-item label="创建时间">
           {{ formatDateTime(order.createTime) }}
         </el-descriptions-item>
-        <el-descriptions-item label="Account Paid">
-          ¥{{ order?.payMoney.toFixed(2) }}
+        <el-descriptions-item label="商品总额">
+          ¥{{ order.payMoney }}
         </el-descriptions-item>
-        <el-descriptions-item label="Post Fee">
+        <el-descriptions-item label="运费">
           ¥{{ order.postFee }}
         </el-descriptions-item>
         <el-descriptions-item label="Total Quantity">
