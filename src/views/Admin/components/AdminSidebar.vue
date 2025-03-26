@@ -11,6 +11,11 @@
         </h2>
       </div>
 
+      <el-menu-item index="/admin/order" class="sidebar-item">
+        <el-icon><Document /></el-icon>
+        <span>Orders</span>
+      </el-menu-item>
+
       <el-menu-item index="/admin/product" class="sidebar-item">
         <el-icon><Goods /></el-icon>
         <span>Product</span>
@@ -24,11 +29,6 @@
       <el-menu-item index="/admin/subcategory" class="sidebar-item">
         <el-icon><Grid /></el-icon>
         <span>Sub-Category</span>
-      </el-menu-item>
-
-      <el-menu-item index="/admin/order" class="sidebar-item">
-        <el-icon><Document /></el-icon>
-        <span>Orders</span>
       </el-menu-item>
     </el-menu>
   </div>

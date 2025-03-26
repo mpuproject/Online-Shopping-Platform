@@ -73,9 +73,6 @@ const handleOrderDetail = (row) => {
   <div class="content-table">
     <!-- 顶部操作区 -->
     <div class="top-actions">
-      <div class="order-stats">
-        <span class="stat-item">Total Orders: {{ total }}</span>
-      </div>
       <el-input
         v-model="searchKeyword"
         placeholder="Search by order number..."
@@ -120,7 +117,7 @@ const handleOrderDetail = (row) => {
 
       <el-table-column label="Products" min-width="200">
         <template #default="{ row }">
-          <div v-for="item in row.items" :key="item.id" class="product-item">
+          <div v-for="item in row.items.slice(0, 3)" :key="item.id" class="product-item">
             <el-image
               :src="item.product.image"
               :alt="item.product.name"
@@ -128,6 +125,7 @@ const handleOrderDetail = (row) => {
             />
             <span>{{ item.product.name }} x{{ item.product.count }}</span>
           </div>
+          <div v-if="row.items.length > 3" class="more-items">+ {{ row.items.length - 3 }} more</div>
         </template>
       </el-table-column>
 
@@ -193,13 +191,6 @@ const handleOrderDetail = (row) => {
   }
 }
 
-.order-stats {
-  display: flex;
-  gap: 20px;
-  margin-right: auto;
-  margin-left: 10px;
-}
-
 .stat-item {
   font-size: 14px;
   color: #606266;
@@ -227,5 +218,11 @@ const handleOrderDetail = (row) => {
 
 .status-item {
   display: none;
+}
+
+.more-items {
+  color: #999;
+  font-size: 12px;
+  margin-top: 5px;
 }
 </style>

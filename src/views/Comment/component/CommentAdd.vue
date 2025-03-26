@@ -35,7 +35,7 @@ const requestData = ref({
 
 // 提交按钮
 const submitComment = async () => {
-    requestData.value.commentDesc = DOMPurify.sanitize(requestData.value)
+    requestData.value.commentDesc = DOMPurify.sanitize(requestData.value.commentDesc)
 
     const res = await addCommentAPI(requestData.value);
     if (res.code === 1) {
