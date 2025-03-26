@@ -46,7 +46,6 @@ watch(() => route.path, (newPath) => {
   display: flex;
   min-height: 100vh;
   background-color: #f0f2f5;
-  max-width: 1920px;
   margin: 0 auto;
 }
 
