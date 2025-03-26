@@ -74,7 +74,7 @@ export const updateOrderItemAPI = (data) => {
     url: '/order/item/update/',
     method: 'PUT',
     data: {
-      item_id: data.itemId,  // 前端参数itemId对应后端item_id
+      item_id: data.itemId,  
       item_status: data.itemStatus
     }
   })

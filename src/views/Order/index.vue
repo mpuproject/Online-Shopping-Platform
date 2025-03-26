@@ -60,7 +60,7 @@ const fetchOrders = async () => {
     const params = {
       userId: userStore.userInfo.id,
       itemStatus: activeTab.value === 'all' ? undefined : activeTab.value.toString(), page: currentPage.value,
-      page_size: 2
+      page_size: 5
 }
 
     const { data } = await getOrderByUserIdAPI(params)
@@ -301,7 +301,7 @@ const formatDateTime = (timeString) => {
             <el-pagination
               :total="total"
               :current-page="currentPage"
-              :page-size="2"
+              :page-size="5"
               background
               layout="prev, pager, next"
               @current-change="pageChange"

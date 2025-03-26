@@ -33,3 +33,56 @@ export const getCategoryAPI = () => {
     url: '/category/list/',
   })
 }
+
+/**
+ * @description 添加一级分类
+ * 
+ * @param {string} name 分类名称
+ * @returns 
+ */
+export const addCategoryAPI = (name) => {
+  return request({
+    url: '/category/add/',
+    method: 'POST',
+    data: {
+      name: name
+    }
+  })
+}
+
+/**
+ * @description 更新一级分类
+ * 
+ * @param {string} id 分类ID
+ * @param {string} name 分类名称
+ * @param {string} status 分类状态
+ * @returns 
+ */
+export const updateCategoryAPI = (id, name, status) => {
+  return request({
+    url: '/category/update/',
+    method: 'POST',
+    data: {
+      id: id,
+      name: name,
+      status: status,
+      image: image
+    }
+  })
+}
+
+/**
+ * @description 删除一级分类
+ * 
+ * @param {string} id 分类ID
+ * @returns 
+ */
+export const deleteCategoryAPI = (id) => {
+  return request({
+    url: '/category/delete/',
+    method: 'POST',
+    data: {
+      id: id
+    }
+  })
+}
