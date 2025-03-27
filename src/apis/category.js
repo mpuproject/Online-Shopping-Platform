@@ -56,9 +56,10 @@ export const addCategoryAPI = (name) => {
  * @param {string} id 分类ID
  * @param {string} name 分类名称
  * @param {string} status 分类状态
+ * @param {string[]} imageURL
  * @returns 
  */
-export const updateCategoryAPI = (id, name, status) => {
+export const updateCategoryAPI = (id, name, status, imageURL) => {
   return request({
     url: '/category/update/',
     method: 'POST',
@@ -66,7 +67,7 @@ export const updateCategoryAPI = (id, name, status) => {
       id: id,
       name: name,
       status: status,
-      image: image
+      imageURL: imageURL || []
     }
   })
 }

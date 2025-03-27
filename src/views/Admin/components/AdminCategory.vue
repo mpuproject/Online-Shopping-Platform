@@ -21,11 +21,13 @@ const fetchCategories = async () => {
       id: category.id,
       name: category.name,
       status: category.status,
-      image: category.images
+      image: category.imageURL
     }))
+    console.log(tableData.value);
+    
     total.value = tableData.value.length
   } catch (error) {
-    ElMessage.error('获取分类数据失败')
+    ElMessage.error('Description Failed to obtain classification data')
   }
 }
 
@@ -36,18 +38,18 @@ fetchCategories()
 const handleAdd = async () => {
   try {
     const { value: name } = await ElMessageBox.prompt('Enter the new Category Name', 'Adding Category', {
-      confirmButtonText: 'OK',
+      confirmButtonText: 'Confirm',
       cancelButtonText: 'Cancel',
       inputPattern: /\S+/, // 非空验证
       inputErrorMessage: 'Category Name cannot be Null'
     })
 
     const response = await addCategoryAPI(name)
-    ElMessage.success('添加成功')
+    ElMessage.success('Adding Successfully')
     fetchCategories() // 刷新数据
   } catch (error) {
     if (error !== 'cancel') {
-      ElMessage.error('添加失败')
+      ElMessage.error('Adding Failure')
     }
   }
 }
@@ -56,7 +58,7 @@ const handleAdd = async () => {
 const handleEdit = async (row) => {
   try {
     const { value: name } = await ElMessageBox.prompt('Enter the new Category Name', 'Editing Category', {
-      confirmButtonText: 'OK',
+      confirmButtonText: 'Confirm',
       cancelButtonText: 'Cancel',
       inputValue: row.name,
       inputPattern: /\S+/, // 非空验证
@@ -65,11 +67,11 @@ const handleEdit = async (row) => {
 
     const status = row.status ? '1' : '0'
     await updateCategoryAPI(row.id, name, status)
-    ElMessage.success('更新成功')
+    ElMessage.success('Update Successfully')
     fetchCategories() // 刷新数据
   } catch (error) {
     if (error !== 'cancel') {
-      ElMessage.error('更新失败')
+      ElMessage.error('Update Failure')
     }
   }
 }
@@ -77,13 +79,13 @@ const handleEdit = async (row) => {
 // 修改分类状态
 const handleStatusChange = async (row) => {
   try {
-    const status = row.status ? '1' : '0'
-    await updateCategoryAPI(row.id, row.name, status)
-    ElMessage.success('状态更新成功')
+    const newStatus = row.status === '1' ? '0' : '1';
+    await updateCategoryAPI(row.id, row.name, newStatus)
+    ElMessage.success('Status Update Successfully')
     fetchCategories()
   } catch (error) {
-    console.error('状态更新失败:', error)
-    ElMessage.error('状态更新失败')
+    console.error('Status Update Failure:', error)
+    ElMessage.error('Status Update Failure')
   }
 }
 
@@ -91,43 +93,46 @@ const handleStatusChange = async (row) => {
 const handleDelete = async (row) => {
   try {
     await ElMessageBox.confirm(
-      `确定要删除 "${row.name}" 吗？`,
-      '警告',
+      `Are you sure you want to delete "${row.name}"?`,
+      'Warning',
       {
-        confirmButtonText: '确认',
-        cancelButtonText: '取消',
+        confirmButtonText: 'Confirm',
+        cancelButtonText: 'Cancel',
         type: 'warning',
       }
     )
 
     await deleteCategoryAPI(row.id)
-    ElMessage.success('删除成功')
+    ElMessage.success('Delete Successfully')
     fetchCategories() // 刷新数据
   } catch (error) {
     if (error !== 'cancel') {
-      ElMessage.error('删除失败')
+      ElMessage.error('Delete Failure')
     }
   }
 }
 
 // 图片上传成功处理
-const handleImageUploadSuccess = async (response, row) => {
+const handleImageUploadSuccess = async (imageURL, row) => {
   try {
-    const imageUrl = response.data.url
-    console.log(response);
-    await updateCategoryAPI(row.id, row.name, row.status, imageUrl) // 更新分类图片
-    ElMessage.success('图片上传成功')
-    fetchCategories() // 刷新数据
+    // 如果 row.image 是数组，将新图片 URL 添加到数组中
+    const updatedImages = Array.isArray(row.image) ? [...row.image, imageURL] : [imageURL];
+    
+    // 更新分类图片
+    await updateCategoryAPI(row.id, row.name, row.status, updatedImages);
+    ElMessage.success('Picture uploaded successfully');
+    fetchCategories(); // 刷新数据
+    handleCloseImageDialog();
   } catch (error) {
-    console.error('图片上传失败:', error)
-    ElMessage.error('图片上传失败')
+    console.error('Image Upload Failure:', error);
+    ElMessage.error('Failed to update category with new image');
   }
-}
+};
 
 // 图片上传失败处理
 const handleImageUploadError = (error) => {
-  console.error('图片上传失败:', error)
-  ElMessage.error('图片上传失败')
+  console.error('Image Upload Failure:', error)
+  ElMessage.error('Image Upload Failure')
 }
 
 // 图片管理对话框
@@ -135,7 +140,9 @@ const imageDialogVisible = ref(false)
 const currentRow = ref([])
 
 const openImageDialog = (row) => {
-  currentRow.value = row.image
+  currentRow.value = row;
+  console.log(row);
+  
   imageDialogVisible.value = true
 }
 
@@ -155,31 +162,33 @@ const handleDeleteImage = async (row, image) => {
         type: 'warning',
       }
     )
+    
+    const updatedImages = row.image.filter(img => img !== image);
 
-    await updateCategoryAPI(row.id, row.name, row.status, null) // 删除图片
-    ElMessage.success('image success to delete')
+    await updateCategoryAPI(row.id, row.name, row.status, updatedImages) // 删除图片
+    ElMessage.success('Image success to delete')
     fetchCategories() // 刷新数据
     handleCloseImageDialog()
   } catch (error) {
     if (error !== 'cancel') {
-      ElMessage.error('image fail to delete')
+      ElMessage.error('Image fail to delete')
     }
   }
 }
 
 // 图片上传处理
-const handleUpload = async (options) => {
+const handleUpload = async (options, currentRow) => {
   const { file } = options;
-  if (!file) return;
-
-  const formData = new FormData();
-  formData.append('file', file);
-
+  if (!file) return; 
+  
   try {
-    const response = await postImageAPI(formData); 
-    await handleImageUploadSuccess(response, currentRow.value); 
+    const response = await postImageAPI(file); // 调用 postImageAPI 上传文件    
+    const imageUrl = response.url; // 获取返回的图片 URL    
+    console.log(currentRow);
+      
+    await handleImageUploadSuccess(imageUrl, currentRow); // 更新分类图片    
   } catch (error) {
-    await handleImageUploadError(error); 
+    await handleImageUploadError(error); // 处理上传失败
   }
 };
 </script>
@@ -265,7 +274,7 @@ const handleUpload = async (options) => {
     >
       <div>
         <div v-if="currentRow" class="image-preview">
-          <div v-for="image in currentRow" class="image-container">
+          <div v-for="image in currentRow.image" class="image-container">
             <img :src="image" alt="Category Image" class="category-image" />
             <div class="overlay">
               <el-icon class="delete-icon" @click="handleDeleteImage(currentRow, image)">
@@ -280,9 +289,7 @@ const handleUpload = async (options) => {
 
         <!-- 图片上传区域 -->
         <el-upload
-          :http-request="handleUpload"
-          :on-success="(response) => handleImageUploadSuccess(response, currentRow)"
-          :on-error="handleImageUploadError"
+          :http-request="(options) => handleUpload(options, currentRow)"
           :show-file-list="false"
           class="upload-box"
           style="margin-top: 10px;"
