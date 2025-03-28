@@ -28,6 +28,10 @@ export function getCategoriesAPI(id) {
   })
 }
 
+/**
+ * @description 管理员在更改产品时获取分类
+ * @returns
+ */
 export const getCategoryAPI = () => {
   return request({
     url: '/category/list/',
@@ -36,9 +40,9 @@ export const getCategoryAPI = () => {
 
 /**
  * @description 添加一级分类
- * 
+ *
  * @param {string} name 分类名称
- * @returns 
+ * @returns
  */
 export const addCategoryAPI = (name) => {
   return request({
@@ -52,12 +56,12 @@ export const addCategoryAPI = (name) => {
 
 /**
  * @description 更新一级分类
- * 
+ *
  * @param {string} id 分类ID
  * @param {string} name 分类名称
  * @param {string} status 分类状态
  * @param {string[]} imageURL
- * @returns 
+ * @returns
  */
 export const updateCategoryAPI = (id, name, status, imageURL) => {
   return request({
@@ -74,9 +78,9 @@ export const updateCategoryAPI = (id, name, status, imageURL) => {
 
 /**
  * @description 删除一级分类
- * 
+ *
  * @param {string} id 分类ID
- * @returns 
+ * @returns
  */
 export const deleteCategoryAPI = (id) => {
   return request({
@@ -85,5 +89,18 @@ export const deleteCategoryAPI = (id) => {
     data: {
       id: id
     }
+  })
+}
+
+/**
+ * @description 管理员获取分类
+ *
+ * @param {} data
+ * @returns
+ */
+export const getAdminCategoryAPI = (params) => {
+  return request({
+    url: '/category/admin/list/',
+    params
   })
 }

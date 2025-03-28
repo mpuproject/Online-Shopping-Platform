@@ -42,3 +42,58 @@ export const getSubcategoryAPI = () => {
     url: '/category/sub/list/'
   })
 }
+
+/**
+ * @description 管理员获取分类ID
+ *
+ * @param {*} params
+ * @returns
+ */
+export const getAdminSubcategoryAPI = (params) => {
+  return request({
+    url: '/category/admin/sub/list/',
+    params
+  })
+}
+
+/**
+ * @description 管理员添加新二级分类
+ *
+ * @param {*} data
+ * @returns
+ */
+export const addSubcategoryAPI = (data) => {
+  return request({
+    url: '/category/sub/add/',
+    method: 'POST',
+    data
+  })
+}
+
+/**
+ * @description 更新二级分类
+ *
+ * @param {*} data
+ * @returns
+ */
+export const updateSubcategoryAPI = (data) => {
+  return request({
+    url: '/category/sub/update/',
+    method: 'PUT',
+    data
+  })
+}
+
+/**
+ * @description 删除二级分类
+ *
+ * @param {*} id
+ * @returns
+ */
+export const deleteSubcategoryAPI = (id) => {
+  return request({
+    url: '/category/sub/delete/',
+    method: 'DELETE',
+    data: { id }
+  })
+}

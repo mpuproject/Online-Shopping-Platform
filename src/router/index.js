@@ -74,7 +74,7 @@ const router = createRouter({
 
     //管理员界面
     {
-      path: '/admin', redirect: '/admin/product', component: Admin,
+      path: '/admin', redirect: '/admin/order', component: Admin,
       meta: { title: 'Rabbuy admin', requiresAdmin: true },
       children: [
         { path: 'product', component: AdminProduct, },
