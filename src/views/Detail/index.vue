@@ -12,35 +12,25 @@ const route = useRoute();
 const router = useRouter();
 
 const getDetail = async () => {
-  const res = await getDetailAPI(route.params.id);
-  product.value = res.data;
-};
-
-const fetchRandomProducts = async () => {
-  if (product.value.sub_category?.id) {
-    const res = await getSubcategoryProductAPI({
-      subCategoryId: product.value.sub_category.id,
-      page: 1,
-      pageSize: 20, 
-      sortField: 'created_time'
+  try {
+    const res = await getDetailAPI(route.params.id);
+    product.value = res.data;
+    router.replace({
+      params: {
+        ...route.params,
+        productName: product.value.name
+      }
     });
-    
-    const allProducts = res.data.products;
-
-    // 随机选择 4 个商品
-    const shuffled = allProducts.sort(() => 0.5 - Math.random());
-    randomProducts.value = shuffled.slice(0, 4);
+  } catch (error) {
+    console.error(error);
   }
 };
 
-onBeforeMount(() => {
-  getDetail();
-  fetchRandomProducts();
-});
-
-watch(() => product.value, () => {
-  fetchRandomProducts();
-}, { immediate: true });
+const randomProducts = ref([]);
+const fetchRandomProducts = async (name, id) => {
+  const res = await getRecommendationAPI(name, id)
+  randomProducts.value = res.data;
+};
 
 // 选择商品数量
 const cartStore = useCartStore()
@@ -251,7 +241,14 @@ watch(
             <div class="related-products" v-if="randomProducts.length > 0">
               <h3>Recommended Products</h3>
               <div class="product-list">
-                <GoodsItem v-for="good in randomProducts" :key="good.id" :goods="good" />
+                <router-link
+                  v-for="good in randomProducts"
+                  :key="good.id"
+                  :to="{ path: `/product/${good.id}` }"
+                  class="product-link"
+                >
+                  <GoodsItem :goods="good" />
+                </router-link>
               </div>
             </div>
 
@@ -612,8 +609,104 @@ watch(
   }
 
   .product-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    padding: 20px 0;
+  }
+}
+
+.product-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+
+  &:hover {
+    transform: translateY(-5px);
+    transition: transform 0.3s ease;
+  }
+}
+
+.comments {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  .comment-item {
     display: flex;
-    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 1px solid #e0e0e0;
+    padding: 10px;
+
+    .avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      margin-right: 10px;
+    }
+
+    .comment-content {
+      flex: 1;
+
+      .username {
+        font-weight: bold;
+        margin: 0;
+        font-size: 18px;
+      }
+
+      .text {
+        margin: 0 0 10px 0;
+        font-size: 15px;
+      }
+
+      .comment-images {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 5px;
+        margin-top: 5px;
+        width: 300px;
+      }
+
+      .comment-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+    }
+  }
+}
+
+.filter-bar {
+  display: flex;
+  align-items: center;
+  padding: 0 25px;
+
+  .left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .filter-item {
+    position: relative;
+    cursor: pointer;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border: 1px solid #dcdfe6;
+    border-radius: 4px;
+
+    &:hover, &.active, &.active::after {
+      color: $xtxColor;
+      border: 1px solid $xtxColor;
+    }
   }
 }
 </style>
