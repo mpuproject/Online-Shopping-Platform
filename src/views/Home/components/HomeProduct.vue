@@ -4,7 +4,6 @@ import { onMounted, ref } from 'vue'
 import GoodsItem from './GoodsItem.vue'
 import { getHomeProductAPI } from '@/apis/home';
 
-// 静态数据
 const goodsProduct = ref([]);
 
 const getHomeProduct = async () => {

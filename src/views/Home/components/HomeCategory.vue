@@ -1,119 +1,45 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { RouterLink } from 'vue-router';
+import { getHomeBannerAPI } from '@/apis/home'
 
-const categoryList = ref([
-  {
-    id: 1,
-    name: 'Living:',
-    children: [
-      { id: 1, name: 'Furniture' },
-      { id: 2, name: '/ Bedding' },
-    ],
-    goods: [
-      {
-        id: 1,
-        picture: 'https://cdn.pixabay.com/photo/2016/11/14/04/45/elephant-1822636_1280.jpg',
-        name: '变频空调',
-        price: 2999,
-      },
-      {
-        id: 2,
-        picture: 'https://cdn.pixabay.com/photo/2016/11/14/04/45/elephant-1822636_1280.jpg',
-        name: '全自动洗衣机',
-        price: 2499,
-      },
-      {
-        id: 3,
-        picture: 'https://cdn.pixabay.com/photo/2016/11/14/04/45/elephant-1822636_1280.jpg',
-        name: '全自动洗衣机',
-        price: 2499,
-      },
-      {
-        id: 1,
-        picture: 'https://cdn.pixabay.com/photo/2016/11/14/04/45/elephant-1822636_1280.jpg',
-        name: '变频空调',
-        price: 2999,
-      },
-      {
-        id: 2,
-        picture: 'https://cdn.pixabay.com/photo/2016/11/14/04/45/elephant-1822636_1280.jpg',
-        name: '全自动洗衣机',
-        price: 2499,
-      },
-      {
-        id: 3,
-        picture: 'https://cdn.pixabay.com/photo/2016/11/14/04/45/elephant-1822636_1280.jpg',
-        name: '全自动洗衣机',
-        price: 2499,
-      },
-      {
-        id: 1,
-        picture: 'https://cdn.pixabay.com/photo/2016/11/14/04/45/elephant-1822636_1280.jpg',
-        name: '变频空调',
-        price: 2999,
-      },
-      {
-        id: 2,
-        picture: 'https://cdn.pixabay.com/photo/2016/11/14/04/45/elephant-1822636_1280.jpg',
-        name: '全自动洗衣机',
-        price: 2499,
-      },
-      {
-        id: 3,
-        picture: 'https://cdn.pixabay.com/photo/2016/11/14/04/45/elephant-1822636_1280.jpg',
-        name: '全自动洗衣机',
-        price: 2499,
-      },
-      {
-        id: 3,
-        picture: 'https://cdn.pixabay.com/photo/2016/11/14/04/45/elephant-1822636_1280.jpg',
-        name: '全自动洗衣机',
-        price: 2499,
-      },
-    ],
-  },
-  {
-    id: 2,
-    name: 'Phone: ',
-    children: [
-      { id: 1, name: 'iPhone' },
-      { id: 2, name: '/ Telephone' },
-    ],
-    goods: [
-      {
-        id: 3,
-        picture: 'https://cdn.pixabay.com/photo/2016/11/14/04/45/elephant-1822636_1280.jpg',
-        name: '智能手机X',
-        price: 3999,
-      },
-      {
-        id: 4,
-        picture: 'https://cdn.pixabay.com/photo/2016/11/14/04/45/elephant-1822636_1280.jpg',
-        name: '功能手机Y',
-        price: 999,
-      },
-    ],
-  },
-]);
+const categoryList = ref([]);
+
+const getHomeBanner = async () => {
+  const res = await getHomeBannerAPI();
+  categoryList.value = res.data;
+}
+
+onMounted(() => {
+  getHomeBanner()
+})
+
 </script>
 
 <template>
   <div class="home-category">
     <ul class="menu">
       <li v-for="item in categoryList" :key="item.id">
-        <RouterLink to="/">{{ item.name }}</RouterLink>
-        <RouterLink v-for="child in item.children" :key="child.id" to="/">{{ child.name }}</RouterLink>
+        <RouterLink :to="`/category/${item.id}`">{{ item.name }}: </RouterLink>
+        <template v-for="(child, index) in item.children" :key="child.id">
+          <RouterLink
+            :to="`/category/sub/${child.id}`"
+            class="sub-link"
+          >
+            {{ child.name.length > 13 ? child.name.split(' ')[0] + '...' : child.name }}
+          </RouterLink>
+          <span v-if="index !== item.children.length - 1" class="divider"> / </span>
+        </template>
         <div class="layer">
           <h4>For Your Page <small>Hot sale are discounted</small></h4>
           <ul>
-            <li v-for="good in item.goods.slice(0, 10)" :key="good.id"> <!-- 限制为前10个商品 -->
-              <RouterLink to="/">
+            <li v-for="product in item.products" :key="product.id">
+              <RouterLink :to="`/product/${product.id}`">
                 <div class="good-item">
-                  <img :src="good.picture" alt="" />
+                  <img :src="product.image" alt="" />
                   <div class="info">
-                    <p class="name ellipsis-2">{{ good.name }}</p>
-                    <p class="price"><i>¥</i>{{ good.price }}</p>
+                    <p class="name ellipsis-2">{{ product.name }}</p>
+                    <p class="price"><i>¥</i>{{ product.price }}</p>
                   </div>
                 </div>
               </RouterLink>
@@ -153,6 +79,14 @@ const categoryList = ref([
         &:first-child {
           font-size: 16px;
         }
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+
+      .divider {
+        color: #fff;
       }
 
       .layer {
@@ -183,7 +117,7 @@ const categoryList = ref([
 
 
           li {
-            width: calc(20% - 10px); /* 设置宽度为 50% 减去间距 */
+            width: calc(25% - 10px); /* 设置宽度为 50% 减去间距 */
             margin-bottom: 10px; /* 增加底部间距 */
             border: 1px solid #eee;
             border-radius: 4px;

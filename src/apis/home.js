@@ -46,3 +46,14 @@ export const getHomeProductAPI = () => {
     url: '/home/products/',
   })
 }
+
+/**
+ * @description 获取主页横幅推荐
+ *
+ * @returns
+ */
+export const getHomeBannerAPI = () =>{
+  return request({
+    url: '/home/recommend/',
+  })
+}
