@@ -50,9 +50,13 @@ export const getSubcategoryAPI = () => {
  * @returns
  */
 export const getAdminSubcategoryAPI = (params) => {
+  const { page, pageSize } = params
   return request({
     url: '/category/admin/sub/list/',
-    params
+    params: {
+      page,
+      pageSize
+    }
   })
 }
 
