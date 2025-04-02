@@ -74,8 +74,9 @@ export const updateOrderItemAPI = (data) => {
     url: '/order/item/update/',
     method: 'PUT',
     data: {
-      item_id: data.itemId,  
-      item_status: data.itemStatus
+      item_id: data.itemId,
+      old_status: data.oldStatus,
+      new_status: data.newStatus
     }
   })
 }

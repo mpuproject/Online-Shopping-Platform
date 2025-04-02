@@ -51,8 +51,8 @@
         totalQuantity: data.products.reduce((total, item) => total + item.count, 0), // 计算商品总数
         skus: data.products.map(item => {
           console.log('Item Status:', item.item_status); // Debug item_status
-          console.log('Item Id:', item.item_id); 
-          console.log('Time:', item.updated_time); 
+          console.log('Item Id:', item.item_id);
+          console.log('Time:', item.updated_time);
           return {
             id: item.item_id,
             image: item.image || '/placeholder.svg',
@@ -60,7 +60,7 @@
             name: item.name,
             attrsText: item.attrsText,
             realPay: item.price,
-            quantity: item.count, 
+            quantity: item.count,
             updatedTime: item.updated_time,
             subtotal: item.price * item.count // 计算 subtotal
           }
@@ -87,7 +87,7 @@
 
   const formatFullLocation = (address) => {
     if (!address) return ''
-    return address.province === address.city 
+    return address.province === address.city
       ? `${address.district}, ${address.province}`
       : `${address.district}, ${address.city}, ${address.province}`
   }
@@ -103,11 +103,12 @@
   }
 
   // Confirm receipt
-  const handleConfirmReceipt = async (itemId) => {
+  const handleConfirmReceipt = async (itemId, itemStatus) => {
     try {
       const res = await updateOrderItemAPI({
         itemId: itemId,
-        itemStatus: '5'
+        oldStatus: itemStatus,
+        newStatus: '5'
       });
 
       if (res.code === 200) {
@@ -147,7 +148,8 @@
       const targetStatus = isApplying ? '6' : '7';
       const res = await updateOrderItemAPI({
         itemId: itemId,
-        itemStatus: targetStatus
+        oldStatus: currentItem.status,
+        newStatus: targetStatus
       });
 
       if (res.code === 200) {
@@ -195,7 +197,7 @@
           <p><span class="label">Recipient:</span>{{ defaultAddress.recipient }}</p>
           <p><span class="label">Contact:</span>{{ defaultAddress.phone }}</p>
           <p><span class="label">Address:</span>
-            {{ defaultAddress.additional_addr }}, 
+            {{ defaultAddress.additional_addr }},
             {{ formatFullLocation(defaultAddress) }}
           </p>
         </div>
@@ -237,7 +239,7 @@
                 v-if="item.status === '4'"
                 type="success"
                 size="small"
-                @click="handleConfirmReceipt(item.id)"
+                @click="handleConfirmReceipt(item.id, item.status)"
               >
                 Confirm Receipt
               </el-button>
@@ -431,7 +433,7 @@
       p {
         margin: 8px 0;
         font-size: 14px;
-        
+
         .label {
           color: #999;
           margin-right: 10px;
