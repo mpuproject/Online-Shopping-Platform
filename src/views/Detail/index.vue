@@ -6,6 +6,9 @@ import { useRoute, useRouter } from 'vue-router';
 import { useCartStore } from '@/stores/cartStore';
 import GoodsItem from '../Home/components/GoodsItem.vue';
 import { getProductCommentAPI } from '@/apis/comment';
+import { getProductQuestionsAPI, submitQuestionAPI, submitAnswerAPI } from '@/apis/question';
+import { useUserStore } from '@/stores/user';
+import { ElMessage } from 'element-plus';
 
 const product = ref({});
 const route = useRoute();
@@ -104,10 +107,117 @@ const filterComments = (type) => {
   getProductComment();
 }
 
+// 问答相关数据
+const questions = ref([]);
+const newQuestion = ref('');
+const newAnswer = ref('');
+const replyToQuestion = ref(null);
+const userStore = useUserStore();
+
+// 获取商品问答
+const getProductQuestions = async () => {
+  console.log('Starting to fetch questions for product:', route.params.id);
+  try {
+    const res = await getProductQuestionsAPI(route.params.id);
+    console.log('API response for questions:', JSON.stringify(res));
+    
+    // 更健壮的数据访问
+    if (res && res.data && typeof res.data === 'object') {
+      // 尝试获取data字段
+      if ('data' in res.data) {
+        console.log('Found data field in response:', res.data.data);
+        questions.value = Array.isArray(res.data.data) ? res.data.data : [];
+      } else {
+        // 如果没有嵌套的data字段，尝试使用整个res.data
+        console.log('No nested data field, using entire res.data:', res.data);
+        questions.value = Array.isArray(res.data) ? res.data : [];
+      }
+    } else {
+      console.error('Invalid response structure:', res);
+      questions.value = [];
+    }
+  } catch (error) {
+    console.error('Failed to fetch questions:', error);
+    questions.value = []; // 确保在出错时questions仍然是一个空数组
+  }
+  console.log('Final questions data:', JSON.stringify(questions.value));
+};
+
+// 提交问题
+const submitQuestion = async () => {
+  if (!userStore.userInfo.id) {
+    ElMessage.warning('Please login to ask a question');
+    router.push('/login');
+    return;
+  }
+  
+  if (!newQuestion.value.trim()) {
+    ElMessage.warning('Question content cannot be empty');
+    return;
+  }
+  
+  try {
+    const res = await submitQuestionAPI(route.params.id, newQuestion.value);
+    ElMessage.success('Question submitted successfully');
+    newQuestion.value = '';
+    setTimeout(() => getProductQuestions(), 500);
+  } catch (error) {
+    console.error('Failed to submit question:', error);
+    ElMessage.error('Failed to submit question');
+  }
+};
+
+// 提交回答
+const submitAnswer = async (questionId) => {
+  if (!userStore.userInfo.id) {
+    ElMessage.warning('Please login to answer the question');
+    router.push('/login');
+    return;
+  }
+  
+  if (!newAnswer.value.trim()) {
+    ElMessage.warning('Answer content cannot be empty');
+    return;
+  }
+  
+  try {
+    const res = await submitAnswerAPI(questionId, newAnswer.value);
+    ElMessage.success('Answer submitted successfully');
+    newAnswer.value = '';
+    replyToQuestion.value = null;
+    setTimeout(() => getProductQuestions(), 500);
+  } catch (error) {
+    console.error('Failed to submit answer:', error);
+    ElMessage.error('Failed to submit answer');
+  }
+};
+
+// 开始回答问题
+const startReply = (question) => {
+  replyToQuestion.value = question;
+  newAnswer.value = '';
+};
+
+// 取消回答
+const cancelReply = () => {
+  replyToQuestion.value = null;
+  newAnswer.value = '';
+};
+
+// 添加标签切换事件处理
+const handleTabChange = (tab) => {
+  if (tab.props.label === 'Q&A') {
+    getProductQuestions();
+  } else if (tab.props.label === 'Comments') {
+    getProductComment();
+  }
+};
+
 onBeforeMount( async () => {
   await getDetail();
   await fetchRandomProducts(product.value.name, product.value.id);
-  await getProductComment()
+  await getProductComment();
+  await getProductQuestions();
 });
 
 watch(
@@ -253,7 +363,7 @@ watch(
             </div>
 
               <!-- 使用 el-tabs 实现标签页 -->
-              <el-tabs type="border-card">
+              <el-tabs type="border-card" @tab-change="handleTabChange">
                 <!-- 产品详情 -->
                 <el-tab-pane label="Details">
                   <el-empty v-if="product.details?.length === 0" description="No details provided" />
@@ -267,7 +377,7 @@ watch(
                   </div>
                 </el-tab-pane>
                 <!-- 产品评论 -->
-                <el-tab-pane label="Comments" @click="getProductComment();">
+                <el-tab-pane label="Comments">
                   <!-- 评论筛选栏 -->
                   <div class="filter-bar" style="margin-bottom: 20px;" v-show="comments.length !== 0">
                     <div class="left">
@@ -333,6 +443,84 @@ watch(
                     @current-change="handlePageChange"
                     style="margin-top: 20px; justify-content: center;"
                   />
+                </el-tab-pane>
+                <!-- 新增问答标签页 -->
+                <el-tab-pane label="Q&A">
+                  <!-- 添加问题 -->
+                  <div class="question-form">
+                    <h3>Ask a Question</h3>
+                    <el-input
+                      v-model="newQuestion"
+                      type="textarea"
+                      :rows="2"
+                      placeholder="Ask about this product..."
+                      style="margin-bottom: 10px;"
+                    />
+                    <el-button type="primary" @click="submitQuestion" :disabled="!newQuestion.trim()">
+                      Submit Question
+                    </el-button>
+                  </div>
+                  
+                  <!-- 问题列表 -->
+                  <div class="questions-container" style="margin-top: 30px;">
+                    <h3>Product Questions</h3>
+                    <el-empty v-if="!questions || questions.length === 0" description="No questions yet" />
+                    <div v-else class="question-list">
+                      <div v-for="(question, qIndex) in questions" :key="qIndex" class="question-item">
+                        <div class="question-header">
+                          <div class="user-info">
+                            <img :src="question.user?.profile_picture || ''" alt="" class="avatar" />
+                            <span class="username">{{ question.user?.username || 'Anonymous' }}</span>
+                          </div>
+                          <span class="question-time">{{ new Date(question.created_time || Date.now()).toLocaleString() }}</span>
+                        </div>
+                        <div class="question-content">
+                          <p class="question-text">{{ question.content || '' }}</p>
+                          
+                          <!-- 回答列表 -->
+                          <div class="answers-container" v-if="question.answers && question.answers.length > 0">
+                            <div v-for="(answer, aIndex) in question.answers" :key="aIndex" class="answer-item">
+                              <div class="answer-header">
+                                <div class="user-info">
+                                  <img :src="answer.user?.profile_picture || ''" alt="" class="avatar" />
+                                  <span class="username">{{ answer.user?.username || 'Anonymous' }}</span>
+                                </div>
+                                <span class="answer-time">{{ new Date(answer.created_time || Date.now()).toLocaleString() }}</span>
+                              </div>
+                              <p class="answer-text">{{ answer.content || '' }}</p>
+                            </div>
+                          </div>
+                          
+                          <!-- 回答问题表单 -->
+                          <div v-if="replyToQuestion && replyToQuestion.question_id === question.question_id" class="reply-form">
+                            <el-input
+                              v-model="newAnswer"
+                              type="textarea"
+                              :rows="2"
+                              placeholder="Write your answer..."
+                              style="margin-bottom: 10px; margin-top: 15px;"
+                            />
+                            <div class="reply-actions">
+                              <el-button type="primary" @click="submitAnswer(question.question_id)" :disabled="!newAnswer.trim()">
+                                Submit Answer
+                              </el-button>
+                              <el-button @click="cancelReply">Cancel</el-button>
+                            </div>
+                          </div>
+                          
+                          <!-- 回答按钮 -->
+                          <div v-else class="question-actions">
+                            <el-button type="primary" plain @click="startReply(question)" size="small">
+                              Answer this question
+                            </el-button>
+                            <span class="answer-count" v-if="question.answers_count && question.answers_count > 0">
+                              {{ question.answers_count }} answer(s)
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </el-tab-pane>
               </el-tabs>
             </div>
@@ -708,5 +896,99 @@ watch(
       border: 1px solid $xtxColor;
     }
   }
+}
+
+// 问答相关样式
+.question-form {
+  padding: 15px;
+  border: 1px solid #ebeef5;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  background-color: #f9f9f9;
+}
+
+.question-list {
+  margin-top: 20px;
+}
+
+.question-item {
+  padding: 15px;
+  border: 1px solid #ebeef5;
+  border-radius: 4px;
+  margin-bottom: 15px;
+  background-color: #fff;
+}
+
+.question-header, .answer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+}
+
+.avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+.username {
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.question-time, .answer-time {
+  color: #909399;
+  font-size: 12px;
+}
+
+.question-text {
+  font-size: 16px;
+  margin-bottom: 15px;
+}
+
+.question-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 15px;
+}
+
+.answer-count {
+  color: #909399;
+  font-size: 12px;
+}
+
+.answers-container {
+  margin-top: 10px;
+  margin-left: 20px;
+  border-left: 2px solid #f0f0f0;
+  padding-left: 15px;
+}
+
+.answer-item {
+  padding: 10px;
+  margin-bottom: 10px;
+  background-color: #f9f9f9;
+  border-radius: 4px;
+}
+
+.answer-text {
+  font-size: 14px;
+}
+
+.reply-form {
+  margin-top: 15px;
+}
+
+.reply-actions {
+  display: flex;
+  gap: 10px;
 }
 </style>
