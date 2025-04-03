@@ -14,8 +14,7 @@ const categories = ref({})
 
 const fetchCategoryData = async (id) => {
   const res = await getCategoriesAPI(id);
-  console.log(res);
-  
+
   categories.value = res.data
 
   // 从 category_data.images 中获取轮播图数据
