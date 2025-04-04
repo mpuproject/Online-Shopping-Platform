@@ -12,6 +12,13 @@ export const getDetailAPI = (id) => {
   })
 }
 
+export const getProductStatusAPI = (id) => {
+  return request({
+    url: `/product/detail/status/`,
+    params: {id}
+  })
+}
+
 /**
  * @description 新增商品
  *

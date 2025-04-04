@@ -1,10 +1,11 @@
 <script setup>
-  import { ref, onMounted } from 'vue'
+  import { ref, onMounted, watch, watchEffect } from 'vue'
   import { useRoute, useRouter } from 'vue-router'
   import { ElMessage, ElMessageBox } from 'element-plus'
   import { getOrderByIdAPI, updateOrderItemAPI } from '@/apis/checkout'
   import { getAddressAPI } from '@/apis/address'
   import { useUserStore } from '@/stores/user'
+  import { getProductStatusAPI } from '@/apis/detail'
 
   const route = useRoute()
   const router = useRouter()
@@ -33,13 +34,13 @@
     '9': { text: 'Hold', type: 'success' }
   };
 
+  const productStatusMap = ref({})
+
   const fetchOrderDetail = async () => {
     try {
       const orderId = route.params.id
 
       const { data } = await getOrderByIdAPI(orderId)
-
-      console.log('API Response:', data); // Debug the entire API response
 
       // 根据接口返回结构调整映射关系
       order.value = {
@@ -50,11 +51,9 @@
         postFee: data.post_fee || 0,
         totalQuantity: data.products.reduce((total, item) => total + item.count, 0), // 计算商品总数
         skus: data.products.map(item => {
-          console.log('Item Status:', item.item_status); // Debug item_status
-          console.log('Item Id:', item.item_id);
-          console.log('Time:', item.updated_time);
           return {
             id: item.item_id,
+            product_id: item.id,
             image: item.image || '/placeholder.svg',
             status: item.item_status,
             name: item.name,
@@ -163,6 +162,45 @@
     }
   };
 
+const getProductStatus = async(id) => {
+  const res = await getProductStatusAPI(id);
+  return res?.data?.status
+}
+
+  const batchCheckProducts = async () => {
+    if (!order.value?.skus) return
+
+    const checkRequests = order.value.skus.map(item =>
+      getProductStatus(item.product_id)
+        .then(status => ({ id: item.product_id, status }))
+        .catch(() => ({ id: item.product_id, status: false }))
+    )
+
+    const results = await Promise.all(checkRequests)
+    results.forEach(({ id, status }) => {
+      productStatusMap.value[id] = status
+    })
+  }
+
+  const setupStatusChecker = () => {
+    let intervalId
+
+    watchEffect((onCleanup) => {
+      batchCheckProducts()
+
+      intervalId = setInterval(batchCheckProducts, 300000)
+
+      onCleanup(() => {
+        clearInterval(intervalId)
+        productStatusMap.value = {}
+      })
+    })
+  }
+
+  watch(() => order.value, (newVal) => {
+    if (newVal) setupStatusChecker()
+  })
+
   onMounted(async () => {
     await fetchOrderDetail()
     await fetchDefaultAddress()
@@ -212,9 +250,21 @@
           :key="item.id"
           class="goods-item"
         >
-          <el-image :src="item.image" class="goods-img" />
+          <RouterLink
+            :to="`/product/${item.product_id}`"
+            v-if="productStatusMap[item.product_id] === true"
+          >
+            <el-image :src="item.image" class="goods-img" />
+          </RouterLink>
+          <el-image :src="item.image" class="goods-img-disabled" v-else />
           <div class="goods-info">
-            <h3>{{ item.name }}</h3>
+            <RouterLink
+              :to="`/product/${item.product_id}`"
+              v-if="productStatusMap[item.product_id] === true"
+            >
+              <h3 class="active">{{ item.name }}</h3>
+            </RouterLink>
+            <h3  class="disabled" v-else>{{ item.name }}</h3>
             <p class="spec">{{ item.attrsText }}</p>
             <div class="price-line">
               <span class="price">¥{{ item.realPay }}</span>
@@ -352,11 +402,46 @@
         height: 120px;
         margin-right: 20px;
         border-radius: 4px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+
+        &:hover {
+          box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+          transform: translateY(-2px);
+        }
+
+        &:active {
+          transform: translateY(0);
+          opacity: 0.9;
+        }
+      }
+
+      .goods-img-disabled {
+        width: 120px;
+        height: 120px;
+        margin-right: 20px;
+        border-radius: 4px;
       }
 
       .goods-info {
         flex: 1;
-        h3 {
+        h3.active {
+          margin: 0 0 10px;
+          font-size: 16px;
+          transition: color 0.2s ease;
+          cursor: pointer;
+          max-width: fit-content;
+
+          &:hover {
+            color: var(--el-color-primary);
+          }
+
+          &:active {
+            color: var(--el-color-primary-dark-2);
+          }
+        }
+
+        h3.disabled {
           margin: 0 0 10px;
           font-size: 16px;
         }
