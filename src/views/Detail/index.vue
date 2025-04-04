@@ -116,20 +116,16 @@ const userStore = useUserStore();
 
 // 获取商品问答
 const getProductQuestions = async () => {
-  console.log('Starting to fetch questions for product:', route.params.id);
   try {
     const res = await getProductQuestionsAPI(route.params.id);
-    console.log('API response for questions:', JSON.stringify(res));
-    
+
     // 更健壮的数据访问
     if (res && res.data && typeof res.data === 'object') {
       // 尝试获取data字段
       if ('data' in res.data) {
-        console.log('Found data field in response:', res.data.data);
         questions.value = Array.isArray(res.data.data) ? res.data.data : [];
       } else {
         // 如果没有嵌套的data字段，尝试使用整个res.data
-        console.log('No nested data field, using entire res.data:', res.data);
         questions.value = Array.isArray(res.data) ? res.data : [];
       }
     } else {
@@ -140,7 +136,6 @@ const getProductQuestions = async () => {
     console.error('Failed to fetch questions:', error);
     questions.value = []; // 确保在出错时questions仍然是一个空数组
   }
-  console.log('Final questions data:', JSON.stringify(questions.value));
 };
 
 // 提交问题
@@ -150,17 +145,17 @@ const submitQuestion = async () => {
     router.push('/login');
     return;
   }
-  
+
   if (!newQuestion.value.trim()) {
     ElMessage.warning('Question content cannot be empty');
     return;
   }
-  
+
   try {
-    const res = await submitQuestionAPI(route.params.id, newQuestion.value);
+    await submitQuestionAPI(route.params.id, newQuestion.value);
     ElMessage.success('Question submitted successfully');
     newQuestion.value = '';
-    setTimeout(() => getProductQuestions(), 500);
+    setTimeout(() => getProductQuestions(), 10000);
   } catch (error) {
     console.error('Failed to submit question:', error);
     ElMessage.error('Failed to submit question');
@@ -174,14 +169,14 @@ const submitAnswer = async (questionId) => {
     router.push('/login');
     return;
   }
-  
+
   if (!newAnswer.value.trim()) {
     ElMessage.warning('Answer content cannot be empty');
     return;
   }
-  
+
   try {
-    const res = await submitAnswerAPI(questionId, newAnswer.value);
+    await submitAnswerAPI(questionId, newAnswer.value);
     ElMessage.success('Answer submitted successfully');
     newAnswer.value = '';
     replyToQuestion.value = null;
@@ -460,7 +455,7 @@ watch(
                       Submit Question
                     </el-button>
                   </div>
-                  
+
                   <!-- 问题列表 -->
                   <div class="questions-container" style="margin-top: 30px;">
                     <h3>Product Questions</h3>
@@ -476,7 +471,7 @@ watch(
                         </div>
                         <div class="question-content">
                           <p class="question-text">{{ question.content || '' }}</p>
-                          
+
                           <!-- 回答列表 -->
                           <div class="answers-container" v-if="question.answers && question.answers.length > 0">
                             <div v-for="(answer, aIndex) in question.answers" :key="aIndex" class="answer-item">
@@ -490,7 +485,7 @@ watch(
                               <p class="answer-text">{{ answer.content || '' }}</p>
                             </div>
                           </div>
-                          
+
                           <!-- 回答问题表单 -->
                           <div v-if="replyToQuestion && replyToQuestion.question_id === question.question_id" class="reply-form">
                             <el-input
@@ -507,7 +502,7 @@ watch(
                               <el-button @click="cancelReply">Cancel</el-button>
                             </div>
                           </div>
-                          
+
                           <!-- 回答按钮 -->
                           <div v-else class="question-actions">
                             <el-button type="primary" plain @click="startReply(question)" size="small">

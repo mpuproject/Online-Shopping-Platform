@@ -8,7 +8,10 @@ import router from '@/router/index'
 const httpInstance = axios.create({
     baseURL: '/api/',
     timeout: 5000,
-    headers: { 'Content-Type': 'application/json' }
+    headers: { 'Content-Type': 'application/json',
+              'Cache-Control': 'max-age=3600'
+    },
+    withCredentials: true
 })
 
 let isRefreshing = false; // 标记是否正在刷新token
@@ -103,7 +106,7 @@ httpInstance.interceptors.response.use(res => res.data, async e => {
   } else if(e.status === 500) {
     router.replace({ path: '/500' })
   } else {
-    ElMessage.warning(e.response.msg || 'Network Error');
+    ElMessage.warning(e.response?.msg || 'Network Error');
     return Promise.reject(e);
   }
 });
