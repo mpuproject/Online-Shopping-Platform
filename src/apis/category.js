@@ -21,10 +21,7 @@ export const getCategories = () => {
 export function getCategoriesAPI(id) {
   return request({
     url: `/category/all/`,
-    method: 'POST',
-    data: {
-      "id": id
-    }
+    params: { id }
   })
 }
 

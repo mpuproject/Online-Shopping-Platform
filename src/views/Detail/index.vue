@@ -155,7 +155,7 @@ const submitQuestion = async () => {
     await submitQuestionAPI(route.params.id, newQuestion.value);
     ElMessage.success('Question submitted successfully');
     newQuestion.value = '';
-    setTimeout(() => getProductQuestions(), 10000);
+    setTimeout(() => getProductQuestions(), 500);
   } catch (error) {
     console.error('Failed to submit question:', error);
     ElMessage.error('Failed to submit question');

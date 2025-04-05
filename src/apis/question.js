@@ -7,11 +7,9 @@ import { ElMessage } from 'element-plus';
  * @return {Promise} Promise对象
  */
 export const getProductQuestionsAPI = (productId) => {
-  console.log('Fetching questions for product:', productId);
   return request({
-    url: `/question/product/${productId}/`
+    url: `/question/product/${productId}/list/`
   }).then(response => {
-    console.log('GET question response:', response);
     // 确保返回完整响应
     return response;
   }).catch(error => {
@@ -28,15 +26,13 @@ export const getProductQuestionsAPI = (productId) => {
  * @return {Promise} Promise对象
  */
 export const submitQuestionAPI = (productId, content) => {
-  console.log('Submitting question for product:', productId, 'Content:', content);
   return request({
-    url: `/question/product/${productId}/`,
+    url: `/question/product/${productId}/add/`,
     method: 'POST',
     data: {
       content
     }
   }).then(response => {
-    console.log('POST question response:', response);
     return response;
   }).catch(error => {
     console.error('Error submitting question:', error);
@@ -52,19 +48,16 @@ export const submitQuestionAPI = (productId, content) => {
  * @return {Promise} Promise对象
  */
 export const submitAnswerAPI = (questionId, content) => {
-  console.log('Submitting answer for question:', questionId, 'Content:', content);
   return request({
-    url: `/question/answer/${questionId}/`,
+    url: `/question/answer/${questionId}/add/`,
     method: 'POST',
     data: {
       content
     }
   }).then(response => {
-    console.log('POST answer response:', response);
     return response;
   }).catch(error => {
-    console.error('Error submitting answer:', error);
     ElMessage.error('Failed to submit answer. Please try again later.');
     return Promise.reject(error);
   });
-}; 
+};
