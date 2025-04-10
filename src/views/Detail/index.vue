@@ -374,7 +374,7 @@ watch(
                 <!-- 产品评论 -->
                 <el-tab-pane label="Comments">
                   <!-- 评论筛选栏 -->
-                  <div class="filter-bar" style="margin-bottom: 20px;" v-show="comments.length !== 0">
+                  <div class="filter-bar" style="margin-bottom: 20px;">
                     <div class="left">
                       <a
                         :class="['filter-item', commentFilter.rating === 'default' ? 'active' : '']"

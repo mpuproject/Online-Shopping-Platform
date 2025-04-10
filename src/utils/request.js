@@ -106,7 +106,7 @@ httpInstance.interceptors.response.use(res => res.data, async e => {
   } else if(e.status === 500) {
     router.replace({ path: '/500' })
   } else {
-    ElMessage.warning(e.response?.msg || 'Network Error');
+    ElMessage.warning(e.response.data?.msg || 'Network Error');
     return Promise.reject(e);
   }
 });

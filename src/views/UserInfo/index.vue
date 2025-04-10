@@ -3,14 +3,17 @@ import { onBeforeMount, ref, watch } from 'vue'
 import { useUserStore } from '@/stores/user'
 import { getMessageCountAPI } from '@/apis/home'
 import { getOrderByUserIdAPI } from '@/apis/checkout'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { jwtDecode } from 'jwt-decode'
 import { updateUserProfileAPI } from '@/apis/user'
 import { postImageAPI } from '@/apis/image'
 import { Upload } from '@element-plus/icons-vue'
-
+import { useCartStore } from '@/stores/cartStore'
+import { getProductStatusAPI, getDetailAPI } from '@/apis/detail'
 
 const userStore = useUserStore()
+const cartStore = useCartStore()
+
 const pending = ref({
   unpaid: 0,
   pending: 0,
@@ -74,6 +77,7 @@ const fetchOrders = async () => {
       total: order.total_price,
       items: order.items.map(item => ({
         id: item.id,
+        productId: item.productId,
         name: item.name,
         image: item.image || '/placeholder.svg',
         price: item.price,
@@ -150,7 +154,7 @@ const handleFileChange = async (file) => {
     userStore.userInfo.profile = response.url
 
     ElMessage.success('Avatar updated successfully');
-    
+
     showAvatarDialog.value = false;
   } catch (error) {
     // 细化错误处理
@@ -181,6 +185,36 @@ onBeforeMount(async () => {
     await fetchOrders()  // 直接调用复用后的方法
   }
 })
+
+const buyAgain = async (items) => {
+  ElMessageBox.confirm(
+    'Are you sure to add these products in your cart?',
+    'Reminder',
+    {
+      confirmButtonText: 'OK',
+      cancelButtonText: 'Cancel',
+      type: 'warning',
+    }
+  ).then(async ()=>{
+    for (let item of items) {
+      const res = await getProductStatusAPI(item.productId);
+      if (res.data.status == true) {
+        const r = await getDetailAPI(item.productId);
+        const product = r.data;
+        cartStore.addToCart({
+          id: product.id,
+          name: product.name,
+          image: product.images[0],
+          price: product.price,
+          count: item.quantity,
+          status: true,
+          selected: true,
+        })
+        ElMessage.success('Add products successfully')
+      }
+    }
+  }).catch()
+}
 </script>
 
 <template>
@@ -215,14 +249,14 @@ onBeforeMount(async () => {
           <div class="security-item">
             <i class="el-icon-mobile-phone"></i>
             <span>
-              Mobile: {{ phone ? 
-                phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2') : 
-                '未绑定' 
+              Mobile: {{ phone ?
+                phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2') :
+                '未绑定'
                 }}
             </span>
-            <el-link 
+            <el-link
               v-if="!email"
-              type="primary" 
+              type="primary"
               :underline="false"
               @click="handleChangePhone"
             >
@@ -390,8 +424,8 @@ onBeforeMount(async () => {
               <div class="order-footer">
                 <span>Total: ¥{{ parseFloat(order.total).toFixed(2) }}</span>
                 <div class="actions">
-                  <el-button type="primary" plain>View Details</el-button>
-                  <el-button>Buy Again</el-button>
+                  <el-button type="primary" plain @click="$router.push(`/order/detail/${order.id}`)">View Details</el-button>
+                  <el-button @click="buyAgain(order.items)">Buy Again</el-button>
                 </div>
               </div>
             </div>

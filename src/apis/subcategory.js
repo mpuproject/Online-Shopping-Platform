@@ -24,11 +24,10 @@ export const getSubcategoryFilterAPI = (id) => {
 
  * @returns
  */
-export const getSubcategoryProductAPI = (data) => {
+export const getSubcategoryProductAPI = (params) => {
   return request({
     url: `/category/sub/product/`,
-    method: 'POST',
-    data
+    params
   })
 }
 
