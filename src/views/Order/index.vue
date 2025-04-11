@@ -6,10 +6,10 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   getOrderByUserIdAPI,
   updateOrderAPI,
-  updateOrderItemAPI,
 } from '@/apis/checkout'
 import LayoutHeader  from '@/views/Layout/components/LayoutHeader.vue'
 import LayoutStatus from '@/views/Layout/components/LayoutStatus.vue'
+import { markNotificationAPI } from '@/apis/home'
 
 const userStore = useUserStore()
 
@@ -18,20 +18,6 @@ const stateMap = {
   '0': 'Unpaid',
   '1': 'Paid',
   '2': 'Cancelled',
-}
-
-// 商品状态映射
-const itemStateMap = {
-  '0': { text: 'Unpaid', type: 'warning' },
-  '1': { text: 'Pending', type: 'success' },
-  '2': { text: 'Cancelled', type: 'info' },
-  '3': { text: 'Shipped', type: 'primary' },
-  '4': { text: 'Delivered', type: '' },
-  '5': { text: 'Received', type: 'success' },
-  '6': { text: 'Refund Pending', type: 'danger' },
-  '7': { text: 'Refunded', type: 'info' },
-  '8': { text: 'Done', type: 'success' },
-  '9': {text: 'Hold', type: 'success'}
 }
 
 // 标签页配置
@@ -127,74 +113,10 @@ const handleCancelOrder = async (orderId) => {
   })
 }
 
-// 确认收货
-const handleConfirmReceipt = async (itemId) => {
-  try {
-
-    const res = await updateOrderItemAPI({
-      itemId: itemId,  //
-      itemStatus: '5'   //
-    })
-
-    // 添加响应状态判断
-    if (res.code === 200) {
-      ElMessage.success('Receipt confirmed successfully')
-      await fetchOrders()
-    } else {
-      ElMessage.error(`Operation failed: ${res.message || 'Unknown error'}`)
-    }
-  } catch (error) {
-    // 增强错误信息
-    ElMessage.error(`Operation failed: ${error.response?.data?.message || error.message}`)
-  }
-}
-
-// 退款处理函数
-const handleRefund = async (itemId) => {
-  try {
-    const currentItem = orderList.value
-      .flatMap(order => order.skus)
-      .find(item => item.id === itemId)
-
-    if (!currentItem) {
-      ElMessage.error('未找到对应订单项')
-      return
-    }
-
-    const isApplying = currentItem.status !== '6'
-    const actionName = isApplying ? 'request refund' : 'cancel refund'
-
-    // 添加确认对话框
-    await ElMessageBox.confirm(
-      `Are you sure to ${actionName}?`,
-      'Confirmation',
-      {
-        confirmButtonText: 'Confirm',
-        cancelButtonText: 'Cancel',
-        type: 'warning'
-      }
-    )
-
-    const targetStatus = isApplying ? '6' : '7'
-    const res = await updateOrderItemAPI({
-      itemId: itemId,
-      itemStatus: targetStatus
-    })
-
-    if (res.code === 200) {
-      ElMessage.success(`${actionName} successful`)
-      await fetchOrders()
-    }
-  } catch (error) {
-    // 捕获用户取消操作的情况
-    if (error !== 'cancel') {
-      ElMessage.error(`Operation failed: ${error.response?.data?.message || error.message}`)
-    }
-  }
-}
 // 初始化获取数据
-onMounted(() => {
-  fetchOrders()
+onMounted(async () => {
+  await fetchOrders()
+  await markNotificationAPI(userStore.userInfo.id)
 })
 
 // 添加时间格式化方法

@@ -57,3 +57,30 @@ export const getHomeBannerAPI = () =>{
     url: '/home/recommend/',
   })
 }
+
+/**
+ * @description 获取未读订单消息
+ *
+ * @param {*} userId
+ * @returns
+ */
+export const getNotificationAPI = (userId) => {
+  return request({
+    url: '/order/notification/',
+    params: {userId}
+  })
+}
+
+/**
+ * @description 标记未读消息
+ *
+ * @param {*} userId
+ * @returns
+ */
+export const markNotificationAPI = (userId) => {
+  return request({
+    url: '/order/mark-notification/',
+    method: 'PATCH',
+    data: {userId}
+  })
+}

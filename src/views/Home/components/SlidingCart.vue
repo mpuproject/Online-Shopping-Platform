@@ -3,7 +3,8 @@ import { ref, computed } from 'vue'
 import { useCartStore } from '@/stores/cartStore';
 import { useUserStore } from '@/stores/user';
 import router from '@/router';
-import { ElMessageBox } from 'element-plus';
+import { ElMessageBox, ElMessage } from 'element-plus';
+import { Delete } from '@element-plus/icons-vue'
 
 const userStore = useUserStore()
 
@@ -49,6 +50,26 @@ const updateCount = (id, count) => {
     }
   }
 }
+
+const clearCart = () => {
+  if(cartStore.cartList.length !== 0) {
+    ElMessageBox.confirm(
+      'Are you sure you want to clear the cart?',
+      'Confirm Clear Cart',
+      {
+        confirmButtonText: 'Clear',
+        cancelButtonText: 'Cancel',
+        type: 'warning',
+      }
+    ).then(() => {
+      cartStore.clearCart()
+    }).catch(() => {})
+  }
+  else {
+    ElMessage.warning('Nothing in your cart yet')
+  }
+}
+
 defineExpose({
   toggleCart
 })
@@ -134,6 +155,7 @@ const checkout = async () => {
             <p>Subtotal ({{ totalCount }} items):</p>
             <p>&yen; {{ totalPrice.toFixed(2) }} </p>
           </div>
+          <el-icon class="delete-icon" @click="clearCart"><Delete /></el-icon>
           <el-button size="large" type="primary" @click="checkout">
             Open Cartlist
           </el-button>
@@ -373,6 +395,21 @@ const checkout = async () => {
             color: $priceColor;
           }
         }
+      }
+
+      .delete-icon {
+        font-size: 24px;
+        color: #666;
+        cursor: pointer;
+        margin-left: 10px;
+
+        &:hover {
+          color: $xtxColor;
+        }
+      }
+
+      .el-button {
+        margin-left: 10px;
       }
     }
   }

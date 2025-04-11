@@ -7,6 +7,7 @@ import SlidingCart from './SlidingCart.vue'
 import { saveCartToServer } from '@/composables/logout'
 import { getMessageCountAPI } from '@/apis/home'
 import { jwtDecode } from 'jwt-decode'
+import { getNotificationAPI } from '@/apis/home'
 
 const userStore = useUserStore()
 const slidingCartRef = ref(null)
@@ -21,7 +22,7 @@ const openCart = (event) => {
   router.push('/cartlist')
 }
 
-const goToOrders = (event) => {
+const goToOrders = async (event) => {
   event.preventDefault()
   router.push('/order')
 }
@@ -43,9 +44,16 @@ const getMessageCount = async () => {
   pending.value = res.data
 }
 
+const orderMessageCount = ref(0)
+const getNotification = async () => {
+  const res = await getNotificationAPI(userStore.userInfo.id)
+  orderMessageCount.value = res.data.count;
+}
+
 onBeforeMount( async () => {
   if(userStore.userInfo.id) {
     await getMessageCount()
+    await getNotification()
   }
 })
 
@@ -78,6 +86,9 @@ onBeforeMount( async () => {
       >
         <span class="iconfont" v-html="item.icon"></span>
         <span>{{ item.label }}</span>
+        <span v-if="item.label === 'Order' && orderMessageCount > 0" class="order-badge">
+          {{ orderMessageCount > 99 ? '99+' : orderMessageCount }}
+        </span>
       </a>
     </div>
     <p class="orderstatus">Order Status:</p>
@@ -161,6 +172,22 @@ onBeforeMount( async () => {
   text-decoration: none;
   color: #333;
   gap: 8px;
+  position: relative;
+
+  .order-badge {
+    position: absolute;
+    top: -5px;
+    right: 0px;
+    background-color: #ff6b6b;
+    color: white;
+    border-radius: 50%;
+    font-size: 10px;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 }
 
 .stat-item:hover {
