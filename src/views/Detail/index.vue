@@ -224,6 +224,17 @@ watch(
   },
   { immediate: true }
 )
+
+watch(
+  () => route.params.id,
+  async (newId) => {
+    if (newId) {
+      await getDetail();
+      await fetchRandomProducts(product.value.name, newId);
+    }
+  },
+  { immediate: true }
+)
 </script>
 
 <template>
@@ -248,7 +259,7 @@ watch(
             <div class="media">
               <!-- 图片预览区 -->
               <template v-if="product.images && product.images.length > 0">
-                <ImageView :imageList="product.images" />
+                <ImageView :imageList="product.images" style="width: 100%;" />
               </template>
               <!-- 统计数量 -->
               <ul class="goods-sales">
@@ -365,8 +376,8 @@ watch(
                   <div class="goods-detail" v-else>
                     <ul class="attrs">
                       <li v-for="(item, key) in product.details" :key="key">
-                        <span class="dt">{{ Object.keys(item)[0].charAt(0).toUpperCase() + Object.keys(item)[0].slice(1).toLowerCase() }}:</span>
-                        <span class="dd">{{ item[Object.keys(item)[0]] }}</span>
+                        <span class="dt">{{ item.key }}:</span>
+                        <span class="dd">{{ item.value }}</span>
                       </li>
                     </ul>
                   </div>
